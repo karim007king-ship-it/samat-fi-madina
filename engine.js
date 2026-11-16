@@ -1,0 +1,208 @@
+// ===== محرّك القصص التفاعلية (قابل لإعادة الاستعمال) =====
+// يُحمَّل بعد images.js وlang_ar.js وstory.js. القواعد اللغوية RX تأتي من ملف اللغة، ونصوص القصة من story.js عبر TR().
+// يوفّر: العرض والحوار والكاميرا والألغاز والصوت والأجواء وتعابير الوجوه، ومعالجة الصور (إزالة الخلفية الخضراء)،
+// والحفظ وخانات الحفظ واختيار الفصل ومعرض النهايات والإعدادات.
+// خطوات القصة: ['من','نص','علامة اختيارية','تعبير اختياري'] أو {c:[اختيارات]} أو {p:لغز} أو {j:دليل} أو {x:'أوامر المشهد'}.
+
+// ===== الإعدادات والثوابت =====
+const $=s=>document.querySelector(s);var LIBK=GAME.id+'_lib';
+// ===== الحالة والحفظ والصوت =====
+let G,au,dr,T=0,TT='',rd=0,nx=0,mute=0,CHR={},OV={},BG0=null,curBg=null,C0=null,IMG={};
+const sv=()=>{try{localStorage.setItem(K,JSON.stringify(G))}catch(e){}};
+const ld=()=>{try{return JSON.parse(localStorage.getItem(K))}catch(e){return null}};
+const trust=(k,d)=>{G[k]=Math.max(0,Math.min(10,G[k]+d))};
+const nw=()=>({c:0,i:0,y:5,s:5,j:[],f:{},card:-1});
+function aud(){if(au)return;try{au=new(window.AudioContext||window.webkitAudioContext)();AMGN=au.createGain();AMGN.gain.value=VOL.a;AMGN.connect(au.destination);FXGN=au.createGain();FXGN.gain.value=VOL.f;FXGN.connect(au.destination);const o=au.createOscillator(),g=au.createGain(),f=au.createBiquadFilter();o.type='sawtooth';o.frequency.value=48;f.type='lowpass';f.frequency.value=140;g.gain.value=.05;o.connect(f);f.connect(g);g.connect(AMGN);o.start();dr=g;ambInit()}catch(e){}}
+function tone(f,d=.35){if(!au||mute)return;const o=au.createOscillator(),g=au.createGain();o.frequency.value=f;g.gain.setValueAtTime(.2,au.currentTime);g.gain.exponentialRampToValueAtTime(.001,au.currentTime+d);o.connect(g);g.connect(FXGN||au.destination);o.start();o.stop(au.currentTime+d)}
+function ov(h){const e=$('#ov');if(!h){e.hidden=true;e.innerHTML='';return}e.innerHTML=h;e.hidden=false}
+function toast(t){const e=$('#toast');e.textContent=t;e.style.opacity=1;setTimeout(()=>e.style.opacity=0,1600)}
+// ===== توزيع الشخصيات على أرض كل مشهد =====
+const LIGHTS={};
+let LX={a:.83,y:.5,s:.17},LY={a:200,y:200,s:200},XT={in:{},out:{}};
+function stage(ch){const[cx0,fy0,fh0]=SC2[ch.bg]||SC2.roof,gc=G?G.c:0,t=STG[gc]||String(gc%3),lay=ch.lay!=null?ch.lay:+t[0],cs=(ch.cast&&ch.cast.join?ch.cast.join(''):t.slice(1))||'ays';
+const ord=(lay===1?'yas':'ays').split('').filter(k=>(cs.includes(k)||XT.in[k])&&!XT.out[k]),n=ord.length,sp=(lay===2?.28:lay===1?.30:.25)*(ch.bg==='studio'?.88:1);
+let xs=ord.map((k,i)=>cx0+(i-(n-1)/2)*sp);const sh=Math.max(0,.2-Math.min(...xs))-Math.max(0,Math.max(...xs)-.82);xs=xs.map(x=>x+sh);
+['a','y','s'].forEach(k=>{const w=$('#w_'+k);if(!w)return;const i=ord.indexOf(k);if(i<0){w.style.display='none';return}
+let fy=fy0,fh=fh0;if(lay===2){fy=.93;fh=Math.min(.6,fh0*1.4)}else if(lay===0&&n===3&&i===1){fy-=.02;fh*=.95}else if(lay===1&&i%2===1){fy-=.05;fh*=.85}
+w.style.display='';w.style.setProperty('--x',xs[i]*100+'%');w.style.setProperty('--b',(1-fy)*100+'%');w.style.setProperty('--h',fh*100+'%');LX[k]=xs[i];LY[k]=(fy-fh*.5)*300});rim(ch)}
+// انعكاس ضوء أقرب مصدر ضوء على حافة الشخصية (دافئ أو أزرق)
+function rim(ch){const A=LIGHTS[ch.bg]||[];['a','y','s'].forEach(k=>{const w=$('#w_'+k);if(!w)return;let best=null,bs=0;const cx=LX[k]*400,cy=LY[k];
+A.forEach(l=>{const d=Math.hypot(l.x-cx,l.y-cy),st=Math.max(0,1-d/170)*(.6+Math.min(1,l.r/45)*.6);if(st>bs){bs=st;best=l}});
+if(!best||bs<.12){w.classList.remove('rim');return}
+const warm=best.c===1,a=Math.min(.85,.35+bs*.6),col=warm?'255,170,70':'60,220,255';
+w.style.setProperty('--rx',(best.x>cx?1:-1)*(2+bs*4)+'px');w.style.setProperty('--rc','rgba('+col+','+a+')');w.style.setProperty('--rd','rgba('+col+','+(a*.4)+')');w.style.setProperty('--rt',(2+Math.random()*1.6).toFixed(2)+'s');w.classList.add('rim')})}
+// ===== لغة وصف المشهد: خطوة {x:'أمر؛ أمر',f:'علامة اختيارية'} تُنفَّذ تلقائيا =====
+// enter k / exit k: دخول أو خروج شخصية بالمشي (k = a أو y أو s)، go k x: امشِ إلى موضع x (0 إلى 1)
+// cam in|down|shake|punch: حركة كاميرا، lights off|dim|on: إضاءة المشهد، flash: ومضة، wait ms: انتظار
+const sl=ms=>new Promise(r=>setTimeout(r,ms));
+async function runX(str){nx=0;rd=0;$('#dl').classList.remove('rd');
+for(const c of str.split(';').map(x=>x.trim()).filter(Boolean)){const[op,a,b]=c.split(/\s+/),w=$('#w_'+a),v=w&&w.querySelector('svg');
+if(op==='enter'&&v){XT.in[a]=1;delete XT.out[a];place(v);v.classList.add('ent');stage(C[G.c]);await sl(60);v.classList.add('wk');steps();v.classList.remove('ent');await sl(900);v.classList.remove('wk')}
+else if(op==='exit'&&v){place(v);v.classList.add('wk','ent');steps();await sl(900);v.classList.remove('wk');XT.out[a]=1;stage(C[G.c])}
+else if(op==='go'&&v){v.classList.add('wk');steps();w.style.setProperty('--x',+b*100+'%');LX[a]=+b;await sl(900);v.classList.remove('wk')}
+else if(op==='cam')camS(a)||cam(a==='in'?1.3:a==='down'?1.1:1,0,a==='down'?-20:0,a==='shake'?'sk':a==='punch'?'pu':'');
+else if(op==='lights'){const sc=$('#sc');sc.classList.toggle('dark',a==='off');sc.classList.toggle('dim',a==='dim');lightSnd(a)}
+else if(op==='flash')(boom(),$('#cam')).animate([{filter:'brightness(3)'},{filter:'none'}],{duration:380});
+else if(op==='wait')await sl(+a||500)}
+adv()}
+// ===== الكاميرا ودخول الشخصيات وخروجها =====
+(()=>{const c=document.createElement('div');c.id='cam';const sc=$('#sc');while(sc.firstChild)c.appendChild(sc.firstChild);sc.appendChild(c)})();buildChars();
+function wide(){cam(1,0,0);$('#sc').classList.remove('lb')}
+function cam(z,x,y,fx){const c=$('#cam'),sc=$('#sc'),mx=(z-1)*sc.clientWidth/2*.9,my=(z-1)*sc.clientHeight/2*.9;x=Math.max(-mx,Math.min(mx,x));y=Math.max(-my,Math.min(my,y));c.style.setProperty('--cz',z);c.style.setProperty('--cx',x+'px');c.style.setProperty('--cy',y+'px');if(fx){c.classList.remove(fx);void c.offsetWidth;c.classList.add(fx);c.onanimationend=()=>c.classList.remove(fx)}}
+const place=x=>{const k=x.id.slice(2);x.style.setProperty('--ex',EN[k][0]);x.style.setProperty('--ey',EN[k][1])};
+function hideAll(){document.querySelectorAll('#ch svg').forEach(x=>{place(x);x.classList.add('ent')})}
+function walk(add,cb){document.querySelectorAll('#ch svg').forEach((x,i)=>{place(x);setTimeout(()=>{x.classList.add('wk');x.classList.toggle('ent',add);setTimeout(()=>x.classList.remove('wk'),900)},i*350)});setTimeout(cb,1700)}
+
+function direct(s){const t=s[1],w=s[0],e=w!=='n'&&$('#c_'+w);let z=1,x=0,y=0,fx='';
+if(e){x=Math.max(-70,Math.min(70,$('#sc').clientWidth*(.5-LX[w])*.5));z=1.14;y=-6}
+if(/يتفتح|تضوي|يتضي/.test(t)){z=1.28;x*=.4}
+if(/ينزلو|سلالم|الدرج|درج/.test(t)){y=-22;z=1.1}
+if(/!/.test(t))fx='pu';
+if(RX.fear.test(t)){fx='sk';z=Math.max(z,1.2)}
+$('#sc').classList.toggle('lb',w==='n');cam(z,x,y,fx)}
+// ===== المشهد والحوار =====
+function scene(b){ambSet(b);const s=S[b];if(curBg!==b){curBg=b;$('#bgs').innerHTML=IMG['b_'+b]?imgBg(b):BG[b]}$('#sc').style.background=`linear-gradient(${s[0]},${s[1]})`;const o=OV[b]||IMG['b_'+b],tn=IMG['b_'+b]?TONE[b]:.85,scn=$('#sc');scn.style.setProperty('--tn',tn);$('#glow').style.opacity=o?0:s[2];$('#moon').style.opacity=o?0:s[3]}
+function hud(){$('#ct').textContent=`${GAME.partOf(G.c)} · ${G.c+1}/${C.length}`;$('#ty').style.width=G.y*10+'%';$('#ts').style.width=G.s*10+'%'}
+function typ(t){clearInterval(T);rd=0;$('#dl').classList.remove('rd');let i=0;const e=$('#tx');e.textContent='';TT=t;$('#ch').classList.add('tk');T=setInterval(()=>{e.textContent=t.slice(0,++i);if(i>=t.length){clearInterval(T);T=0;$('#ch').classList.remove('tk');rd=1;$('#dl').classList.add('rd')}},TS)}
+$('#dl').onclick=e=>{if(e.target.closest('#cx'))return;if(T){clearInterval(T);T=0;$('#ch').classList.remove('tk');$('#tx').textContent=TT;rd=1;$('#dl').classList.add('rd')}else if(rd&&nx){rd=0;$('#dl').classList.remove('rd');const f=nx;nx=0;f()}};
+function adv(){G.i++;sv();step()}
+function step(){
+const ch=C[G.c];if(!ch)return endScr();
+if(G.i===0&&G.card!==G.c){G.card=G.c;snapSave();cam(1,0,0);scene(ch.bg);stage(ch);hud();ov(`<div class="card"><p>الفصل ${G.c+1}</p><h2>${ch.t}</h2></div>`);XT={in:{},out:{}};$('#sc').classList.remove('dark','dim');AMV=1;ambSet(AMB_B);hideAll();setTimeout(()=>{ov();walk(false,step)},1900);return}
+const s=ch.st[G.i];if(!s){wide();walk(true,()=>{G.c++;G.i=0;sv();step()});return}
+scene(ch.bg);stage(ch);hud();$('#cx').innerHTML='';
+if(s.x!=null){if(s.f&&!G.f[s.f]){G.i++;return step()}return runX(s.x)}
+if(Array.isArray(s)){if(s[2]&&!G.f[s[2]]){G.i++;return step()}
+const [nm,col]=N[s[0]];$('#nm').textContent=nm;$('#nm').style.color=col;
+['a','y','s'].forEach(k=>{const e=$('#c_'+k);e.classList.toggle('on',k===s[0]);e.classList.toggle('al',k===s[0]&&/[!؟]/.test(s[1]))});
+const t=s[1],rx=/!/.test(t)?'jp':/\u061f/.test(t)?'tl':RX.fear.test(t)?'sh':'';document.querySelectorAll('#ch svg').forEach(x=>x.classList.remove('jp','tl','sh'));void $('#ch').offsetWidth;if(rx)(s[0]==='n'?document.querySelectorAll('#ch svg'):[$('#c_'+s[0])]).forEach(x=>x.classList.add(rx));const sc=$('#sc');sc.classList.remove('qk');void sc.offsetWidth;if(RX.knock.test(t)){sc.classList.add('qk');thump()}
+$('#tx').style.color=s[0]==='n'?'#b9c0d8':'var(--ink)';direct(s);express(s);typ(s[1]);nx=adv;return}
+if(s.c){wide();$('#nm').textContent='';$('#tx').textContent='ماذا تقرّرون؟';nx=0;rd=0;
+s.c.forEach(o=>{const b=document.createElement('button');b.textContent=o[0];b.onclick=()=>{for(const k in o[1]){trust(k,o[1][k]);const e=$('#c_'+k);if(e){e.classList.remove('jp','sh');void e.getBoundingClientRect();e.classList.add(o[1][k]>0?'jp':'sh');setEx(e,o[1][k]>0?'joy':'sad')}}if(o[2])G.f[o[2]]=1;hud();$('#cx').innerHTML='';setTimeout(adv,750)};$('#cx').appendChild(b)});return}
+if(s.p){nx=0;wide();return puz(s.p)}
+if(s.j){if(!G.j.includes(s.j)){G.j.push(s.j);toast('📓 دليل جديد في الدفتر')}G.i++;sv();return step()}}
+// ===== الألغاز =====
+function win(p,f){chime(f<2);$('#ps').textContent=f>1?'✔ نجحتم!':'✔ نجحتم! +ثقة';for(const k in p.r)trust(k,f>1?0:p.r[k]);setTimeout(()=>{ov();adv()},900)}
+function puz(p){let f=0,busy=1,pos=0,inp='';
+if(p.k==='seq'){
+ov(`<div class="pz"><h3>${p.t}</h3><div class="pads">${p.pads.map((x,i)=>`<button class="pad" data-i="${i}">${x}</button>`).join('')}</div><p id="ps"></p></div>`);
+const B=[...document.querySelectorAll('.pad')];
+const fl=i=>{B[i].classList.add('lit');tone(F[i]);setTimeout(()=>B[i].classList.remove('lit'),350)};
+const play=()=>{busy=1;pos=0;$('#ps').textContent='استمع جيدا...';p.q.forEach((q,k)=>setTimeout(()=>{fl(q);if(k===p.q.length-1)setTimeout(()=>{busy=0;$('#ps').textContent='دورك'},500)},700+k*700))};
+B.forEach(b=>b.onclick=()=>{if(busy)return;const i=+b.dataset.i;fl(i);if(i===p.q[pos]){if(++pos===p.q.length){busy=1;win(p,f)}}else{f++;busy=1;$('#ps').textContent=f>1?'تلميح: '+p.h:'خطأ. أعد الاستماع';setTimeout(play,1600)}});
+play()}
+else{
+ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div id="dg"></div><div class="kp">${[1,2,3,4,5,6,7,8,9,'⌫',0,'✔'].map(k=>`<button class="pad" data-k="${k}">${k}</button>`).join('')}</div><p id="ps"></p></div>`);
+const sh=()=>$('#dg').textContent=inp.padEnd(p.a.length,'·');sh();
+document.querySelectorAll('.pad').forEach(b=>b.onclick=()=>{const k=b.dataset.k;tone(300,.1);
+if(k==='⌫')inp=inp.slice(0,-1);else if(k==='✔'){if(inp===p.a)return win(p,f);f++;inp='';$('#ps').textContent=f>1?'تلميح: '+p.h:'الرمز غير صحيح'}else if(inp.length<p.a.length)inp+=k;sh()})}}
+// ===== النهايات =====
+function endScr(){const e=ending();endSnd(e[3]);endRec(e[3]);scene(e[2]);ov(`<div class="card"><p>النهاية ${e[3]} من ٥</p><h2>${e[0]}</h2><p>${e[1]}</p><button class="btn" onclick="rst()">إعادة من البداية</button><button class="btn" onclick="endsUI()">معرض النهايات</button></div>`)}
+function start(g){aud();G=g;ov();step()}
+function rst(){try{localStorage.removeItem(K)}catch(e){}start(nw())}
+// ===== الاستيراد من الاستوديو =====
+// ===== الصور الحقيقية: معالجة وحفظ (IndexedDB) وتحريك تلقائي =====
+const SLAB="<defs><linearGradient id='trg' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#2c3b4b'/><stop offset='1' stop-color='#0d141c'/></linearGradient></defs><path fill='url(#trg)' d='M0 300V236Q200 226 400 236V300Z'/><path d='M0 236Q200 226 400 236' stroke='#5b7186' stroke-width='1.2' fill='none' opacity='.7'/><path stroke='#0a1118' stroke-width='1' opacity='.6' d='M0 262H400M70 236L40 300M170 232L150 300M270 232L290 300M370 236L410 300'/>";
+const SLOTS=[...Object.keys(N).map(k=>['c_'+k,N[k][0]]),...MAPB.map(([k,n])=>['b_'+k,'خلفية: '+n])];
+const DUSTG='<g fill=\'#cfe9ff\'>'+[[60,270,0],[130,250,2],[200,280,4],[270,240,1],[330,265,3],[370,230,5]].map(d=>`<circle class='du' cx='${d[0]}' cy='${d[1]}' r='1.6' style='animation-delay:-${d[2]}s'/>`).join('')+'</g>';
+// --- وحدة مستقلة قابلة لإعادة الاستعمال: اكتشاف الأضواء في أي صورة وتحريكها ---
+// دفئ (فوانيس، مصابيح، نوافذ) وأزرق (أنابيب، حلقات): يعيد مصفوفة {x,y,r,c} بإحداثيات 400x300
+function findLights(src){return new Promise(ok=>{const im=new Image();im.onload=()=>{const W=160,H=Math.max(1,Math.round(W*im.height/im.width)),c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,W,H);const d=x.getImageData(0,0,W,H).data,t=new Uint8Array(W*H);
+for(let i=0;i<W*H;i++){const r=d[i*4],g=d[i*4+1],b=d[i*4+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);if(mx<180)continue;const dl=mx-mn,s=dl/mx;let h=mx===r?((g-b)/dl)%6:mx===g?(b-r)/dl+2:(r-g)/dl+4;h*=60;if(h<0)h+=360;
+if(s>.35&&h>=12&&h<=58)t[i]=1;else if(mx>225&&s>.2&&h>=165&&h<=205)t[i]=2}
+const seen=new Uint8Array(W*H),L=[];
+for(let i=0;i<W*H;i++){if(!t[i]||seen[i])continue;const k=t[i],st=[i];seen[i]=1;let n=0,sx=0,sy=0;
+while(st.length){const j=st.pop();n++;sx+=j%W;sy+=(j/W)|0;for(const q of[j-1,j+1,j-W,j+W])if(q>=0&&q<W*H&&!seen[q]&&t[q]===k&&Math.abs(q%W-j%W)<2){seen[q]=1;st.push(q)}}
+if(n>=3&&n<=500)L.push({k,n,x:sx/n/W,y:sy/n/H})}
+L.sort((a,b)=>b.n-a.n);const pick=[...L.filter(l=>l.k===1).slice(0,8),...L.filter(l=>l.k===2).slice(0,4)],sc=Math.max(400/im.width,300/im.height),ox=(400-im.width*sc)/2,oy=(300-im.height*sc)/2;
+ok(pick.map(l=>({x:ox+l.x*im.width*sc,y:oy+l.y*im.height*sc,r:Math.min(70,Math.max(16,Math.sqrt(l.n)*5)),c:l.k})))};im.src=src})}
+function glow(b,cold){const A=LIGHTS[b]||[];if(!A.length)return `<rect class='lf${cold?' cd2':''}' width='400' height='300' fill='url(#l${b})'/>`;
+return A.map((l,i)=>`<circle class='lg${l.c===2?' cd':''}' cx='${l.x.toFixed(1)}' cy='${l.y.toFixed(1)}' r='${l.r.toFixed(1)}' fill='url(#${l.c===2?'k':'w'}${b})' style='animation-duration:${(1.7+(i*.37)%1.6).toFixed(2)}s;animation-delay:-${(i*.53).toFixed(2)}s'/>`).join('')}
+const imgChar=k=>{const u=IMG['c_'+k],im=(c,cls)=>`<image class='${cls}' clip-path='url(#${c}${k})' href='${u}' width='60' height='92' preserveAspectRatio='xMidYMax meet'/>`;
+return `<svg id='c_${k}' class='img' viewBox='0 0 60 92' style='--c:${N[k][1]}'><defs><clipPath id='cu${k}'><rect width='60' height='48.4'/></clipPath><clipPath id='cl${k}'><rect y='47.6' width='30.2' height='45'/></clipPath><clipPath id='cr${k}'><rect x='29.8' y='47.6' width='30.2' height='45'/></clipPath></defs><ellipse cx='30' cy='90.8' rx='17' ry='2.4' fill='#000' opacity='.55' style='filter:blur(1.2px)'/><image class='fl' href='${u}' width='60' height='92' preserveAspectRatio='xMidYMax meet'/>${im('cu','up')}${im('cl','lL')}${im('cr','lR')}</svg>`};
+const imgBg=b=>{const cold=S[b][2],cl=cold?'#35e6ff':'#ffb454';return svgWrap(`<defs><radialGradient id='v${b}'><stop offset='.55' stop-color='#000' stop-opacity='0'/><stop offset='1' stop-color='#000' stop-opacity='.65'/></radialGradient><radialGradient id='l${b}' cx='.5' cy='.35'><stop offset='0' stop-color='${cl}' stop-opacity='.55'/><stop offset='1' stop-color='${cl}' stop-opacity='0'/></radialGradient><radialGradient id='w${b}'><stop offset='0' stop-color='#ffb454' stop-opacity='.85'/><stop offset='1' stop-color='#ffb454' stop-opacity='0'/></radialGradient><radialGradient id='k${b}'><stop offset='0' stop-color='#35e6ff' stop-opacity='.7'/><stop offset='1' stop-color='#35e6ff' stop-opacity='0'/></radialGradient></defs><image class='kb' href='${IMG['b_'+b]}' width='400' height='300' preserveAspectRatio='xMidYMid slice'/>${b==='roof'?SLAB:''}${glow(b,cold)}${DUSTG}<rect width='400' height='300' fill='url(#v${b})'/>`)};
+const DB=()=>new Promise((ok,no)=>{const r=indexedDB.open(GAME.id+'_img',1);r.onupgradeneeded=()=>r.result.createObjectStore('i');r.onsuccess=()=>ok(r.result);r.onerror=()=>no()});
+const dbGet=async k=>{try{const d=await DB();return await new Promise(r=>{const q=d.transaction('i').objectStore('i').get(k);q.onsuccess=()=>r(q.result);q.onerror=()=>r()})}catch(e){}};
+const dbSet=async(k,v)=>{try{const d=await DB();const s=d.transaction('i','readwrite').objectStore('i');v?s.put(v,k):s.delete(k)}catch(e){}};
+function cut(x,w,h){const d=x.getImageData(0,0,w,h),a=d.data;if(a[3]<200)return;const r=a[0],g=a[1],b=a[2],seen=new Uint8Array(w*h),st=[];
+const near=i=>Math.abs(a[i*4]-r)+Math.abs(a[i*4+1]-g)+Math.abs(a[i*4+2]-b)<90;
+for(let i=0;i<w;i++)st.push(i,(h-1)*w+i);for(let j=0;j<h;j++)st.push(j*w,j*w+w-1);
+while(st.length){const i=st.pop();if(seen[i]||!near(i))continue;seen[i]=1;a[i*4+3]=0;const cx=i%w;if(cx>0)st.push(i-1);if(cx<w-1)st.push(i+1);if(i>=w)st.push(i-w);if(i<w*h-w)st.push(i+w)}
+x.putImageData(d,0,0)}
+function prep(file,isC){return new Promise(ok=>{const im=new Image();im.onload=()=>{const m=isC?[520,760]:[1100,825],s=Math.min(1,m[0]/im.width,m[1]/im.height),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,c.width,c.height);if(isC)cut(x,c.width,c.height);ok(c.toDataURL('image/webp',.82))};im.src=URL.createObjectURL(file)})}
+async function loadImgs(){for(const [k] of SLOTS){const v=(await dbGet(k))||DEF[k];if(v)IMG[k]=v;else delete IMG[k]}for(const [k] of SLOTS)if(k[0]==='b')LIGHTS[k.slice(2)]=IMG[k]?await findLights(IMG[k]):[];curBg=null;await loadExp();buildChars()}
+function imgUI(){ov(`<div class='pz'><h3>صور حقيقية</h3><p>صورة الشخصية كاملة الجسم، بخلفية شفافة أو لون ثابت (تُزال تلقائيا). صورة الخلفية أفقية. تُحفظ على هذا الجهاز.</p>${SLOTS.map(([k,n])=>`<div style='display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #ffffff14'><span style='flex:1;text-align:right'>${n}</span>${IMG[k]?`<img src='${IMG[k]}' style='height:38px;border-radius:4px'>`:''}<button class='btn' style='min-width:70px;padding:6px' data-k='${k}' data-a='pick'>اختيار</button>${IMG[k]?`<button class='btn' style='min-width:46px;padding:6px' data-k='${k}' data-a='del'>✕</button>`:''}</div>`).join('')}<p id='ps'></p><button class='btn' onclick='home()'>رجوع</button></div>`);
+document.querySelectorAll('#ov [data-a]').forEach(b=>b.onclick=()=>{const k=b.dataset.k;if(b.dataset.a==='del'){dbSet(k,null).then(loadImgs).then(imgUI);return}
+const f=document.createElement('input');f.type='file';f.accept='image/*';f.onchange=async()=>{if(!f.files[0])return;$('#ps').textContent='جارِ المعالجة...';const d=await prep(f.files[0],k[0]==='c');await dbSet(k,d);IMG[k]=d;if(k[0]==='b')LIGHTS[k.slice(2)]=await findLights(d);curBg=null;buildChars();imgUI()};f.click()})}
+function buildChars(){$('#ch').innerHTML=['a','y','s'].map(k=>`<div class='cw' id='w_${k}'>${IMG['c_'+k]?imgChar(k):CHR[k]||fig(k)}</div>`).join('');stage(C[G?G.c:0]||C[0]);try{['a','y','s'].forEach(k=>{delete HD[k];headFind(k)})}catch(e){}}
+function applyLib(t){let j;try{j=JSON.parse(t)}catch(e){return 'نص غير صالح'}if(Array.isArray(j))j={story:j};
+BG0=BG0||{...BG};Object.assign(BG,BG0);CHR={};OV={};C0=C0||JSON.stringify(C);const ns=Array.isArray(j.story)&&j.story.length;C.length=0;C.push(...(ns?j.story:JSON.parse(C0)));let n=ns?1:0;
+(j.chars||[]).forEach(c=>{const m=MAPC.find(x=>(c.name||'').includes(x[1]));if(m&&c.svg){CHR[m[0]]=c.svg.replace('<svg viewBox="0 0 60 92">',`<svg id="c_${m[0]}" viewBox="0 0 60 92" style="--c:${N[m[0]][1]}">`);n++}});
+(j.bgs||[]).forEach(b=>{const m=MAPB.find(x=>(b.name||'').includes(x[1]));if(m&&b.svg){BG[m[0]]=b.svg;OV[m[0]]=1;n++}});
+let st=$('#imp');if(!st){st=document.createElement('style');st.id='imp';document.head.appendChild(st)}st.textContent=j.css||'';
+curBg=null;buildChars();return 'تم تطبيق '+n+' عنصر'}
+function imp(){ov(`<div class="pz"><h3>استيراد من الاستوديو</h3><p>انسخ ملف JSON من تبويب «تصدير» في الاستوديو والصقه هنا. سمِّ الشخصيات: آدم، ياسمين، سامي. وسمِّ الخلفيات: سطح، استوديو، سوق، باب، سلالم، متاهة، مخبر، قاعة.</p><textarea id="jt" style="width:100%;height:110px;box-sizing:border-box;background:#06080f;color:#e9ecf5;border:1px solid #ffffff33;border-radius:8px;padding:8px;direction:ltr;user-select:text;-webkit-user-select:text"></textarea><p id="ps"></p><button class="btn" onclick="const t=$('#jt').value;const r=applyLib(t);if(r[0]==='ت')try{localStorage.setItem(LIBK,t)}catch(e){}$('#ps').textContent=r">تطبيق</button> <button class="btn" onclick="try{localStorage.removeItem(LIBK)}catch(e){}$('#ps').textContent=applyLib('{}')">استعادة الافتراضي</button> <button class="btn" onclick="home()">رجوع</button></div>`)}
+function expStory(){ov(`<div class="pz"><h3>القصة للمحرر</h3><p>انسخ النص والصقه في تبويب «قصة» داخل الاستوديو.</p><textarea id="jt" readonly style="width:100%;height:110px;box-sizing:border-box;background:#06080f;color:#e9ecf5;border:1px solid #ffffff33;border-radius:8px;padding:8px;direction:ltr;user-select:text;-webkit-user-select:text"></textarea><p id="ps"></p><button class="btn" onclick="const t=$('#jt');t.select();let ok=0;try{ok=document.execCommand('copy')}catch(e){}$('#ps').textContent=ok?'تم النسخ':'حدّد النص وانسخه يدويا'">نسخ</button> <button class="btn" onclick="home()">رجوع</button></div>`);$('#jt').value=JSON.stringify(C)}
+function home(){const s=ld();ov(`<div class="card"><p>${GAME.homePart}</p><h1>${GAME.homeTitle}</h1><p>اضغط على الحوار للمتابعة.</p><button class="btn" onclick="start(nw())">ابدأ</button>${s?'<button class="btn" onclick="start(ld())">تابع</button>':''}<button class="btn" onclick="imp()">استيراد من الاستوديو</button><button class="btn" onclick="expStory()">نسخ القصة للمحرر</button><button class="btn" onclick="imgUI()">صور حقيقية (شخصيات وخلفيات)</button><button class="btn" onclick="expUI()">تعابير الوجوه</button><button class="btn" onclick="menuUI()">القائمة</button></div>`)}
+$('#bj').onclick=()=>ov(`<div class="pz"><h3>دفتر الأدلة</h3><ul class="jl">${G&&G.j.length?G.j.map(x=>`<li>${x}</li>`).join(''):'<li>لا أدلة بعد.</li>'}</ul><button class="btn" onclick="ov()">إغلاق</button></div>`);
+$('#bs').onclick=()=>{mute=!mute;if(dr)dr.gain.value=mute?0:.05;ambMute();$('#bs').textContent=mute?'🔇':'🔊'};
+$('#br').onclick=()=>ov(`<div class="card"><h2>إعادة من البداية؟</h2><p>سيُحذف التقدّم المحفوظ.</p><button class="btn" onclick="rst()">نعم، من البداية</button><button class="btn" onclick="ov()">إلغاء</button></div>`);
+// ===== التعابير =====
+const EXN=['joy','sad','angry','fear','surprise'],EXA={joy:'فرح',sad:'حزن',angry:'غضب',fear:'خوف',surprise:'دهشة'},HD={};
+const ER=[['fear',RX.fear],['angry',RX.angry],['sad',RX.sad],['joy',RX.joy]];
+function emo(t){for(const[k,r]of ER)if(r.test(t))return k;if(/!/.test(t)&&t.length<50)return'surprise';if(RX.question.test(t)&&t.length<60)return'think';return''}
+function headFind(k){return new Promise(ok=>{const u=IMG['c_'+k];if(!u)return ok();const im=new Image();im.onload=()=>{const W=120,H=Math.max(1,Math.round(im.height*W/im.width)),c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,W,H);const a=x.getImageData(0,0,W,H).data,row=y=>{let n=0;for(let i=0;i<W;i++)if(a[(y*W+i)*4+3]>60)n++;return n};let t=-1,b=0;for(let y=0;y<H;y++)if(row(y)>1){if(t<0)t=y;b=y}if(t<0)return ok();const fh=b-t,xs=[];for(let y=t;y<=t+Math.max(2,fh*.12);y++)for(let i=0;i<W;i++)if(a[(y*W+i)*4+3]>60)xs.push(i);xs.sort((p,q)=>p-q);const sc=Math.min(60/im.width,92/im.height),k2=sc*im.width/W,ox=(60-im.width*sc)/2,oy=92-im.height*sc;HD[k]={x:ox+xs[xs.length>>1]*k2,y:oy+t*k2,h:fh*k2*.17};ok()};im.onerror=()=>ok();im.src=u})}
+function exMark(k,e){const h=HD[k]||{x:30,y:8,h:14},x=h.x,t=h.y,H=h.h,w=H*.8,f=n=>n.toFixed(1),T=(dx,dy,sc)=>`translate(${f(x+dx)} ${f(t+dy)}) scale(${f(sc)})`,st=`<path class='tw' d='M0-1.8L.5-.5 1.8 0 .5 .5 0 1.8-.5 .5-1.8 0-.5-.5Z' fill='#ffe27a'/>`,gl=c=>`<path d='M${f(x-w*.3)} ${f(t+H*.08)}v${f(H*.28)}M${f(x)} ${f(t+H*.04)}v${f(H*.32)}M${f(x+w*.3)} ${f(t+H*.08)}v${f(H*.28)}' stroke='${c}' stroke-width='.45' opacity='.7' fill='none'/>`,ck=`<ellipse cx='${f(x-w*.32)}' cy='${f(t+H*.64)}' rx='${f(H*.15)}' ry='${f(H*.07)}' fill='#ff6b8a' opacity='.5'/><ellipse cx='${f(x+w*.32)}' cy='${f(t+H*.64)}' rx='${f(H*.15)}' ry='${f(H*.07)}' fill='#ff6b8a' opacity='.5'/>`;
+if(e==='joy')return ck+`<g transform='${T(w*.8,H*.05,H/12)}'>${st}</g><g transform='${T(-w*.85,H*.3,H/16)}'>${st}</g>`;
+if(e==='sad')return gl('#222a55')+`<path d='M${f(x-w*.3)} ${f(t+H*.66)}q-.4 ${f(H*.2)} 0 ${f(H*.38)}M${f(x+w*.3)} ${f(t+H*.66)}q.4 ${f(H*.2)} 0 ${f(H*.38)}' stroke='#8fd8ff' stroke-width='.55' fill='none' stroke-linecap='round'/>`;
+if(e==='angry')return `<g transform='${T(w*.75,H*.12,H/10)}'><path d='M0-2.2Q1-1 2.2 0M0-2.2Q-1-1-2.2 0M0 2.2Q1 1 2.2 0M0 2.2Q-1 1-2.2 0' stroke='#ff3030' stroke-width='1.1' fill='none' stroke-linecap='round'/></g>`;
+if(e==='fear')return gl('#3a2f6b')+`<g transform='${T(w*.7,H*.3,H/9)}'><path d='M0-2Q1.6 .2 1.6 1.2A1.6 1.6 0 0 1-1.6 1.2Q-1.6 .2 0-2Z' fill='#cfefff' stroke='#6bb7e6' stroke-width='.3'/></g>`;
+if(e==='surprise')return `<path d='M${f(x)} ${f(t-H*.1)}v${f(-H*.25)}M${f(x-w*.5)} ${f(t-H*.05)}l${f(-H*.15)} ${f(-H*.2)}M${f(x+w*.5)} ${f(t-H*.05)}l${f(H*.15)} ${f(-H*.2)}' stroke='#fff' stroke-width='.6' stroke-linecap='round' fill='none'/><g transform='${T(w*.85,H*.1,H/9)}'><rect x='-.6' y='-2.8' width='1.2' height='3.6' rx='.5' fill='#ff4d6d'/><circle cy='2' r='.7' fill='#ff4d6d'/></g>`;
+if(e==='think')return `<g transform='${T(w*.95,-H*.05,H/10)}'><ellipse rx='2.8' ry='2.4' fill='#0b0f1dcc' stroke='#e9ecf5' stroke-width='.3'/><text text-anchor='middle' y='1.4' font-size='4' font-weight='bold' fill='#e9ecf5'>?</text></g>`;return''}
+function swapFace(v,k,e){const u=(e&&IMG['x_'+k+'_'+e])||IMG['c_'+k];if(!u||!v.classList.contains('img'))return;v.querySelectorAll('image').forEach(i=>i.setAttribute('href',u))}
+function setEx(v,e){if(!v)return;const k=v.id.slice(2);[...EXN,'think'].forEach(n=>v.classList.remove('e-'+n));v.querySelectorAll('.xg').forEach(g=>g.remove());swapFace(v,k,e);if(!e)return;void v.getBoundingClientRect();v.classList.add('e-'+e);if(!v.classList.contains('img'))return;const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class','xg');g.innerHTML=exMark(k,e);v.appendChild(g)}
+function express(s){const x=s[3],e=x?(x==='calm'?'':x):emo(s[1]),all=[...document.querySelectorAll('#ch svg')],tg=s[0]==='n'?(x||e==='fear'||e==='surprise'?all:[]):[$('#c_'+s[0])].filter(Boolean);all.forEach(v=>{if(!tg.includes(v))setEx(v,'')});tg.forEach(v=>setEx(v,e));if(e&&tg.length){sting(e);if(s[0]==='a'&&e==='fear'&&RX.voice.test(s[1]))glitch()}}
+async function loadExp(){for(const c of'ays')for(const e of EXN){const k='x_'+c+'_'+e,v=(await dbGet(k))||DEF[k];if(v)IMG[k]=v;else delete IMG[k]}}
+function expUI(){ov(`<div class='pz'><h3>تعابير الوجوه</h3><p>اختياري: لكل شخصية صورة كاملة الجسم بنفس الوضعية والإطار وبتعبير مختلف، وتظهر عند ذلك الشعور. بدونها تعمل التعابير تلقائيا بالرموز والحركة.</p>${Object.keys(N).map(c=>[c,N[c][0]]).map(([c,n])=>`<div style='padding:6px 0;border-bottom:1px solid #ffffff14'><b>${n}</b><div style='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px'>${EXN.map(e=>{const k='x_'+c+'_'+e;return `<button class='btn' data-x='${k}' style='padding:6px 10px;font-size:13px'>${EXA[e]}${IMG[k]?' ✓':''}</button>`}).join('')}</div></div>`).join('')}<p id='ps'></p><button class='btn' id='xc'>مسح كل التعابير</button><button class='btn' onclick='ov()'>إغلاق</button></div>`);
+$('#xc').onclick=async()=>{for(const c of'ays')for(const e of EXN){const k='x_'+c+'_'+e;await dbSet(k,null);delete IMG[k]}expUI()};
+document.querySelectorAll('#ov [data-x]').forEach(b=>b.onclick=()=>{const k=b.dataset.x,f=document.createElement('input');f.type='file';f.accept='image/*';f.onchange=async()=>{if(!f.files[0])return;$('#ps').textContent='جارِ المعالجة...';const d=await prep(f.files[0],true);await dbSet(k,d);IMG[k]=d;expUI()};f.click()})}
+// ===== الميزات: الحفظ والفصول والنهايات والإعدادات =====
+var TS=(()=>{try{return +localStorage.getItem('ts')||24}catch(e){return 24}})();
+function lsg(k,d){try{return JSON.parse(localStorage.getItem(K+k))||d}catch(e){return d}}
+function lss(k,v){try{localStorage.setItem(K+k,JSON.stringify(v))}catch(e){}}
+function snapSave(){const q=lsg('_snap',{});q[G.c]=JSON.parse(JSON.stringify(Object.assign({},G,{i:0,card:-1})));lss('_snap',q)}
+function endRec(n){const e=lsg('_end',[]);if(!e.includes(n)){e.push(n);lss('_end',e)}}
+function menuUI(){ov(`<div class='card'><h2>القائمة</h2><button class='btn' onclick='slotUI()'>خانات الحفظ</button><button class='btn' onclick='chUI()'>اختيار الفصل</button><button class='btn' onclick='endsUI()'>معرض النهايات</button><button class='btn' onclick='setUI()'>الإعدادات</button><button class='btn' onclick='ov()'>إغلاق</button></div>`)}
+function slotUI(){const sl=lsg('_slots',{});ov(`<div class='pz'><h3>خانات الحفظ</h3>${[1,2,3].map(n=>{const x=sl[n];return `<div style='padding:8px 0;border-bottom:1px solid #ffffff14'><b>خانة ${n}</b><br><small>${x?'الفصل '+(x.g.c+1)+' · '+x.t:'فارغة'}</small><div style='display:flex;gap:6px;justify-content:center;margin-top:6px'><button class='btn' data-sv='${n}' ${G?'':'disabled'}>حفظ</button><button class='btn' data-ld='${n}' ${x?'':'disabled'}>تحميل</button></div></div>`}).join('')}<button class='btn' onclick='menuUI()'>رجوع</button></div>`);
+document.querySelectorAll('#ov [data-sv]').forEach(b=>b.onclick=()=>{const q=lsg('_slots',{}),d=new Date();q[b.dataset.sv]={g:JSON.parse(JSON.stringify(G)),t:d.toLocaleDateString('ar')+' '+d.toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'})};lss('_slots',q);slotUI()});
+document.querySelectorAll('#ov [data-ld]').forEach(b=>b.onclick=()=>{const x=lsg('_slots',{})[b.dataset.ld];if(x)start(JSON.parse(JSON.stringify(x.g)))})}
+function chUI(){const q=lsg('_snap',{}),ks=Object.keys(q).map(Number).sort((a,b)=>a-b);ov(`<div class='pz'><h3>اختيار الفصل</h3><div style='max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:6px'>${ks.length?ks.map(c=>`<button class='btn' data-c='${c}'>${c+1}. ${C[c].t}</button>`).join(''):'<p>لم تفتح فصولا بعد.</p>'}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`);document.querySelectorAll('#ov [data-c]').forEach(b=>b.onclick=()=>start(JSON.parse(JSON.stringify(q[b.dataset.c]))))}
+function endsUI(){const got=lsg('_end',[]),sg=G,df={};[{f:{},y:2,s:2},{f:{destroy:1},y:9,s:9},{f:{guard:1},y:9,s:9},{f:{release:1},y:9,s:9},{f:{},y:9,s:9}].forEach(g=>{G=g;try{const e=ending();df[e[3]]=e}catch(x){}});G=sg;ov(`<div class='pz'><h3>معرض النهايات (${got.length}/5)</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5].map(n=>{const e=df[n];return got.includes(n)&&e?`<div><b>${n}. ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n}. ؟؟؟</b><br><small>نهاية لم تكتشفها بعد.</small></div>`}).join('')}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`)}
+function setUI(){ov(`<div class='pz'><h3>الإعدادات</h3><p>سرعة النص</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${[['بطيئة',45],['عادية',24],['سريعة',10],['فورية',1]].map(([n,v])=>`<button class='btn' data-ts='${v}' style='${TS===v?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><button class='btn' id='vb'>مستوى الصوت</button><button class='btn' onclick='menuUI()'>رجوع</button></div>`);document.querySelectorAll('#ov [data-ts]').forEach(b=>b.onclick=()=>{TS=+b.dataset.ts;try{localStorage.setItem('ts',TS)}catch(e){}setUI()});$('#vb').onclick=volUI}
+// ===== الصوت والأجواء =====
+var AMGN=null,FXGN=null,VOL=(()=>{try{return JSON.parse(localStorage.getItem('vol'))||{a:1,f:.7}}catch(e){return{a:1,f:.7}}})();
+function volSave(){try{localStorage.setItem('vol',JSON.stringify(VOL))}catch(e){}}
+function volUI(){ov(`<div class='pz'><h3>مستوى الصوت</h3><p>الأجواء (الخلفية)</p><input type='range' id='va' min='0' max='150' value='${Math.round(VOL.a*100)}' style='width:100%'><p>المؤثرات (الدقّات والنغمات)</p><input type='range' id='vf' min='0' max='150' value='${Math.round(VOL.f*100)}' style='width:100%'><button class='btn' id='vt'>اختبار الصوت</button><button class='btn' onclick='ov()'>إغلاق</button></div>`);
+$('#va').oninput=e=>{VOL.a=e.target.value/100;if(AMGN)AMGN.gain.value=VOL.a;volSave()};
+$('#vf').oninput=e=>{VOL.f=e.target.value/100;if(FXGN)FXGN.gain.value=VOL.f;volSave()};
+$('#vt').onclick=()=>{aud();ambInit();thump(.6);chime(1)}}
+(()=>{const b=$('#bs');if(!b)return;const v=document.createElement('button');v.id='bv';v.setAttribute('aria-label','القائمة');v.textContent='☰';v.className=b.className;b.before(v);v.onclick=menuUI})();
+
+var AM=null,AMB_B='roof',AMV=1,AMB_K='',lastSt=0,AMB={roof:[500,.7,.035,55,.02],studio:[260,.5,.02,110,.018],souk:[1100,.5,.018,65,.012],door:[400,.6,.03,70,.02],stairs:[320,.6,.03,62,.02],tunnel:[180,.5,.05,45,.035],lab:[2400,.4,.018,120,.03],hall:[240,.4,.03,52,.03]};
+function ambInit(){if(AM||!au)return;const n=au.createBuffer(1,au.sampleRate*2,au.sampleRate),d=n.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const ns=au.createBufferSource();ns.buffer=n;ns.loop=true;const f=au.createBiquadFilter();f.type='bandpass';const ng=au.createGain();ng.gain.value=0;const o=au.createOscillator(),og=au.createGain();og.gain.value=0;const lf=au.createOscillator(),lg=au.createGain();lf.frequency.value=.13;lg.gain.value=0;ns.connect(f);f.connect(ng);ng.connect(AMGN);o.connect(og);og.connect(AMGN);lf.connect(lg);lg.connect(ng.gain);ns.start();o.start();lf.start();AM={f,ng,o,og,lg};AMB_K='';ambSet(AMB_B)}
+function ambSet(b){AMB_B=b||AMB_B;if(!AM||!au)return;const k=AMB_B+'|'+AMV+'|'+mute;if(k===AMB_K)return;AMB_K=k;const a=AMB[AMB_B]||AMB.roof,t=au.currentTime,v=mute?0:a[2]*AMV,w=mute?0:a[4]*AMV;AM.f.frequency.setTargetAtTime(a[0],t,1.2);AM.f.Q.setTargetAtTime(a[1],t,1.2);AM.ng.gain.setTargetAtTime(v,t,1.2);AM.lg.gain.setTargetAtTime(v*.5,t,1.2);AM.o.frequency.setTargetAtTime(a[3],t,1.2);AM.og.gain.setTargetAtTime(w,t,1.2)}
+function ambMute(){ambSet(AMB_B)}
+function nb(d,fq,g,ty){if(!au||mute)return;const b=au.createBuffer(1,au.sampleRate*d,au.sampleRate),x=b.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1;const n=au.createBufferSource();n.buffer=b;const f=au.createBiquadFilter();f.type=ty||'lowpass';f.frequency.value=fq;const gn=au.createGain();gn.gain.setValueAtTime(g,au.currentTime);gn.gain.exponentialRampToValueAtTime(.001,au.currentTime+d);n.connect(f);f.connect(gn);gn.connect(FXGN);n.start()}
+function ps(fr,to,d,g,ty){if(!au||mute)return;const o=au.createOscillator(),gn=au.createGain(),t=au.currentTime;o.type=ty||'sine';o.frequency.setValueAtTime(fr,t);o.frequency.exponentialRampToValueAtTime(to,t+d);gn.gain.setValueAtTime(g,t);gn.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(gn);gn.connect(FXGN);o.start();o.stop(t+d)}
+function thump(k){k=k||1;ps(70,28,.6,.35*k);nb(.35,160,.18*k)}
+function boom(){ps(90,22,1.1,.4);nb(.9,300,.2);ps(1400,300,.3,.05,'sawtooth')}
+function steps(){for(let i=0;i<4;i++)setTimeout(()=>{ps(120,60,.12,.08);nb(.06,500,.05)},i*210)}
+function chime(ok){[523,659,784,1047].slice(0,ok?4:2).forEach((f,i)=>setTimeout(()=>ps(f,f,.5,.07),i*110))}
+function glitch(){for(let i=0;i<8;i++)setTimeout(()=>ps(200+Math.random()*1800,100+Math.random()*1500,.08,.05,'square'),i*70)}
+function camS(a){if(a==='shake')thump(1);else if(a==='punch')thump(.6);return 0}
+function lightSnd(a){if(a==='off'){nb(1.2,2500,.12);ps(120,40,1.2,.2);AMV=.2}else if(a==='dim')AMV=.6;else{ps(60,120,.4,.08);nb(.2,3000,.06,'highpass');AMV=1}ambSet(AMB_B)}
+function sting(e){const n=Date.now();if(n-lastSt<1200)return;lastSt=n;if(e==='fear'){ps(196,185,1.4,.09,'triangle');ps(207,196,1.4,.07,'triangle');nb(1.2,200,.05)}else if(e==='surprise'){ps(880,1320,.18,.07,'square');nb(.12,3000,.05,'highpass')}else if(e==='sad'){ps(262,247,1.6,.06);ps(196,185,1.8,.05)}else if(e==='angry'){nb(.3,900,.12);ps(110,80,.5,.1,'sawtooth')}else if(e==='joy')chime(1);else if(e==='think')ps(330,330,.7,.05)}
+function endSnd(n){n===1?chime(1):n===3?ps(65,40,3,.15):n===5?(thump(.8),ps(110,90,2.5,.08,'sawtooth')):n===2?ps(220,330,2,.07):chime(0)}
+// ===== التشغيل =====
+scene('roof');$('#ct').textContent=GAME.part;try{const t=localStorage.getItem(LIBK);if(t)applyLib(t)}catch(e){}loadImgs();home();
+
