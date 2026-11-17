@@ -1,0 +1,164 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>الصمت في المدينة العتيقة</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07080f;--ink:#e9ecf5;--mut:#8b93ad;--pulse:#35e6ff;--lamp:#ffb454;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:Tajawal,Cairo,system-ui,sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none}
+button{font:inherit;color:inherit;cursor:pointer}
+#app{height:100%;max-width:520px;margin:0 auto;display:flex;flex-direction:column;position:relative}
+/* ===== الشريط العلوي ===== */
+#hud{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#0a0c16;border-bottom:1px solid #ffffff14;font-size:13px}
+#ct{flex:1;font-weight:700;color:var(--mut)}
+.tr{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--mut)}
+.tr u{display:block;width:40px;height:5px;background:#ffffff1a;border-radius:3px;overflow:hidden}
+.tr i{display:block;height:100%;background:var(--lamp);transition:width .5s}
+#hud button{background:#ffffff0f;border:1px solid #ffffff1f;border-radius:8px;width:34px;height:34px;font-size:15px}
+/* ===== المشهد والكاميرا ===== */
+#sc{flex:1;min-height:0;position:relative;overflow:hidden;transition:background 1s}
+#moon{position:absolute;top:9%;right:14%;width:46px;height:46px;border-radius:50%;background:#f4efd8;box-shadow:0 0 44px #f4efd877;transition:opacity 1s}
+#glow{position:absolute;left:0;right:0;bottom:0;height:75%;background:radial-gradient(ellipse at 50% 100%,#35e6ff66,transparent 65%);opacity:0;transition:opacity 1s;animation:pl 3.4s ease-in-out infinite}
+@keyframes pl{50%{transform:scale(1.12)}}
+#bgs{position:absolute;inset:0}
+#cam{position:absolute;inset:0;transform:translate(var(--cx,0px),var(--cy,0px)) scale(var(--cz,1));transform-origin:50% 65%;transition:transform 1.4s cubic-bezier(.3,.1,.2,1)}
+#ch svg.ent{opacity:0!important;translate:var(--ex,0px) var(--ey,0px)!important;scale:1!important}
+#ch svg.wk{animation:wk .4s ease-in-out infinite}
+@keyframes wk{50%{transform:translateY(-3px)}}
+#cam.pu{animation:pu .45s}
+/* ===== حركة الصور الحقيقية ===== */
+.kb{transform-box:fill-box;transform-origin:center;animation:kb 28s ease-in-out infinite alternate}
+.lf{mix-blend-mode:screen;animation:lf 2.6s linear infinite}
+.lf.cd2{animation:lp 3.6s ease-in-out infinite}
+.lg{mix-blend-mode:screen;animation:lf 2.6s linear infinite}
+.lg.cd{animation:lp 3.6s ease-in-out infinite}
+.du{animation:du 9s linear infinite}
+#ch svg.img image{transform-box:fill-box;transform-origin:50% 100%;animation:sw 5s ease-in-out infinite alternate}
+#ch svg.img .up,#ch svg.img .lL,#ch svg.img .lR{display:none}
+#ch svg.img.wk .fl{display:none}
+#ch svg.img.wk .up,#ch svg.img.wk .lL,#ch svg.img.wk .lR{display:inline}
+#ch.tk svg.on.img .fl{animation:sp .3s ease-in-out infinite alternate}
+#ch svg.wk .lL{animation:legL .42s ease-in-out infinite alternate;transform-origin:25% 52%}
+#ch svg.wk .lR{animation:legR .42s ease-in-out infinite alternate;transform-origin:75% 52%}
+#ch svg.wk .up{animation:bob .42s ease-in-out infinite alternate}
+.cw.rim{animation:rf var(--rt,2.4s) ease-in-out infinite}
+@keyframes legL{from{transform:rotate(-10deg)}to{transform:rotate(10deg)}}
+@keyframes legR{from{transform:rotate(10deg)}to{transform:rotate(-10deg)}}
+@keyframes bob{to{transform:translateY(-.7px)}}
+@keyframes rf{0%,100%{filter:drop-shadow(var(--rx,3px) 0 4px var(--rc,#ffb45499))}30%{filter:drop-shadow(var(--rx,3px) 0 2px var(--rd,#ffb45444))}60%{filter:drop-shadow(var(--rx,3px) 0 6px var(--rc,#ffb45499))}}
+@keyframes kb{to{transform:scale(1.07) translate(-6px,-3px)}}
+@keyframes lf{0%{opacity:.7}12%{opacity:.35}18%{opacity:.8}40%{opacity:.55}55%{opacity:.9}70%{opacity:.5}85%{opacity:.75}100%{opacity:.6}}
+@keyframes lp{50%{opacity:.35}}
+@keyframes du{0%{transform:translateY(0);opacity:0}30%{opacity:.7}100%{transform:translateY(-50px);opacity:0}}
+@keyframes sw{from{transform:rotate(-.6deg)}to{transform:rotate(.6deg)}}
+@keyframes sp{to{transform:scaleY(1.015) translateY(-1px)}}
+@media (prefers-reduced-motion:reduce){.kb,.lf,.lg,.du,.cw.rim,#ch svg.img image{animation:none!important}}
+#cam.sk{animation:sk .6s}
+#sc::before,#sc::after{content:'';position:absolute;left:0;right:0;height:0;background:#000;z-index:3;transition:height .7s}
+#sc::before{top:0}
+#sc::after{bottom:0}
+#sc.lb::before,#sc.lb::after{height:7%}
+/* ===== النوافذ والألغاز ===== */
+#ov{animation:fi .5s}
+@keyframes fi{from{opacity:0}}
+@keyframes pu{40%{transform:translate(var(--cx,0px),var(--cy,0px)) scale(calc(var(--cz,1)*1.07))}}
+@keyframes sk{20%{transform:translate(calc(var(--cx,0px) - 4px),var(--cy,0px)) scale(var(--cz,1))}40%{transform:translate(calc(var(--cx,0px) + 4px),calc(var(--cy,0px) + 2px)) scale(var(--cz,1))}60%{transform:translate(calc(var(--cx,0px) - 3px),var(--cy,0px)) scale(var(--cz,1))}80%{transform:translate(calc(var(--cx,0px) + 3px),var(--cy,0px)) scale(var(--cz,1))}}
+@media (prefers-reduced-motion:reduce){#cam{transition:none}}
+#bgs svg{width:100%;height:100%;display:block}
+/* ===== الشخصيات ===== */
+#ch{position:absolute;inset:0}
+.cw{position:absolute;left:var(--x,50%);bottom:var(--b,8%);height:var(--h,60%);aspect-ratio:60/92;transform:translateX(-50%);transition:left .9s ease}
+#bgs,#ch{transition:filter 1.2s}
+#sc.dark #bgs{filter:brightness(.18)}
+#sc.dim #bgs{filter:brightness(.55)}
+#sc.dark #ch{filter:brightness(.3)}
+#sc.dim #ch{filter:brightness(.7)}
+#sc.dark .lg,#sc.dark .lf{opacity:0!important}
+#ch svg{height:100%;width:100%;opacity:.8;filter:grayscale(.3) brightness(var(--tn,.85));transition:opacity .7s,filter .3s,translate .9s cubic-bezier(.3,.1,.2,1),scale .3s;transform-origin:50% 100%;animation:br 4s ease-in-out infinite}
+#ch svg.on{opacity:1;filter:drop-shadow(0 0 10px var(--c));translate:0 -6px;scale:1.06}
+.mo{display:none}
+#ch.tk svg.on .mc{display:none}
+#ch.tk svg.on .mo{display:inline;transform-box:fill-box;transform-origin:center;animation:tk .26s infinite alternate}
+#ch svg.al .bl{transform:translateY(-2px)}
+.ey{transform-box:fill-box;transform-origin:center;animation:bk 4.5s infinite}
+#c_y .ey{animation-delay:-1.5s}
+#c_s .ey{animation-delay:-3s}
+#ch #c_y{animation-delay:-1.3s}
+#ch #c_s{animation-delay:-2.6s}
+#ch svg.jp{animation:br 4s ease-in-out infinite,jp .5s}
+#ch svg.tl{animation:br 4s ease-in-out infinite,tl .7s}
+#ch svg.sh{animation:br 4s ease-in-out infinite,sh .45s}
+#sc.qk #bgs{animation:qk .5s 2}
+@keyframes br{50%{transform:scaleY(1.02)}}
+@keyframes tk{to{transform:scaleY(.35)}}
+@keyframes bk{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+@keyframes jp{35%{transform:translateY(-14px)}}
+@keyframes tl{50%{transform:rotate(6deg)}}
+@keyframes sh{20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
+@keyframes qk{25%{transform:translate(-3px,2px)}50%{transform:translate(3px,-2px)}75%{transform:translate(-2px,-2px)}}
+@media (prefers-reduced-motion:reduce){#ch svg,.ey,#sc.qk #bgs{animation:none!important}}
+/* ===== صندوق الحوار والاختيارات ===== */
+#dl{height:36%;min-height:190px;box-sizing:border-box;background:linear-gradient(#0c0f1cf0,#07080f);border-top:1px solid #ffffff22;padding:12px 18px;overflow:auto;cursor:pointer;position:relative}
+#nm{font-weight:900;font-size:15px;min-height:22px}
+#tx{font-size:17px;line-height:1.85}
+#dl.rd::after{content:'▾';position:absolute;left:16px;bottom:8px;color:var(--pulse);animation:pl 1.2s infinite}
+#cx{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+#cx button,.btn{background:#121730;border:1px solid #35e6ff55;border-radius:10px;padding:10px 12px;font-size:15px;text-align:right}
+#cx button:active,.btn:active{background:#1c2450}
+#ov{position:absolute;inset:0;background:#05060cf2;display:flex;align-items:center;justify-content:center;padding:20px;z-index:5;overflow:auto}
+#ov[hidden]{display:none}
+.card{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.card h1{font-size:40px;font-weight:900;margin:0;line-height:1.2;text-shadow:0 0 24px #35e6ff88}
+.card h2{font-size:26px;margin:0}
+.card p{margin:0;color:var(--mut);line-height:1.8}
+.btn{min-width:180px;text-align:center}
+.pz{width:100%;text-align:center}
+.pz h3{margin:0 0 8px}
+.pz p{color:var(--mut);min-height:24px;margin:8px 0}
+#dg{font-size:34px;letter-spacing:10px;margin:8px 0;direction:ltr}
+.pads,.kp{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;direction:ltr;margin:12px 0}
+.kp{grid-template-columns:repeat(3,1fr)}
+.pad{background:#121730;border:1px solid #35e6ff55;border-radius:12px;height:58px;font-size:22px}
+.pad.lit{background:var(--pulse);color:#04141a;box-shadow:0 0 22px var(--pulse)}
+.jl{text-align:right;line-height:1.8;padding:0;list-style:none;margin:0}
+.jl li{padding:8px 0;border-bottom:1px solid #ffffff14}
+#toast{position:absolute;top:56px;left:50%;transform:translateX(-50%);background:#121730;border:1px solid var(--lamp);border-radius:20px;padding:6px 14px;font-size:13px;z-index:6;opacity:0;transition:opacity .4s;pointer-events:none}
+@media (prefers-reduced-motion:reduce){#glow,#dl.rd::after{animation:none}}
+/* التعابير */
+.xg{pointer-events:none;transform-box:fill-box;transform-origin:50% 100%;animation:xp 3.2s ease-out forwards}
+.xg .tw{animation:tw .5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+@keyframes xp{0%{opacity:0;transform:scale(.3)}12%{opacity:1;transform:scale(1.15)}22%{transform:scale(1)}80%{opacity:1}100%{opacity:0}}
+@keyframes tw{to{transform:scale(1.35) rotate(20deg)}}
+@keyframes esd{to{transform:translateY(3px) rotate(-1.5deg)}}
+@keyframes esp{30%{transform:translateY(-10px) scale(1.04)}}
+#ch svg.e-joy{animation:br 4s ease-in-out infinite,jp .5s 2}
+#ch svg.e-sad{animation:br 4s ease-in-out infinite,esd 1.4s forwards}
+#ch svg.e-angry{animation:br 4s ease-in-out infinite,sh .3s 3}
+#ch svg.e-fear{animation:br 4s ease-in-out infinite,sh .45s 4}
+#ch svg.e-surprise{animation:br 4s ease-in-out infinite,esp .5s}
+#ch svg.e-think{animation:br 4s ease-in-out infinite,tl .7s}
+#ch svg.e-sad image{filter:saturate(.55) brightness(.85)}
+#ch svg.e-fear image{filter:saturate(.5) brightness(1.12)}
+#ch svg.e-angry image{filter:saturate(1.4) sepia(.35) hue-rotate(-30deg)}
+#ch svg.e-joy image{filter:brightness(1.1) saturate(1.2)}
+#hud{gap:6px}#hud button{width:42px;height:42px;font-size:18px}@media (pointer:coarse){#hud button{width:46px;height:46px}}
+#pg{height:3px;background:#ffffff14}#pg i{display:block;height:100%;width:0;background:#35e6ff;transition:width .3s}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+:focus-visible{outline:2px solid #35e6ff;outline-offset:2px}
+.ordw{display:flex;flex-direction:column;gap:8px;margin:10px 0}.ordw .pad{width:100%;height:auto;min-height:46px;padding:10px;font-size:16px}.pad:disabled{opacity:.6}
+.why{font-size:13px;color:var(--mut);border-top:1px solid #ffffff22;padding-top:8px;margin-top:10px}
+body.low #sc{box-shadow:inset 0 0 70px #ff3a5a40}.jb{margin-top:8px}
+#jn{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#000000b8}
+#jn .pz{background:#0b1220;border:1px solid #35e6ff55;border-radius:14px;padding:16px;width:min(92vw,420px);max-height:80vh;overflow:auto;text-align:right}
+</style></head><body>
+<div id="app">
+<div id="hud"><span id="ct"></span><span class="tr">ياسمين<u><i id="ty"></i></u></span><span class="tr">سامي<u><i id="ts"></i></u></span><button id="bk" aria-label="سرعة النص">⏩</button><button id="bj" aria-label="دفتر الأدلة">📓</button><button id="bs" aria-label="الصوت">🔊</button><button id="br" aria-label="إعادة من البداية">↺</button></div>
+<div id="pg" role="progressbar" aria-label="تقدم الفصل" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div>
+<div id="sr" class="sr" aria-live="polite"></div>
+<div id="sc"><div id="bgs"></div><div id="moon"></div><div id="glow"></div><div id="ch"></div></div>
+<div id="dl"><div id="nm"></div><div id="tx"></div><div id="cx"></div></div>
+<div id="ov" role="dialog" aria-modal="true" hidden></div><div id="toast"></div>
+</div>
+<script src="images.js"></script>
+<script src="lang_ar.js"></script>
+<script src="story.js"></script>
+<script src="engine.js"></script>
+<script>if("serviceWorker" in navigator&&location.protocol!=="file:")navigator.serviceWorker.register("sw.js").catch(function(){})</script></body></html>
