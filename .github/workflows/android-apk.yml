@@ -45,8 +45,17 @@ jobs:
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Install Capacitor
-        run: npm install --no-save @capacitor/core@6.2.1 @capacitor/cli@6.2.1 @capacitor/android@6.2.1
+      - name: Install Capacitor and icon generator
+        run: npm install --no-save @capacitor/core@6.2.1 @capacitor/cli@6.2.1 @capacitor/android@6.2.1 @capacitor/assets@3.0.5
+
+      - name: Prepare Android launcher icon source
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+          mkdir -p assets
+          test -s icon-512.png
+          convert icon-512.png -resize 1024x1024 -background none -gravity center -extent 1024x1024 assets/icon.png
+          identify assets/icon.png
 
       - name: Prepare local game assets
         run: |
@@ -67,6 +76,9 @@ jobs:
 
       - name: Generate Android project
         run: npx cap add android
+
+      - name: Generate native Android launcher icons
+        run: npx capacitor-assets generate --android
 
       - name: Sync web assets
         run: npx cap sync android
