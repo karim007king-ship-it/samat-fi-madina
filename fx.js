@@ -229,7 +229,6 @@
 #fxf.e-sp::after,#fxf.e-an::after{content:"";position:absolute;inset:0;background:repeating-conic-gradient(#fff3 0 1.5deg,transparent 1.5deg 9deg);-webkit-mask:radial-gradient(circle,transparent 30%,#000 75%);mask:radial-gradient(circle,transparent 30%,#000 75%)}
 @keyframes c-ef{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
 .card .pt{color:#35e6ff;font-size:13px;letter-spacing:2px;margin-bottom:4px}
-.cw::before{content:"";position:absolute;left:8%;right:8%;bottom:-2%;height:7%;background:radial-gradient(ellipse at center,#000c 0,#0006 45%,transparent 72%);filter:blur(3px);z-index:-1;pointer-events:none}
 @media (prefers-reduced-motion:reduce){#amb i,.c-dust i{animation:none!important}}`;
   document.head.appendChild(Object.assign(document.createElement('style'), { textContent: css }));
 })();

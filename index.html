@@ -155,6 +155,10 @@ body.low #sc{box-shadow:inset 0 0 70px #ff3a5a40}.jb{margin-top:8px}
 @media (pointer:coarse){#hud button{width:40px;height:40px}}
 @media (max-width:360px){#hud button{width:34px;height:34px;font-size:15px}.tr u{width:30px}}
 #ch svg.on{filter:drop-shadow(0 0 10px var(--c));filter:drop-shadow(0 0 7px color-mix(in srgb,var(--c) 45%,transparent))}
+#ch svg{opacity:1}
+.cw::before{content:"";position:absolute;left:6%;right:6%;bottom:-3.5%;height:9%;border-radius:50%;background:radial-gradient(ellipse at 50% 50%,#000000b3 0,#00000059 45%,transparent 72%);z-index:-1;pointer-events:none}
+.cw.far svg{filter:grayscale(.42) brightness(calc(var(--tn,.85)*.93))}
+.cw.far::before{opacity:.75;left:12%;right:12%}
 </style></head><body>
 <div id="app">
 <div id="hud"><span id="ct"></span><span class="tr">ياسمين<u><i id="ty"></i></u></span><span class="tr">سامي<u><i id="ts"></i></u></span><button id="bk" aria-label="سرعة النص">⏩</button><button id="bj" aria-label="دفتر الأدلة">📓</button><button id="bs" aria-label="الصوت">🔊</button><button id="br" aria-label="إعادة من البداية">↺</button></div>

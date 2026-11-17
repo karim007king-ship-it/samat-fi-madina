@@ -347,18 +347,15 @@ let xs=ord.map((k,i)=>cx0+(i-(n-1)/2)*sp);
       w.style.display='none';
       return
     }
-let fy=fy0,fh=fh0;
+// صفّان على الأرض: قريب (أكبر وأدنى) وبعيد (أصغر وأعلى) وقدما كل شخصية تبقيان على أرض المشهد
+    const far=lay!==2&&((lay===0&&n===3&&i===1)||(lay===1&&i%2===1));
+    let fy=far?fy0:fy0+.018,fh=far?fh0*.92:fh0*1.04;
     if(lay===2){
       fy=.93;
       fh=Math.min(.6,fh0*1.4)
-    }else if(lay===0&&n===3&&i===1){
-      fy-=.02;
-      fh*=.95
-    }else if(lay===1&&i%2===1){
-      fy-=.05;
-      fh*=.85
     }
-w.style.display='';
+    w.classList.toggle('far',far);
+    w.style.display='';
     w.style.setProperty('--x',xs[i]*100+'%');
     w.style.setProperty('--b',(1-fy)*100+'%');
     w.style.setProperty('--h',fh*100+'%');
