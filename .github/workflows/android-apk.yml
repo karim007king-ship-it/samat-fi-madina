@@ -1,3 +1,4 @@
+# Android APK pipeline for the local Capacitor wrapper
 name: Build Android APK
 
 on:
