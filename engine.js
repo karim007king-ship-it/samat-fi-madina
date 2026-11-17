@@ -11,17 +11,108 @@ IMG  الصور المفعّلة (الافتراضية أو المرفوعة) | 
 // خطوات القصة: ['من','نص','علامة اختيارية','تعبير اختياري'] أو {c:[اختيارات]} أو {p:لغز} أو {j:دليل} أو {x:'أوامر المشهد'}.
 
 // ===== الإعدادات والثوابت =====
-const $=s=>document.querySelector(s);var LIBK=GAME.id+'_lib';
-// ===== الحالة والحفظ والصوت =====
+/* ===== فهرس الأقسام =====
+1) الإعدادات والثوابت — ثوابت عامة ومرجع GAME القادم من story.js
+2) واجهة التوسعة (Engine) — نقاط ربط تسمح بإضافة ميزات من ملفات أخرى دون تعديل المحرك: أحداث، بوابات، ألغاز، أوامر مشهد
+3) الحالة والحفظ — حالة اللعب G، الحفظ التلقائي، الثقة، خانات الحفظ، سجل النهايات
+4) عناصر الواجهة الأساسية — النوافذ المنبثقة، الإشعارات، دفتر الأدلة
+5) الصوت والأجواء — توليد الصوت (Web Audio) والأجواء والمؤثرات والموسيقى التصويرية، بلا أي ملف صوتي
+6) المشهد والكاميرا والشخصيات — توزيع الشخصيات على أرض كل مشهد، انعكاس الأضواء، الكاميرا، المشي
+7) لغة وصف المشهد — خطوة {x:"أمر؛ أمر"}: enter/exit، cam، lights، flash، wait، ويمكن إضافة أوامر عبر Engine.ops
+8) الحوار وتدفق القصة — الكتابة الحرفية، التقدّم، تنفيذ خطوات الفصل
+9) الألغاز — سجل الألغاز Engine.puzzles (seq، ord، code) + الفوز والتلميحات المدرّجة
+10) النهايات — شاشة النهاية، شرح السبب، «جرّب قراراً آخر»، المشاركة، البدء والإعادة
+11) الصور والاستوديو — تحميل الصور (أساسي + كسول)، اكتشاف الأضواء، المعالجة والاستيراد من الاستوديو
+12) تعابير الوجوه — تبديل تعابير الشخصيات حسب مشاعر السطر
+13) القوائم والإعدادات — الشاشة الرئيسية، القائمة، خانات الحفظ، الفصول، معرض النهايات، التصدير والاستيراد
+14) التشغيل — كل ما ينفَّذ عند التحميل: ربط الأزرار ولوحة المفاتيح وبدء اللعبة (يأتي آخرا بعد تعريف كل شيء)
+   قاعدة: ما يجب أن يعمل عند التحميل يوضع في «التشغيل» فقط. الإضافات تستعمل Engine بدل تعديل المحرك. */
+
+/* ═══════════ 1) الإعدادات والثوابت ═══════════
+   ثوابت عامة ومرجع GAME القادم من story.js */
+
+const $=s=>document.querySelector(s);
+var LIBK=GAME.id+'_lib';
+
+/* ═══════════ 2) واجهة التوسعة (Engine) ═══════════
+   نقاط ربط تسمح بإضافة ميزات من ملفات أخرى دون تعديل المحرك: أحداث، بوابات، ألغاز، أوامر مشهد */
+const Engine={
+  hooks:{},gates:{},puzzles:{},ops:{},
+  // أحداث: Engine.on('line'|'chapter'|'trust'|'puzzle:won'|'ending', fn) — تُستدعى fn بوسائط الحدث ولا تعطّل اللعبة إن فشلت
+  on(ev,fn){(this.hooks[ev]=this.hooks[ev]||[]).push(fn);return this},
+  emit(ev,...a){(this.hooks[ev]||[]).forEach(f=>{try{f(...a)}catch(x){console.error('hook',ev,x)}})},
+  // حقول نص: كل fn تعيد HTML يُضاف إلى الموضع (مثلا 'card:extra' في بطاقة الفصل)
+  fill(ev,...a){return(this.hooks[ev]||[]).map(f=>{try{return f(...a)||''}catch(x){return''}}).join('')},
+  // بوابات: مشهد يُعرض قبل المتابعة. Engine.onGate('puzzle:won'|'ending', (ctx,go)=>{...; go()}) واستدعِ go عند الانتهاء
+  onGate(n,fn){(this.gates[n]=this.gates[n]||[]).push(fn);return this},
+  gate(n,ctx,next){const q=(this.gates[n]||[]).slice(),go=()=>q.length?q.shift()(ctx,go):next();go()}
+};
+// Engine.puzzles[نوع]=(p,c)=>{...}  أنواع جديدة للألغاز | Engine.ops[أمر]=async(a,b,نص)=>{...}  أوامر جديدة لخطوة {x:'أمر ...'}
+
+/* ═══════════ 3) الحالة والحفظ ═══════════
+   حالة اللعب G، الحفظ التلقائي، الثقة، خانات الحفظ، سجل النهايات */
+
 let G,au,dr,T=0,TT='',rd=0,nx=0,mute=0,CHR={},OV={},BG0=null,curBg=null,C0=null,IMG={};
+
 const sv=()=>{try{localStorage.setItem(K,JSON.stringify(G))}catch(e){}};
+
 const ld=()=>{try{return JSON.parse(localStorage.getItem(K))}catch(e){return null}};
+
 const trust=(k,d)=>{
   const o=G[k];
   G[k]=Math.max(0,Math.min(10,o+d));
+  Engine.emit('trust',k,d,G[k]);
   if(o>=4&&G[k]<4)toast(TR('warn.trust').replace('{n}',k==='y'?'ياسمين':'سامي'))
 };
+
 const nw=()=>({c:0,i:0,y:5,s:5,j:[],f:{},card:-1});
+
+var TS=(()=>{try{return +localStorage.getItem('ts')||24}catch(e){return 24}})();
+
+function lsg(k,d){try{return JSON.parse(localStorage.getItem(K+k))||d}catch(e){return d}}
+
+function lss(k,v){try{localStorage.setItem(K+k,JSON.stringify(v))}catch(e){}}
+
+function snapSave(){
+  const q=lsg('_snap',{});
+  q[G.c]=JSON.parse(JSON.stringify(Object.assign({},G,{
+    i:0,card:-1
+  })));
+  lss('_snap',q)
+}
+
+function endRec(n){const e=lsg('_end',[]);if(!e.includes(n)){e.push(n);lss('_end',e)}}
+
+/* ═══════════ 4) عناصر الواجهة الأساسية ═══════════
+   النوافذ المنبثقة، الإشعارات، دفتر الأدلة */
+
+function ov(h){const e=$('#ov');if(!h){e.hidden=true;e.innerHTML='';return}e.innerHTML=h;e.hidden=false}
+
+function toast(t){
+  const e=$('#toast');
+  e.textContent=t;
+  e.style.opacity=1;
+  setTimeout(()=>e.style.opacity=0,1600)
+}
+
+// دفتر الأدلة كطبقة مستقلة: يفتح من ☰ أو من داخل اللغز دون إغلاقه (الأحدث أولا)
+function jnl(){let d=$('#jn');if(d){d.remove();return}
+const a=(G&&G.j)||[];
+  d=document.createElement('div');
+  d.id='jn';
+  d.setAttribute('role','dialog');
+  d.setAttribute('aria-modal','true');
+d.innerHTML=`<div class="pz"><h3>${TR('jn.h')} (${a.length})</h3><ul class="jl">${a.length?a.slice().reverse().map(x=>`<li>${x}</li>`).join(''):`<li>${TR('jn.none')}</li>`}</ul><button class="btn">${TR('jn.close')}</button></div>`;
+d.onclick=x=>{
+    if(x.target===d||x.target.tagName==='BUTTON')d.remove()
+  };
+  document.body.appendChild(d);
+  d.querySelector('button').focus()
+}
+
+/* ═══════════ 5) الصوت والأجواء ═══════════
+   توليد الصوت (Web Audio) والأجواء والمؤثرات والموسيقى التصويرية، بلا أي ملف صوتي */
+
 function aud(){
   if(au)return;
   try{
@@ -46,6 +137,7 @@ function aud(){
     ambInit()
   }catch(e){}
 }
+
 function tone(f,d=.35){
   if(!au||mute)return;
   const o=au.createOscillator(),g=au.createGain();
@@ -57,16 +149,190 @@ function tone(f,d=.35){
   o.start();
   o.stop(au.currentTime+d)
 }
-function ov(h){const e=$('#ov');if(!h){e.hidden=true;e.innerHTML='';return}e.innerHTML=h;e.hidden=false}
-function toast(t){
-  const e=$('#toast');
-  e.textContent=t;
-  e.style.opacity=1;
-  setTimeout(()=>e.style.opacity=0,1600)
+
+var AMGN=null,FXGN=null,VOL=(()=>{
+  try{
+    return JSON.parse(localStorage.getItem('vol'))||{
+      a:1,f:.7
+    }
+  }catch(e){
+    return{
+      a:1,f:.7
+    }
+  }
+})();
+
+function volSave(){try{localStorage.setItem('vol',JSON.stringify(VOL))}catch(e){}}
+
+function volUI(){
+  ov(`<div class='pz'><h3>مستوى الصوت</h3><p>الأجواء (الخلفية)</p><input type='range' id='va' min='0' max='150' value='${Math.round(VOL.a*100)}' style='width:100%'><p>المؤثرات (الدقّات والنغمات)</p><input type='range' id='vf' min='0' max='150' value='${Math.round(VOL.f*100)}' style='width:100%'><button class='btn' id='vt'>اختبار الصوت</button><button class='btn' onclick='ov()'>إغلاق</button></div>`);
+$('#va').oninput=e=>{VOL.a=e.target.value/100;if(AMGN)AMGN.gain.value=VOL.a;volSave()};
+$('#vf').oninput=e=>{VOL.f=e.target.value/100;if(FXGN)FXGN.gain.value=VOL.f;volSave()};
+$('#vt').onclick=()=>{aud();ambInit();thump(.6);chime(1)}}
+(()=>{
+  const b=$('#bs');
+  if(!b)return;
+  const v=document.createElement('button');
+  v.id='bv';
+  v.setAttribute('aria-label','القائمة');
+  v.textContent='☰';
+  v.className=b.className;
+  b.before(v);
+  v.onclick=menuUI
+})();
+
+
+var AM=null,AMB_B='roof',AMV=1,AMB_K='',lastSt=0,AMB={
+  roof:[500,.7,.035,55,.02],studio:[260,.5,.02,110,.018],souk:[1100,.5,.018,65,.012],door:[400,.6,.03,70,.02],stairs:[320,.6,.03,62,.02],tunnel:[180,.5,.05,45,.035],lab:[2400,.4,.018,120,.03],hall:[240,.4,.03,52,.03]
+};
+
+function ambInit(){
+  if(AM||!au)return;
+  const n=au.createBuffer(1,au.sampleRate*2,au.sampleRate),d=n.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  const ns=au.createBufferSource();
+  ns.buffer=n;
+  ns.loop=true;
+  const f=au.createBiquadFilter();
+  f.type='bandpass';
+  const ng=au.createGain();
+  ng.gain.value=0;
+  const o=au.createOscillator(),og=au.createGain();
+  og.gain.value=0;
+  const lf=au.createOscillator(),lg=au.createGain();
+  lf.frequency.value=.13;
+  lg.gain.value=0;
+  ns.connect(f);
+  f.connect(ng);
+  ng.connect(AMGN);
+  o.connect(og);
+  og.connect(AMGN);
+  lf.connect(lg);
+  lg.connect(ng.gain);
+  ns.start();
+  o.start();
+  lf.start();
+  AM={
+    f,ng,o,og,lg
+  };
+  AMB_K='';
+  ambSet(AMB_B)
 }
-// ===== توزيع الشخصيات على أرض كل مشهد =====
+
+function ambSet(b){
+  AMB_B=b||AMB_B;
+  if(!AM||!au)return;
+  const k=AMB_B+'|'+AMV+'|'+mute;
+  if(k===AMB_K)return;
+  AMB_K=k;
+  const a=AMB[AMB_B]||AMB.roof,t=au.currentTime,v=mute?0:a[2]*AMV,w=mute?0:a[4]*AMV;
+  AM.f.frequency.setTargetAtTime(a[0],t,1.2);
+  AM.f.Q.setTargetAtTime(a[1],t,1.2);
+  AM.ng.gain.setTargetAtTime(v,t,1.2);
+  AM.lg.gain.setTargetAtTime(v*.5,t,1.2);
+  AM.o.frequency.setTargetAtTime(a[3],t,1.2);
+  AM.og.gain.setTargetAtTime(w,t,1.2)
+}
+
+function ambMute(){ambSet(AMB_B)}
+
+function nb(d,fq,g,ty){
+  if(!au||mute)return;
+  const b=au.createBuffer(1,au.sampleRate*d,au.sampleRate),x=b.getChannelData(0);
+  for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1;
+  const n=au.createBufferSource();
+  n.buffer=b;
+  const f=au.createBiquadFilter();
+  f.type=ty||'lowpass';
+  f.frequency.value=fq;
+  const gn=au.createGain();
+  gn.gain.setValueAtTime(g,au.currentTime);
+  gn.gain.exponentialRampToValueAtTime(.001,au.currentTime+d);
+  n.connect(f);
+  f.connect(gn);
+  gn.connect(FXGN);
+  n.start()
+}
+
+function ps(fr,to,d,g,ty){
+  if(!au||mute)return;
+  const o=au.createOscillator(),gn=au.createGain(),t=au.currentTime;
+  o.type=ty||'sine';
+  o.frequency.setValueAtTime(fr,t);
+  o.frequency.exponentialRampToValueAtTime(to,t+d);
+  gn.gain.setValueAtTime(g,t);
+  gn.gain.exponentialRampToValueAtTime(.001,t+d);
+  o.connect(gn);
+  gn.connect(FXGN);
+  o.start();
+  o.stop(t+d)
+}
+
+function thump(k){k=k||1;ps(70,28,.6,.35*k);nb(.35,160,.18*k)}
+
+function boom(){ps(90,22,1.1,.4);nb(.9,300,.2);ps(1400,300,.3,.05,'sawtooth')}
+
+function steps(){for(let i=0;i<4;i++)setTimeout(()=>{ps(120,60,.12,.08);nb(.06,500,.05)},i*210)}
+
+function chime(ok){[523,659,784,1047].slice(0,ok?4:2).forEach((f,i)=>setTimeout(()=>ps(f,f,.5,.07),i*110))}
+
+function glitch(){
+  for(let i=0;i<8;i++)setTimeout(()=>ps(200+Math.random()*1800,100+Math.random()*1500,.08,.05,'square'),i*70)
+}
+
+function camS(a){if(a==='shake')thump(1);else if(a==='punch')thump(.6);return 0}
+
+function lightSnd(a){
+  if(a==='off'){
+    nb(1.2,2500,.12);
+    ps(120,40,1.2,.2);
+    AMV=.2
+  }else if(a==='dim')AMV=.6;
+  else{
+    ps(60,120,.4,.08);
+    nb(.2,3000,.06,'highpass');
+    AMV=1
+  }
+  ambSet(AMB_B)
+}
+
+function sting(e){
+  const n=Date.now();
+  if(n-lastSt<1200)return;
+  lastSt=n;
+  if(e==='fear'){
+    ps(196,185,1.4,.09,'triangle');
+    ps(207,196,1.4,.07,'triangle');
+    nb(1.2,200,.05)
+  }else if(e==='surprise'){
+    ps(880,1320,.18,.07,'square');
+    nb(.12,3000,.05,'highpass')
+  }else if(e==='sad'){
+    ps(262,247,1.6,.06);
+    ps(196,185,1.8,.05)
+  }else if(e==='angry'){
+    nb(.3,900,.12);
+    ps(110,80,.5,.1,'sawtooth')
+  }else if(e==='joy')chime(1);
+  else if(e==='think')ps(330,330,.7,.05)
+}
+
+function endSnd(n){
+  n===1?chime(1):n===3?ps(65,40,3,.15):n===5?(thump(.8),ps(110,90,2.5,.08,'sawtooth')):n===2?ps(220,330,2,.07):chime(0)
+}
+
+// نبض قلب خفيف يرافق المشهد حين تنزل ثقة أي رفيق تحت ٤ (يتوقف مع الكتم أو عند إخفاء الصفحة)
+function setBeat(on){
+  if(on&&!window.__beat)window.__beat=setInterval(()=>{if(!mute&&au&&!document.hidden)ps(62,38,.2,.1)},1400);
+  else if(!on&&window.__beat){clearInterval(window.__beat);window.__beat=0}}
+
+/* ═══════════ 6) المشهد والكاميرا والشخصيات ═══════════
+   توزيع الشخصيات على أرض كل مشهد، انعكاس الأضواء، الكاميرا، المشي */
+
 const LIGHTS={};
+
 let LX={a:.83,y:.5,s:.17},LY={a:200,y:200,s:200},XT={in:{},out:{}};
+
 function stage(ch){
   const[cx0,fy0,fh0]=SC2[ch.bg]||SC2.roof,gc=G?G.c:0,t=STG[gc]||String(gc%3),lay=ch.lay!=null?ch.lay:+t[0],cs=(ch.cast&&ch.cast.join?ch.cast.join(''):t.slice(1))||'ays';
 const ord=(lay===1?'yas':'ays').split('').filter(k=>(cs.includes(k)||XT.in[k])&&!XT.out[k]),n=ord.length,sp=(lay===2?.28:lay===1?.30:.25)*(ch.bg==='studio'?.88:1);
@@ -101,6 +367,7 @@ w.style.display='';
   });
   rim(ch)
 }
+
 // انعكاس ضوء أقرب مصدر ضوء على حافة الشخصية (دافئ أو أزرق)
 function rim(ch){
   const A=LIGHTS[ch.bg]||[];
@@ -125,14 +392,91 @@ w.style.setProperty('--rx',(best.x>cx?1:-1)*(2+bs*4)+'px');
     w.classList.add('rim')
   })
 }
-// ===== لغة وصف المشهد: خطوة {x:'أمر؛ أمر',f:'علامة اختيارية'} تُنفَّذ تلقائيا =====
+
+function wide(){cam(1,0,0);$('#sc').classList.remove('lb')}
+
+function cam(z,x,y,fx){
+  const c=$('#cam'),sc=$('#sc'),mx=(z-1)*sc.clientWidth/2*.9,my=(z-1)*sc.clientHeight/2*.9;
+  x=Math.max(-mx,Math.min(mx,x));
+  y=Math.max(-my,Math.min(my,y));
+  c.style.setProperty('--cz',z);
+  c.style.setProperty('--cx',x+'px');
+  c.style.setProperty('--cy',y+'px');
+  if(fx){
+    c.classList.remove(fx);
+    void c.offsetWidth;
+    c.classList.add(fx);
+    c.onanimationend=()=>c.classList.remove(fx)
+  }
+}
+
+const place=x=>{
+  const k=x.id.slice(2);
+  x.style.setProperty('--ex',EN[k][0]);
+  x.style.setProperty('--ey',EN[k][1])
+};
+
+function hideAll(){document.querySelectorAll('#ch svg').forEach(x=>{place(x);x.classList.add('ent')})}
+
+function walk(add,cb){
+  document.querySelectorAll('#ch svg').forEach((x,i)=>{
+    place(x);
+    setTimeout(()=>{
+      x.classList.add('wk');
+      x.classList.toggle('ent',add);
+      setTimeout(()=>x.classList.remove('wk'),900)
+    },i*350)
+  });
+  setTimeout(cb,1700)
+}
+
+
+function direct(s){const t=s[1],w=s[0],e=w!=='n'&&$('#c_'+w);let z=1,x=0,y=0,fx='';
+if(e){x=Math.max(-70,Math.min(70,$('#sc').clientWidth*(.5-LX[w])*.5));z=1.14;y=-6}
+if(/يتفتح|تضوي|يتضي/.test(t)){z=1.28;x*=.4}
+if(/ينزلو|سلالم|الدرج|درج/.test(t)){y=-22;z=1.1}
+if(/!/.test(t))fx='pu';
+if(RX.fear.test(t)){fx='sk';z=Math.max(z,1.2)}
+$('#sc').classList.toggle('lb',w==='n');cam(z,x,y,fx)}
+
+function scene(b){
+  ambSet(b);
+  const s=S[b];
+  if(curBg!==b){
+    curBg=b;
+    $('#bgs').innerHTML=IMG['b_'+b]?imgBg(b):BG[b];
+    Engine.emit('scene',b)
+  }
+  $('#sc').style.background=`linear-gradient(${s[0]},${s[1]})`;
+  const o=OV[b]||IMG['b_'+b],tn=IMG['b_'+b]?TONE[b]:.85,scn=$('#sc');
+  scn.style.setProperty('--tn',tn);
+  $('#glow').style.opacity=o?0:s[2];
+  $('#moon').style.opacity=o?0:s[3]
+}
+
+function hud(){
+  $('#ct').textContent=`${G.c+1}/${C.length}`;
+  $('#ct').title=GAME.partOf(G.c);
+  $('#ty').style.width=G.y*10+'%';
+  $('#ts').style.width=G.s*10+'%';
+  const ch=C[G.c],n=ch?ch.st.length:1,pc=Math.round(Math.min(G.i,n)/n*100);
+  $('#pg i').style.width=pc+'%';
+  $('#pg').setAttribute('aria-valuenow',pc);
+  document.body.classList.toggle('low',G.y<4||G.s<4);
+  setBeat(G.y<4||G.s<4)
+}
+
+/* ═══════════ 7) لغة وصف المشهد ═══════════
+   خطوة {x:"أمر؛ أمر"}: enter/exit، cam، lights، flash، wait، ويمكن إضافة أوامر عبر Engine.ops */
+
 // enter k / exit k: دخول أو خروج شخصية بالمشي (k = a أو y أو s)، go k x: امشِ إلى موضع x (0 إلى 1)
 // cam in|down|shake|punch: حركة كاميرا، lights off|dim|on: إضاءة المشهد، flash: ومضة، wait ms: انتظار
 const sl=ms=>new Promise(r=>setTimeout(r,ms));
+
 async function runX(str){nx=0;rd=0;$('#dl').classList.remove('rd');
 for(const c of str.split(';').map(x=>x.trim()).filter(Boolean)){
     const[op,a,b]=c.split(/\s+/),w=$('#w_'+a),v=w&&w.querySelector('svg');
-if(op==='cine'){await new Promise(r=>cine(a,r));continue}
+if(Engine.ops[op]){await Engine.ops[op](a,b,c);continue}
 if(op==='enter'&&v){
       XT.in[a]=1;
       delete XT.out[a];
@@ -173,79 +517,10 @@ else if(op==='lights'){
 else if(op==='flash')(boom(),$('#cam')).animate([{filter:'brightness(3)'},{filter:'none'}],{duration:380});
 else if(op==='wait')await sl(+a||500)}
 adv()}
-// ===== الكاميرا ودخول الشخصيات وخروجها =====
-(()=>{
-  const c=document.createElement('div');
-  c.id='cam';
-  const sc=$('#sc');
-  while(sc.firstChild)c.appendChild(sc.firstChild);
-  sc.appendChild(c)
-})();
-buildChars();
-function wide(){cam(1,0,0);$('#sc').classList.remove('lb')}
-function cam(z,x,y,fx){
-  const c=$('#cam'),sc=$('#sc'),mx=(z-1)*sc.clientWidth/2*.9,my=(z-1)*sc.clientHeight/2*.9;
-  x=Math.max(-mx,Math.min(mx,x));
-  y=Math.max(-my,Math.min(my,y));
-  c.style.setProperty('--cz',z);
-  c.style.setProperty('--cx',x+'px');
-  c.style.setProperty('--cy',y+'px');
-  if(fx){
-    c.classList.remove(fx);
-    void c.offsetWidth;
-    c.classList.add(fx);
-    c.onanimationend=()=>c.classList.remove(fx)
-  }
-}
-const place=x=>{
-  const k=x.id.slice(2);
-  x.style.setProperty('--ex',EN[k][0]);
-  x.style.setProperty('--ey',EN[k][1])
-};
-function hideAll(){document.querySelectorAll('#ch svg').forEach(x=>{place(x);x.classList.add('ent')})}
-function walk(add,cb){
-  document.querySelectorAll('#ch svg').forEach((x,i)=>{
-    place(x);
-    setTimeout(()=>{
-      x.classList.add('wk');
-      x.classList.toggle('ent',add);
-      setTimeout(()=>x.classList.remove('wk'),900)
-    },i*350)
-  });
-  setTimeout(cb,1700)
-}
 
-function direct(s){const t=s[1],w=s[0],e=w!=='n'&&$('#c_'+w);let z=1,x=0,y=0,fx='';
-if(e){x=Math.max(-70,Math.min(70,$('#sc').clientWidth*(.5-LX[w])*.5));z=1.14;y=-6}
-if(/يتفتح|تضوي|يتضي/.test(t)){z=1.28;x*=.4}
-if(/ينزلو|سلالم|الدرج|درج/.test(t)){y=-22;z=1.1}
-if(/!/.test(t))fx='pu';
-if(RX.fear.test(t)){fx='sk';z=Math.max(z,1.2)}
-$('#sc').classList.toggle('lb',w==='n');cam(z,x,y,fx)}
-// ===== المشهد والحوار =====
-function scene(b){
-  ambSet(b);
-  const s=S[b];
-  if(curBg!==b){
-    curBg=b;
-    $('#bgs').innerHTML=IMG['b_'+b]?imgBg(b):BG[b]
-  }
-  $('#sc').style.background=`linear-gradient(${s[0]},${s[1]})`;
-  const o=OV[b]||IMG['b_'+b],tn=IMG['b_'+b]?TONE[b]:.85,scn=$('#sc');
-  scn.style.setProperty('--tn',tn);
-  $('#glow').style.opacity=o?0:s[2];
-  $('#moon').style.opacity=o?0:s[3]
-}
-function hud(){
-  $('#ct').textContent=`${GAME.partOf(G.c)} · ${G.c+1}/${C.length}`;
-  $('#ty').style.width=G.y*10+'%';
-  $('#ts').style.width=G.s*10+'%';
-  const ch=C[G.c],n=ch?ch.st.length:1,pc=Math.round(Math.min(G.i,n)/n*100);
-  $('#pg i').style.width=pc+'%';
-  $('#pg').setAttribute('aria-valuenow',pc);
-  document.body.classList.toggle('low',G.y<4||G.s<4);
-  setBeat(G.y<4||G.s<4)
-}
+/* ═══════════ 8) الحوار وتدفق القصة ═══════════
+   الكتابة الحرفية، التقدّم، تنفيذ خطوات الفصل */
+
 function typ(t){
   $('#sr').textContent=t;
   clearInterval(T);
@@ -267,34 +542,20 @@ function typ(t){
     }
   },TS)
 }
-$('#dl').onclick=e=>{
-  if(e.target.closest('#cx'))return;
-  if(T){
-    clearInterval(T);
-    T=0;
-    $('#ch').classList.remove('tk');
-    $('#tx').textContent=TT;
-    rd=1;
-    $('#dl').classList.add('rd')
-  }else if(rd&&nx){
-    rd=0;
-    $('#dl').classList.remove('rd');
-    const f=nx;
-    nx=0;
-    f()
-  }
-};
+
 function adv(){G.i++;sv();step()}
+
 function step(){
 const ch=C[G.c];if(!ch)return endScr();
 if(G.i===0&&G.card!==G.c){
     G.card=G.c;
     snapSave();
+    Engine.emit('chapter',G.c);
     cam(1,0,0);
     scene(ch.bg);
     stage(ch);
     hud();
-    ov(`<div class="card">${window.partTag?partTag():''}<p>الفصل ${G.c+1}</p><h2>${ch.t}</h2></div>`);
+    ov(`<div class="card">${Engine.fill('card:extra',G.c)}<p>الفصل ${G.c+1}</p><h2>${ch.t}</h2></div>`);
     XT={
       in:{},out:{}
     };
@@ -329,7 +590,7 @@ const t=s[1],rx=/!/.test(t)?'jp':/\u061f/.test(t)?'tl':RX.fear.test(t)?'sh':'';
       sc.classList.add('qk');
       thump()
     }
-$('#tx').style.color=s[0]==='n'?'#b9c0d8':'var(--ink)';direct(s);express(s);typ(s[1]);nx=adv;return}
+$('#tx').style.color=s[0]==='n'?'#b9c0d8':'var(--ink)';direct(s);express(s);Engine.emit('line',s);typ(s[1]);nx=adv;return}
 if(s.c){wide();$('#nm').textContent='';$('#tx').textContent='ماذا تقرّرون؟';nx=0;rd=0;
 s.c.forEach(o=>{
       const b=document.createElement('button');
@@ -356,104 +617,157 @@ s.c.forEach(o=>{
   }
 if(s.p){nx=0;wide();return puz(s.p)}
 if(s.j){if(!G.j.includes(s.j)){G.j.push(s.j);toast('📓 دليل جديد في الدفتر')}G.i++;sv();return step()}}
-// ===== الألغاز =====
+
+/* ═══════════ 9) الألغاز ═══════════
+   سجل الألغاز Engine.puzzles (seq، ord، code) + الفوز والتلميحات المدرّجة */
 function win(p,f){
   chime(f<2);
-  $('#ps').textContent=f>1?'✔ نجحتم!':'✔ نجحتم! +ثقة';
+  const e=$('#ps');
+  if(e)e.textContent=f>1?'✔ نجحتم!':'✔ نجحتم! +ثقة';
   for(const k in p.r)trust(k,f>1?0:p.r[k]);
+  Engine.emit('puzzle:won',p,f);
   setTimeout(()=>{
     ov();
-    window.cine?cine(cineFor(G.c+1),adv):adv()
+    Engine.gate('puzzle:won',{p,f,chapter:G.c+1},adv)
   },900)
 }
-function puz(p){let f=0,busy=1,pos=0,inp='';
-if(p.k==='seq'){
-ov(`<div class="pz"><h3>${p.t}</h3><div class="pads">${p.pads.map((x,i)=>`<button class="pad" data-i="${i}">${x}</button>`).join('')}</div><p id="ps"></p></div>`);
-const B=[...document.querySelectorAll('.pad')];
-const fl=i=>{B[i].classList.add('lit');tone(F[i]);setTimeout(()=>B[i].classList.remove('lit'),350)};
-const play=()=>{
-      busy=1;
-      pos=0;
-      $('#ps').textContent='استمع جيدا...';
-      p.q.forEach((q,k)=>setTimeout(()=>{
-        fl(q);
-        if(k===p.q.length-1)setTimeout(()=>{
-          busy=0;
-          $('#ps').textContent='دورك'
-        },500)
-      },700+k*700))
-    };
-B.forEach(b=>b.onclick=()=>{
-      if(busy)return;
-      const i=+b.dataset.i;
-      fl(i);
-      if(i===p.q[pos]){
-        if(++pos===p.q.length){
-          busy=1;
-          win(p,f)
-        }
-      }else{
-        f++;
-        busy=1;
-        $('#ps').textContent=hint(f,p,'خطأ. أعد الاستماع');
-        setTimeout(play,1600)
-      }
-    });
-play()}
-else if(p.k==='ord'){ // لغز الترتيب: اضغط العناصر بالترتيب الصحيح (p.o العناصر، p.a فهارس الترتيب الصحيح)
-ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div class="ordw">${p.o.map((x,i)=>`<button class="pad" data-i="${i}">${x}</button>`).join('')}</div><p id="ps"></p></div>`);
-const B=[...document.querySelectorAll('.pad')];
-B.forEach(b=>b.onclick=()=>{
-      const i=+b.dataset.i;
-      tone(300,.1);
-      if(i===p.a[pos]){
-        b.disabled=true;
-        b.classList.add('lit');
-        b.textContent=(pos+1)+'. '+p.o[i];
-        if(++pos===p.a.length)win(p,f)
-      }else{
-        f++;
-        pos=0;
-        B.forEach((x,k)=>{
-          x.disabled=false;
-          x.classList.remove('lit');
-          x.textContent=p.o[k]
-        });
-        $('#ps').textContent=hint(f,p,'الترتيب غير صحيح، حاولوا من جديد')
-      }
-    })
+// مؤقتات اللغز قد تنتهي بعد إغلاقه (تخطي مثلا) لذلك say آمنة
+const say=t=>{const e=$('#ps');if(e)e.textContent=t};
+Engine.puzzles.seq=(p,c)=>{
+  ov(`<div class="pz"><h3>${p.t}</h3><div class="pads">${p.pads.map((x,i)=>`<button class="pad" data-i="${i}">${x}</button>`).join('')}</div><p id="ps"></p></div>`);
+  const B=[...document.querySelectorAll('.pad')];
+  const fl=i=>{if(!B[i])return;B[i].classList.add('lit');tone(F[i]);setTimeout(()=>B[i].classList.remove('lit'),350)};
+  const play=()=>{
+    c.busy=1;c.pos=0;
+    say('استمع جيدا...');
+    p.q.forEach((q,k)=>setTimeout(()=>{
+      fl(q);
+      if(k===p.q.length-1)setTimeout(()=>{c.busy=0;say('دورك')},500)
+    },700+k*700))
+  };
+  B.forEach(b=>b.onclick=()=>{
+    if(c.busy)return;
+    const i=+b.dataset.i;
+    fl(i);
+    if(i===p.q[c.pos]){
+      if(++c.pos===p.q.length){c.busy=1;win(p,c.f)}
+    }else{
+      c.f++;c.busy=1;
+      say(hint(c.f,p,'خطأ. أعد الاستماع'));
+      setTimeout(play,1600)
+    }
+  });
+  play()
+};
+// لغز الترتيب: اضغط العناصر بالترتيب الصحيح (p.o العناصر، p.a فهارس الترتيب الصحيح)
+Engine.puzzles.ord=(p,c)=>{
+  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div class="ordw">${p.o.map((x,i)=>`<button class="pad" data-i="${i}">${x}</button>`).join('')}</div><p id="ps"></p></div>`);
+  const B=[...document.querySelectorAll('.pad')];
+  B.forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i;
+    tone(300,.1);
+    if(i===p.a[c.pos]){
+      b.disabled=true;b.classList.add('lit');
+      b.textContent=(c.pos+1)+'. '+p.o[i];
+      if(++c.pos===p.a.length)win(p,c.f)
+    }else{
+      c.f++;c.pos=0;
+      B.forEach((x,k)=>{x.disabled=false;x.classList.remove('lit');x.textContent=p.o[k]});
+      say(hint(c.f,p,'الترتيب غير صحيح، حاولوا من جديد'))
+    }
+  })
+};
+// لغز الرمز الرقمي (الافتراضي لأي نوع غير معروف)
+Engine.puzzles.code=(p,c)=>{
+  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div id="dg"></div><div class="kp">${[1,2,3,4,5,6,7,8,9,'⌫',0,'✔'].map(k=>`<button class="pad" data-k="${k}">${k}</button>`).join('')}</div><p id="ps"></p></div>`);
+  const sh=()=>{const e=$('#dg');if(e)e.textContent=c.inp.padEnd(p.a.length,'·')};
+  sh();
+  document.querySelectorAll('.pad').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.k;
+    tone(300,.1);
+    if(k==='⌫')c.inp=c.inp.slice(0,-1);
+    else if(k==='✔'){
+      if(c.inp===p.a)return win(p,c.f);
+      c.f++;c.inp='';
+      say(hint(c.f,p,'الرمز غير صحيح'))
+    }else if(c.inp.length<p.a.length)c.inp+=k;
+    sh()
+  })
+};
+function puz(p){(Engine.puzzles[p.k]||Engine.puzzles.code)(p,{f:0,busy:1,pos:0,inp:''})}
+
+// تلميحات مدرّجة: خطأ أول = رسالة عامة، ثان = راجعوا الدفتر، ثالث فأكثر = التلميح الكامل
+function hint(f,p,base){
+  if(f>=4&&!$('#sk')){
+    const z=$('#ov .pz');
+    if(z){
+      const b=document.createElement('button');
+      b.id='sk';
+      b.className='btn';
+      b.textContent=TR('skip.p');
+      b.onclick=()=>win(p,9);
+      z.appendChild(b)
+    }
   }
-else{
-ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div id="dg"></div><div class="kp">${[1,2,3,4,5,6,7,8,9,'⌫',0,'✔'].map(k=>`<button class="pad" data-k="${k}">${k}</button>`).join('')}</div><p id="ps"></p></div>`);
-const sh=()=>$('#dg').textContent=inp.padEnd(p.a.length,'·');sh();
-document.querySelectorAll('.pad').forEach(b=>b.onclick=()=>{const k=b.dataset.k;tone(300,.1);
-if(k==='⌫')inp=inp.slice(0,-1);
-      else if(k==='✔'){
-        if(inp===p.a)return win(p,f);
-        f++;
-        inp='';
-        $('#ps').textContent=hint(f,p,'الرمز غير صحيح')
-      }else if(inp.length<p.a.length)inp+=k;
-      sh()
-    })
-  }
-}
-// ===== النهايات =====
+  return f<2?base:f===2?TR('hint.j'):'تلميح: '+p.h}
+
+/* ═══════════ 10) النهايات ═══════════
+   شاشة النهاية، شرح السبب، «جرّب قراراً آخر»، المشاركة، البدء والإعادة */
+
 function endScr(){
   const e=ending();
   endSnd(e[3]);
   endRec(e[3]);
   scene(e[2]);
   const show=()=>ov(`<div class="card"><p>النهاية ${e[3]} من ٥</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">إعادة من البداية</button><button class="btn" onclick="endsUI()">معرض النهايات</button></div>`)
-  window.cine?cine(cineEnd(e[3]),show):show()
+  Engine.emit('ending',e);
+  Engine.gate('ending',{n:e[3],e},show)
 }
+
 function start(g){aud();G=g;ov();step()}
+
 function rst(){try{localStorage.removeItem(K)}catch(e){}start(nw())}
-// ===== الاستيراد من الاستوديو =====
-// ===== الصور الحقيقية: معالجة وحفظ (IndexedDB) وتحريك تلقائي =====
+
+// شرح سبب النهاية (يطابق شروط ending() في story.js)
+function why(n){
+  const y=G.y,s=G.s,f=G.f||{},lo=[];
+  if(y<4)lo.push('ياسمين ('+y+'/10)');
+  if(s<4)lo.push('سامي ('+s+'/10)');
+  let m;
+if(n===5)m=TR('why.low').replace('{n}',lo.join(' و '));
+  else if(n===3)m=TR('why.destroy');
+  else if(n===2)m=TR('why.guard');
+  else if(n===1)m=TR('why.release');
+  else m=f.release?TR('why.rel_low'):TR('why.none');
+return `<p class="why"><b>${TR('why.h')}</b><br>${m}<br><small>${TR('why.tip')} (ياسمين ${y}/10 · سامي ${s}/10)</small></p>`
+}
+
+// «جرّب قراراً آخر»: العودة لبداية فصل القرار الأخير (أول فصل فيه خيار destroy) من اللقطة المحفوظة
+const decIdx=()=>C.findIndex(c=>JSON.stringify(c.st).includes('"destroy"'));
+
+function retryBtn(){
+  const q=lsg('_snap',{});
+  return q[decIdx()]?`<button class="btn" onclick="retryEnd()">${TR('retry.b')}</button>`:''
+}
+
+function retryEnd(){const q=lsg('_snap',{}),s=q[decIdx()];if(s)start(JSON.parse(JSON.stringify(s)))}
+
+// مشاركة النتيجة: قائمة المشاركة إن وُجدت، وإلا نسخ للحافظة
+function shareEnd(){
+  const e=ending(),t=TR('share.t').replace('{n}',e[3]).replace('{g}',TR('game.homeTitle')).replace('{e}',e[0])+(location.protocol.indexOf('http')===0?' '+location.href.split('#')[0]:'');
+  if(navigator.share)navigator.share({text:t}).catch(()=>{});
+  else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast(TR('copied')),()=>toast(t));
+  else toast(t)}
+
+/* ═══════════ 11) الصور والاستوديو ═══════════
+   تحميل الصور (أساسي + كسول)، اكتشاف الأضواء، المعالجة والاستيراد من الاستوديو */
+
 const SLAB="<defs><linearGradient id='trg' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#2c3b4b'/><stop offset='1' stop-color='#0d141c'/></linearGradient></defs><path fill='url(#trg)' d='M0 300V236Q200 226 400 236V300Z'/><path d='M0 236Q200 226 400 236' stroke='#5b7186' stroke-width='1.2' fill='none' opacity='.7'/><path stroke='#0a1118' stroke-width='1' opacity='.6' d='M0 262H400M70 236L40 300M170 232L150 300M270 232L290 300M370 236L410 300'/>";
+
 const SLOTS=[...Object.keys(N).map(k=>['c_'+k,N[k][0]]),...MAPB.map(([k,n])=>['b_'+k,'خلفية: '+n])];
+
 const DUSTG='<g fill=\'#cfe9ff\'>'+[[60,270,0],[130,250,2],[200,280,4],[270,240,1],[330,265,3],[370,230,5]].map(d=>`<circle class='du' cx='${d[0]}' cy='${d[1]}' r='1.6' style='animation-delay:-${d[2]}s'/>`).join('')+'</g>';
+
 // --- وحدة مستقلة قابلة لإعادة الاستعمال: اكتشاف الأضواء في أي صورة وتحريكها ---
 // دفئ (فوانيس، مصابيح، نوافذ) وأزرق (أنابيب، حلقات): يعيد مصفوفة {x,y,r,c} بإحداثيات 400x300
 function findLights(src){
@@ -498,25 +812,30 @@ ok(pick.map(l=>({
     im.src=src
   })
 }
+
 function glow(b,cold){
   const A=LIGHTS[b]||[];
   if(!A.length)return `<rect class='lf${cold?' cd2':''}' width='400' height='300' fill='url(#l${b})'/>`;
 return A.map((l,i)=>`<circle class='lg${l.c===2?' cd':''}' cx='${l.x.toFixed(1)}' cy='${l.y.toFixed(1)}' r='${l.r.toFixed(1)}' fill='url(#${l.c===2?'k':'w'}${b})' style='animation-duration:${(1.7+(i*.37)%1.6).toFixed(2)}s;animation-delay:-${(i*.53).toFixed(2)}s'/>`).join('')
 }
+
 const imgChar=k=>{
   const u=IMG['c_'+k],im=(c,cls)=>`<image class='${cls}' clip-path='url(#${c}${k})' href='${u}' width='60' height='92' preserveAspectRatio='xMidYMax meet'/>`;
 return `<svg id='c_${k}' class='img' viewBox='0 0 60 92' style='--c:${N[k][1]}'><defs><clipPath id='cu${k}'><rect width='60' height='48.4'/></clipPath><clipPath id='cl${k}'><rect y='47.6' width='30.2' height='45'/></clipPath><clipPath id='cr${k}'><rect x='29.8' y='47.6' width='30.2' height='45'/></clipPath></defs><ellipse cx='30' cy='90.8' rx='17' ry='2.4' fill='#000' opacity='.55' style='filter:blur(1.2px)'/><image class='fl' href='${u}' width='60' height='92' preserveAspectRatio='xMidYMax meet'/>${im('cu','up')}${im('cl','lL')}${im('cr','lR')}</svg>`
 };
+
 const imgBg=b=>{
   const cold=S[b][2],cl=cold?'#35e6ff':'#ffb454';
   return svgWrap(`<defs><radialGradient id='v${b}'><stop offset='.55' stop-color='#000' stop-opacity='0'/><stop offset='1' stop-color='#000' stop-opacity='.65'/></radialGradient><radialGradient id='l${b}' cx='.5' cy='.35'><stop offset='0' stop-color='${cl}' stop-opacity='.55'/><stop offset='1' stop-color='${cl}' stop-opacity='0'/></radialGradient><radialGradient id='w${b}'><stop offset='0' stop-color='#ffb454' stop-opacity='.85'/><stop offset='1' stop-color='#ffb454' stop-opacity='0'/></radialGradient><radialGradient id='k${b}'><stop offset='0' stop-color='#35e6ff' stop-opacity='.7'/><stop offset='1' stop-color='#35e6ff' stop-opacity='0'/></radialGradient></defs><image class='kb' href='${IMG['b_'+b]}' width='400' height='300' preserveAspectRatio='xMidYMid slice'/>${b==='roof'?SLAB:''}${glow(b,cold)}${DUSTG}<rect width='400' height='300' fill='url(#v${b})'/>`)
 };
+
 const DB=()=>new Promise((ok,no)=>{
   const r=indexedDB.open(GAME.id+'_img',1);
   r.onupgradeneeded=()=>r.result.createObjectStore('i');
   r.onsuccess=()=>ok(r.result);
   r.onerror=()=>no()
 });
+
 const dbGet=async k=>{
   try{
     const d=await DB();
@@ -527,6 +846,7 @@ const dbGet=async k=>{
     })
   }catch(e){}
 };
+
 const dbSet=async(k,v)=>{
   try{
     const d=await DB();
@@ -534,6 +854,7 @@ const dbSet=async(k,v)=>{
     v?s.put(v,k):s.delete(k)
   }catch(e){}
 };
+
 function cut(x,w,h){
   const d=x.getImageData(0,0,w,h),a=d.data;
   if(a[3]<200)return;
@@ -552,6 +873,7 @@ while(st.length){
     if(i<w*h-w)st.push(i+w)
   }
 x.putImageData(d,0,0)}
+
 function prep(file,isC){
   return new Promise(ok=>{
     const im=new Image();
@@ -569,6 +891,7 @@ function prep(file,isC){
     im.src=URL.createObjectURL(file)
   })
 }
+
 async function loadImgs(){
   for(const [k] of SLOTS){
     const v=(await dbGet(k))||DEF[k];
@@ -580,6 +903,7 @@ async function loadImgs(){
   await loadExp();
   buildChars()
 }
+
 function imgUI(){
   ov(`<div class='pz'><h3>صور حقيقية</h3><p>صورة الشخصية كاملة الجسم، بخلفية شفافة أو لون ثابت (تُزال تلقائيا). صورة الخلفية أفقية. تُحفظ على هذا الجهاز.</p>${SLOTS.map(([k,n])=>`<div style='display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #ffffff14'><span style='flex:1;text-align:right'>${n}</span>${IMG[k]?`<img src='${IMG[k]}' style='height:38px;border-radius:4px'>`:''}<button class='btn' style='min-width:70px;padding:6px' data-k='${k}' data-a='pick'>اختيار</button>${IMG[k]?`<button class='btn' style='min-width:46px;padding:6px' data-k='${k}' data-a='del'>✕</button>`:''}</div>`).join('')}<p id='ps'></p><button class='btn' onclick='home()'>رجوع</button></div>`);
 document.querySelectorAll('#ov [data-a]').forEach(b=>b.onclick=()=>{
@@ -605,6 +929,7 @@ const f=document.createElement('input');
     f.click()
   })
 }
+
 function buildChars(){
   $('#ch').innerHTML=['a','y','s'].map(k=>`<div class='cw' id='w_${k}'>${IMG['c_'+k]?imgChar(k):CHR[k]||fig(k)}</div>`).join('');
   stage(C[G?G.c:0]||C[0]);
@@ -615,6 +940,7 @@ function buildChars(){
     })
   }catch(e){}
 }
+
 function applyLib(t){let j;try{j=JSON.parse(t)}catch(e){return 'نص غير صالح'}if(Array.isArray(j))j={story:j};
 BG0=BG0||{
     ...BG
@@ -650,31 +976,63 @@ let st=$('#imp');
   }
   st.textContent=j.css||'';
 curBg=null;buildChars();return 'تم تطبيق '+n+' عنصر'}
+
 function imp(){
   ov(`<div class="pz"><h3>استيراد من الاستوديو</h3><p>انسخ ملف JSON من تبويب «تصدير» في الاستوديو والصقه هنا. سمِّ الشخصيات: آدم، ياسمين، سامي. وسمِّ الخلفيات: سطح، استوديو، سوق، باب، سلالم، متاهة، مخبر، قاعة.</p><textarea id="jt" style="width:100%;height:110px;box-sizing:border-box;background:#06080f;color:#e9ecf5;border:1px solid #ffffff33;border-radius:8px;padding:8px;direction:ltr;user-select:text;-webkit-user-select:text"></textarea><p id="ps"></p><button class="btn" onclick="const t=$('#jt').value;const r=applyLib(t);if(r[0]==='ت')try{localStorage.setItem(LIBK,t)}catch(e){}$('#ps').textContent=r">تطبيق</button> <button class="btn" onclick="try{localStorage.removeItem(LIBK)}catch(e){}$('#ps').textContent=applyLib('{}')">استعادة الافتراضي</button> <button class="btn" onclick="home()">رجوع</button></div>`)
 }
+
 function expStory(){
   ov(`<div class="pz"><h3>القصة للمحرر</h3><p>انسخ النص والصقه في تبويب «قصة» داخل الاستوديو.</p><textarea id="jt" readonly style="width:100%;height:110px;box-sizing:border-box;background:#06080f;color:#e9ecf5;border:1px solid #ffffff33;border-radius:8px;padding:8px;direction:ltr;user-select:text;-webkit-user-select:text"></textarea><p id="ps"></p><button class="btn" onclick="const t=$('#jt');t.select();let ok=0;try{ok=document.execCommand('copy')}catch(e){}$('#ps').textContent=ok?'تم النسخ':'حدّد النص وانسخه يدويا'">نسخ</button> <button class="btn" onclick="home()">رجوع</button></div>`);
   $('#jt').value=JSON.stringify(C)
 }
-function home(){
-  const s=ld();
-  ov(`<div class="card"><p>${GAME.homePart}</p><h1>${GAME.homeTitle}</h1><p>اضغط على الحوار للمتابعة.</p><button class="btn" onclick="start(nw())">ابدأ</button>${s?'<button class="btn" onclick="start(ld())">تابع</button>':''}<button class="btn" onclick="imp()">استيراد من الاستوديو</button><button class="btn" onclick="expStory()">نسخ القصة للمحرر</button><button class="btn" onclick="imgUI()">صور حقيقية (شخصيات وخلفيات)</button><button class="btn" onclick="expUI()">تعابير الوجوه</button><button class="btn" onclick="menuUI()">القائمة</button></div>`)
+
+// تحميل images2.js بعد ظهور الشاشة الأولى ثم تفعيل الصور الجديدة دون إعادة بناء المشهد
+async function loadMore(){if(window.__more)return;window.__more=1;
+await new Promise(r=>{
+    const s=document.createElement('script');
+    s.src='images2.js';
+    s.onload=r;
+    s.onerror=r;
+    document.head.appendChild(s)
+  });
+if(typeof MORE==='undefined')return;Object.assign(DEF,MORE);
+for(const k in MORE){
+    const v=(await dbGet(k))||MORE[k];
+    IMG[k]=v;
+    if(k[0]==='b')LIGHTS[k.slice(2)]=await lightsCached(v)
+  }
+await loadExp();const cb=curBg;if(cb&&MORE['b_'+cb]){curBg=null;scene(cb)}}
+
+// حساب الأضواء ثقيل: نحفظ نتيجته لكل صورة (المفتاح من طول الصورة وآخرها)
+async function lightsCached(src){
+  const k='lt_'+src.length+'_'+src.slice(-20);
+  try{
+    const c=localStorage.getItem(k);
+    if(c)return JSON.parse(c)
+  }catch(x){}
+  const r=await findLights(src);
+  try{
+    localStorage.setItem(k,JSON.stringify(r))
+  }catch(x){}
+  return r
 }
-$('#bj').onclick=()=>jnl();
-$('#bs').onclick=()=>{mute=!mute;if(dr)dr.gain.value=mute?0:.05;ambMute();$('#bs').textContent=mute?'🔇':'🔊'};
-$('#br').onclick=()=>ov(`<div class="card"><h2>إعادة من البداية؟</h2><p>سيُحذف التقدّم المحفوظ.</p><button class="btn" onclick="rst()">نعم، من البداية</button><button class="btn" onclick="ov()">إلغاء</button></div>`);
-// ===== التعابير =====
+
+/* ═══════════ 12) تعابير الوجوه ═══════════
+   تبديل تعابير الشخصيات حسب مشاعر السطر */
+
 const EXN=['joy','sad','angry','fear','surprise'],EXA={
   joy:'فرح',sad:'حزن',angry:'غضب',fear:'خوف',surprise:'دهشة'
 },HD={};
+
 const ER=[['fear',RX.fear],['angry',RX.angry],['sad',RX.sad],['joy',RX.joy]];
+
 function emo(t){
   for(const[k,r]of ER)if(r.test(t))return k;
   if(/!/.test(t)&&t.length<50)return'surprise';
   if(RX.question.test(t)&&t.length<60)return'think';
   return''
 }
+
 function headFind(k){
   return new Promise(ok=>{
     const u=IMG['c_'+k];
@@ -712,6 +1070,7 @@ function headFind(k){
     im.src=u
   })
 }
+
 function exMark(k,e){
   const h=HD[k]||{
     x:30,y:8,h:14
@@ -726,11 +1085,13 @@ if(e==='surprise')return `<path d='M${f(x)} ${f(t-H*.1)}v${f(-H*.25)}M${f(x-w*.5
 if(e==='think')return `<g transform='${T(w*.95,-H*.05,H/10)}'><ellipse rx='2.8' ry='2.4' fill='#0b0f1dcc' stroke='#e9ecf5' stroke-width='.3'/><text text-anchor='middle' y='1.4' font-size='4' font-weight='bold' fill='#e9ecf5'>?</text></g>`;
   return''
 }
+
 function swapFace(v,k,e){
   const u=(e&&IMG['x_'+k+'_'+e])||IMG['c_'+k];
   if(!u||!v.classList.contains('img'))return;
   v.querySelectorAll('image').forEach(i=>i.setAttribute('href',u))
 }
+
 function setEx(v,e){
   if(!v)return;
   const k=v.id.slice(2);
@@ -746,6 +1107,7 @@ function setEx(v,e){
   g.innerHTML=exMark(k,e);
   v.appendChild(g)
 }
+
 function express(s){
   const x=s[3],e=x?(x==='calm'?'':x):emo(s[1]),all=[...document.querySelectorAll('#ch svg')],tg=s[0]==='n'?(x||e==='fear'||e==='surprise'?all:[]):[$('#c_'+s[0])].filter(Boolean);
   all.forEach(v=>{
@@ -757,6 +1119,7 @@ function express(s){
     if(s[0]==='a'&&e==='fear'&&RX.voice.test(s[1]))glitch()
   }
 }
+
 async function loadExp(){
   for(const c of'ays')for(const e of EXN){
     const k='x_'+c+'_'+e,v=(await dbGet(k))||DEF[k];
@@ -764,6 +1127,7 @@ async function loadExp(){
     else delete IMG[k]
   }
 }
+
 function expUI(){
   ov(`<div class='pz'><h3>تعابير الوجوه</h3><p>اختياري: لكل شخصية صورة كاملة الجسم بنفس الوضعية والإطار وبتعبير مختلف، وتظهر عند ذلك الشعور. بدونها تعمل التعابير تلقائيا بالرموز والحركة.</p>${Object.keys(N).map(c=>[c,N[c][0]]).map(([c,n])=>`<div style='padding:6px 0;border-bottom:1px solid #ffffff14'><b>${n}</b><div style='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px'>${EXN.map(e=>{const k='x_'+c+'_'+e;return `<button class='btn' data-x='${k}' style='padding:6px 10px;font-size:13px'>${EXA[e]}${IMG[k]?' ✓':''}</button>`}).join('')}</div></div>`).join('')}<p id='ps'></p><button class='btn' id='xc'>مسح كل التعابير</button><button class='btn' onclick='ov()'>إغلاق</button></div>`);
 $('#xc').onclick=async()=>{
@@ -789,21 +1153,19 @@ document.querySelectorAll('#ov [data-x]').forEach(b=>b.onclick=()=>{
     f.click()
   })
 }
-// ===== الميزات: الحفظ والفصول والنهايات والإعدادات =====
-var TS=(()=>{try{return +localStorage.getItem('ts')||24}catch(e){return 24}})();
-function lsg(k,d){try{return JSON.parse(localStorage.getItem(K+k))||d}catch(e){return d}}
-function lss(k,v){try{localStorage.setItem(K+k,JSON.stringify(v))}catch(e){}}
-function snapSave(){
-  const q=lsg('_snap',{});
-  q[G.c]=JSON.parse(JSON.stringify(Object.assign({},G,{
-    i:0,card:-1
-  })));
-  lss('_snap',q)
+
+/* ═══════════ 13) القوائم والإعدادات ═══════════
+   الشاشة الرئيسية، القائمة، خانات الحفظ، الفصول، معرض النهايات، التصدير والاستيراد */
+
+function home(){
+  const s=ld();
+  ov(`<div class="card"><p>${GAME.homePart}</p><h1>${GAME.homeTitle}</h1><p>اضغط على الحوار للمتابعة.</p><button class="btn" onclick="start(nw())">ابدأ</button>${s?'<button class="btn" onclick="start(ld())">تابع</button>':''}<button class="btn" onclick="imp()">استيراد من الاستوديو</button><button class="btn" onclick="expStory()">نسخ القصة للمحرر</button><button class="btn" onclick="imgUI()">صور حقيقية (شخصيات وخلفيات)</button><button class="btn" onclick="expUI()">تعابير الوجوه</button><button class="btn" onclick="menuUI()">القائمة</button></div>`)
 }
-function endRec(n){const e=lsg('_end',[]);if(!e.includes(n)){e.push(n);lss('_end',e)}}
+
 function menuUI(){
   ov(`<div class='card'><h2>القائمة</h2><button class='btn' onclick='slotUI()'>خانات الحفظ</button><button class='btn' onclick='chUI()'>اختيار الفصل</button><button class='btn' onclick='endsUI()'>معرض النهايات</button><button class='btn' onclick='expSave()'>تصدير الحفظ</button><button class='btn' onclick='impSave()'>استيراد الحفظ</button><button class='btn' onclick='setUI()'>الإعدادات</button><button class='btn' onclick='ov()'>إغلاق</button></div>`)
 }
+
 function slotUI(){
   const sl=lsg('_slots',{});
   ov(`<div class='pz'><h3>خانات الحفظ</h3>${[1,2,3].map(n=>{const x=sl[n];return `<div style='padding:8px 0;border-bottom:1px solid #ffffff14'><b>خانة ${n}</b><br><small>${x?'الفصل '+(x.g.c+1)+' · '+x.t:'فارغة'}</small><div style='display:flex;gap:6px;justify-content:center;margin-top:6px'><button class='btn' data-sv='${n}' ${G?'':'disabled'}>حفظ</button><button class='btn' data-ld='${n}' ${x?'':'disabled'}>تحميل</button></div></div>`}).join('')}<button class='btn' onclick='menuUI()'>رجوع</button></div>`);
@@ -822,11 +1184,13 @@ document.querySelectorAll('#ov [data-ld]').forEach(b=>b.onclick=()=>{
     if(x)start(JSON.parse(JSON.stringify(x.g)))
   })
 }
+
 function chUI(){
   const q=lsg('_snap',{}),ks=Object.keys(q).map(Number).sort((a,b)=>a-b);
   ov(`<div class='pz'><h3>اختيار الفصل</h3><div style='max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:6px'>${ks.length?ks.map(c=>`<button class='btn' data-c='${c}'>${c+1}. ${C[c].t}</button>`).join(''):'<p>لم تفتح فصولا بعد.</p>'}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`);
   document.querySelectorAll('#ov [data-c]').forEach(b=>b.onclick=()=>start(JSON.parse(JSON.stringify(q[b.dataset.c]))))
 }
+
 function endsUI(){
   const got=lsg('_end',[]),sg=G,df={};
   [{
@@ -855,6 +1219,7 @@ function endsUI(){
   G=sg;
   ov(`<div class='pz'><h3>معرض النهايات (${got.length}/5)</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5].map(n=>{const e=df[n];return got.includes(n)&&e?`<div><b>${n}. ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n}. ؟؟؟</b><br><small>نهاية لم تكتشفها بعد.</small></div>`}).join('')}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`)
 }
+
 function setUI(){
   ov(`<div class='pz'><h3>الإعدادات</h3><p>سرعة النص</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${[['بطيئة',45],['عادية',24],['سريعة',10],['فورية',1]].map(([n,v])=>`<button class='btn' data-ts='${v}' style='${TS===v?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><button class='btn' id='vb'>مستوى الصوت</button><button class='btn' onclick='menuUI()'>رجوع</button></div>`);
   document.querySelectorAll('#ov [data-ts]').forEach(b=>b.onclick=()=>{
@@ -866,242 +1231,10 @@ function setUI(){
   });
   $('#vb').onclick=volUI
 }
-// ===== الصوت والأجواء =====
-var AMGN=null,FXGN=null,VOL=(()=>{
-  try{
-    return JSON.parse(localStorage.getItem('vol'))||{
-      a:1,f:.7
-    }
-  }catch(e){
-    return{
-      a:1,f:.7
-    }
-  }
-})();
-function volSave(){try{localStorage.setItem('vol',JSON.stringify(VOL))}catch(e){}}
-function volUI(){
-  ov(`<div class='pz'><h3>مستوى الصوت</h3><p>الأجواء (الخلفية)</p><input type='range' id='va' min='0' max='150' value='${Math.round(VOL.a*100)}' style='width:100%'><p>المؤثرات (الدقّات والنغمات)</p><input type='range' id='vf' min='0' max='150' value='${Math.round(VOL.f*100)}' style='width:100%'><button class='btn' id='vt'>اختبار الصوت</button><button class='btn' onclick='ov()'>إغلاق</button></div>`);
-$('#va').oninput=e=>{VOL.a=e.target.value/100;if(AMGN)AMGN.gain.value=VOL.a;volSave()};
-$('#vf').oninput=e=>{VOL.f=e.target.value/100;if(FXGN)FXGN.gain.value=VOL.f;volSave()};
-$('#vt').onclick=()=>{aud();ambInit();thump(.6);chime(1)}}
-(()=>{
-  const b=$('#bs');
-  if(!b)return;
-  const v=document.createElement('button');
-  v.id='bv';
-  v.setAttribute('aria-label','القائمة');
-  v.textContent='☰';
-  v.className=b.className;
-  b.before(v);
-  v.onclick=menuUI
-})();
 
-var AM=null,AMB_B='roof',AMV=1,AMB_K='',lastSt=0,AMB={
-  roof:[500,.7,.035,55,.02],studio:[260,.5,.02,110,.018],souk:[1100,.5,.018,65,.012],door:[400,.6,.03,70,.02],stairs:[320,.6,.03,62,.02],tunnel:[180,.5,.05,45,.035],lab:[2400,.4,.018,120,.03],hall:[240,.4,.03,52,.03]
-};
-function ambInit(){
-  if(AM||!au)return;
-  const n=au.createBuffer(1,au.sampleRate*2,au.sampleRate),d=n.getChannelData(0);
-  for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
-  const ns=au.createBufferSource();
-  ns.buffer=n;
-  ns.loop=true;
-  const f=au.createBiquadFilter();
-  f.type='bandpass';
-  const ng=au.createGain();
-  ng.gain.value=0;
-  const o=au.createOscillator(),og=au.createGain();
-  og.gain.value=0;
-  const lf=au.createOscillator(),lg=au.createGain();
-  lf.frequency.value=.13;
-  lg.gain.value=0;
-  ns.connect(f);
-  f.connect(ng);
-  ng.connect(AMGN);
-  o.connect(og);
-  og.connect(AMGN);
-  lf.connect(lg);
-  lg.connect(ng.gain);
-  ns.start();
-  o.start();
-  lf.start();
-  AM={
-    f,ng,o,og,lg
-  };
-  AMB_K='';
-  ambSet(AMB_B)
-}
-function ambSet(b){
-  AMB_B=b||AMB_B;
-  if(!AM||!au)return;
-  const k=AMB_B+'|'+AMV+'|'+mute;
-  if(k===AMB_K)return;
-  AMB_K=k;
-  const a=AMB[AMB_B]||AMB.roof,t=au.currentTime,v=mute?0:a[2]*AMV,w=mute?0:a[4]*AMV;
-  AM.f.frequency.setTargetAtTime(a[0],t,1.2);
-  AM.f.Q.setTargetAtTime(a[1],t,1.2);
-  AM.ng.gain.setTargetAtTime(v,t,1.2);
-  AM.lg.gain.setTargetAtTime(v*.5,t,1.2);
-  AM.o.frequency.setTargetAtTime(a[3],t,1.2);
-  AM.og.gain.setTargetAtTime(w,t,1.2)
-}
-function ambMute(){ambSet(AMB_B)}
-function nb(d,fq,g,ty){
-  if(!au||mute)return;
-  const b=au.createBuffer(1,au.sampleRate*d,au.sampleRate),x=b.getChannelData(0);
-  for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1;
-  const n=au.createBufferSource();
-  n.buffer=b;
-  const f=au.createBiquadFilter();
-  f.type=ty||'lowpass';
-  f.frequency.value=fq;
-  const gn=au.createGain();
-  gn.gain.setValueAtTime(g,au.currentTime);
-  gn.gain.exponentialRampToValueAtTime(.001,au.currentTime+d);
-  n.connect(f);
-  f.connect(gn);
-  gn.connect(FXGN);
-  n.start()
-}
-function ps(fr,to,d,g,ty){
-  if(!au||mute)return;
-  const o=au.createOscillator(),gn=au.createGain(),t=au.currentTime;
-  o.type=ty||'sine';
-  o.frequency.setValueAtTime(fr,t);
-  o.frequency.exponentialRampToValueAtTime(to,t+d);
-  gn.gain.setValueAtTime(g,t);
-  gn.gain.exponentialRampToValueAtTime(.001,t+d);
-  o.connect(gn);
-  gn.connect(FXGN);
-  o.start();
-  o.stop(t+d)
-}
-function thump(k){k=k||1;ps(70,28,.6,.35*k);nb(.35,160,.18*k)}
-function boom(){ps(90,22,1.1,.4);nb(.9,300,.2);ps(1400,300,.3,.05,'sawtooth')}
-function steps(){for(let i=0;i<4;i++)setTimeout(()=>{ps(120,60,.12,.08);nb(.06,500,.05)},i*210)}
-function chime(ok){[523,659,784,1047].slice(0,ok?4:2).forEach((f,i)=>setTimeout(()=>ps(f,f,.5,.07),i*110))}
-function glitch(){
-  for(let i=0;i<8;i++)setTimeout(()=>ps(200+Math.random()*1800,100+Math.random()*1500,.08,.05,'square'),i*70)
-}
-function camS(a){if(a==='shake')thump(1);else if(a==='punch')thump(.6);return 0}
-function lightSnd(a){
-  if(a==='off'){
-    nb(1.2,2500,.12);
-    ps(120,40,1.2,.2);
-    AMV=.2
-  }else if(a==='dim')AMV=.6;
-  else{
-    ps(60,120,.4,.08);
-    nb(.2,3000,.06,'highpass');
-    AMV=1
-  }
-  ambSet(AMB_B)
-}
-function sting(e){
-  const n=Date.now();
-  if(n-lastSt<1200)return;
-  lastSt=n;
-  if(e==='fear'){
-    ps(196,185,1.4,.09,'triangle');
-    ps(207,196,1.4,.07,'triangle');
-    nb(1.2,200,.05)
-  }else if(e==='surprise'){
-    ps(880,1320,.18,.07,'square');
-    nb(.12,3000,.05,'highpass')
-  }else if(e==='sad'){
-    ps(262,247,1.6,.06);
-    ps(196,185,1.8,.05)
-  }else if(e==='angry'){
-    nb(.3,900,.12);
-    ps(110,80,.5,.1,'sawtooth')
-  }else if(e==='joy')chime(1);
-  else if(e==='think')ps(330,330,.7,.05)
-}
-function endSnd(n){
-  n===1?chime(1):n===3?ps(65,40,3,.15):n===5?(thump(.8),ps(110,90,2.5,.08,'sawtooth')):n===2?ps(220,330,2,.07):chime(0)
-}
-// ===== التشغيل =====
-scene('roof');
-$('#ct').textContent=GAME.part;
-try{
-  const t=localStorage.getItem(LIBK);
-  if(t)applyLib(t)
-}catch(e){}
-loadImgs().then(()=>setTimeout(loadMore,400));
-home();
-
-
-
-// ===== إضافات: تحميل كسول + ذاكرة الأضواء + سرعة النص + لوحة المفاتيح + تصدير/استيراد الحفظ + شرح النهاية =====
-// تحميل images2.js بعد ظهور الشاشة الأولى ثم تفعيل الصور الجديدة دون إعادة بناء المشهد
-async function loadMore(){if(window.__more)return;window.__more=1;
-await new Promise(r=>{
-    const s=document.createElement('script');
-    s.src='images2.js';
-    s.onload=r;
-    s.onerror=r;
-    document.head.appendChild(s)
-  });
-if(typeof MORE==='undefined')return;Object.assign(DEF,MORE);
-for(const k in MORE){
-    const v=(await dbGet(k))||MORE[k];
-    IMG[k]=v;
-    if(k[0]==='b')LIGHTS[k.slice(2)]=await lightsCached(v)
-  }
-await loadExp();const cb=curBg;if(cb&&MORE['b_'+cb]){curBg=null;scene(cb)}}
-// حساب الأضواء ثقيل: نحفظ نتيجته لكل صورة (المفتاح من طول الصورة وآخرها)
-async function lightsCached(src){
-  const k='lt_'+src.length+'_'+src.slice(-20);
-  try{
-    const c=localStorage.getItem(k);
-    if(c)return JSON.parse(c)
-  }catch(x){}
-  const r=await findLights(src);
-  try{
-    localStorage.setItem(k,JSON.stringify(r))
-  }catch(x){}
-  return r
-}
-// زر سرعة النص (⏩): بطيئة ← عادية ← سريعة ← فورية
-(()=>{
-  const SP=[['بطيئة',45],['عادية',24],['سريعة',10],['فورية',1]];
-  $('#bk').onclick=()=>{
-    const i=SP.findIndex(x=>x[1]===TS),n=SP[(i+1)%SP.length];
-    TS=n[1];
-    try{
-      localStorage.setItem('ts',TS)
-    }catch(x){}
-    toast('سرعة النص: '+n[0]);
-    if(TS===1&&T)$('#dl').click()
-  }
-})();
-// إعادة تركيز تلقائي داخل النوافذ (لقارئات الشاشة ولوحة المفاتيح)
-(()=>{const o=ov;ov=function(h){o(h);if(!h)return;const z=$('#ov .pz');
-if(z&&$('#ps')&&!z.querySelector('.jb')){
-      const b=document.createElement('button');
-      b.className='btn jb';
-      b.textContent=TR('jn.btn');
-      b.onclick=()=>jnl();
-      z.appendChild(b)
-    }
-const f=$('#ov button');if(f)f.focus({preventScroll:true})}})();
-// لوحة المفاتيح: مسافة/Enter = متابعة، 1-9 = اختيار، M = القائمة، Esc = إغلاق نافذة قابلة للإغلاق
-document.addEventListener('keydown',e=>{
-  const t=e.target;
-  if(t.closest&&t.closest('input,textarea'))return;
-  const open=!$('#ov').hidden;
-if(e.key==='Escape'&&$('#jn')){$('#jn').remove();return}
-if(e.key==='Escape'){if(open&&$('#ov').querySelector('[onclick="ov()"]'))ov();return}
-if(open||$('#jn'))return;if(e.key==='m'||e.key==='M'){menuUI();return}
-if(e.key==='j'||e.key==='J'){jnl();return}
-const cb=[...document.querySelectorAll('#cx button')];
-  if(/^[1-9]$/.test(e.key)&&cb[+e.key-1]){
-    cb[+e.key-1].click();
-    return
-  }
-if((e.key===' '||e.key==='Enter')&&t.tagName!=='BUTTON'){e.preventDefault();$('#dl').click()}});
 // تصدير/استيراد الحفظ كملف JSON (كل مفاتيح اللعبة + السرعة والصوت)
 const okKey=k=>k.indexOf(K)===0||k==='ts'||k==='vol';
+
 function expSave(){
   try{
     const d={};
@@ -1125,6 +1258,7 @@ const b=new Blob([JSON.stringify({
     toast('تعذّر التصدير')
   }
 }
+
 function impSave(){
   const f=document.createElement('input');
   f.type='file';
@@ -1142,67 +1276,99 @@ function impSave(){
   };
   f.click()
 }
-// شرح سبب النهاية (يطابق شروط ending() في story.js)
-function why(n){
-  const y=G.y,s=G.s,f=G.f||{},lo=[];
-  if(y<4)lo.push('ياسمين ('+y+'/10)');
-  if(s<4)lo.push('سامي ('+s+'/10)');
-  let m;
-if(n===5)m=TR('why.low').replace('{n}',lo.join(' و '));
-  else if(n===3)m=TR('why.destroy');
-  else if(n===2)m=TR('why.guard');
-  else if(n===1)m=TR('why.release');
-  else m=f.release?TR('why.rel_low'):TR('why.none');
-return `<p class="why"><b>${TR('why.h')}</b><br>${m}<br><small>${TR('why.tip')} (ياسمين ${y}/10 · سامي ${s}/10)</small></p>`
-}
 
-// دفتر الأدلة كطبقة مستقلة: يفتح من ☰ أو من داخل اللغز دون إغلاقه (الأحدث أولا)
-function jnl(){let d=$('#jn');if(d){d.remove();return}
-const a=(G&&G.j)||[];
-  d=document.createElement('div');
-  d.id='jn';
-  d.setAttribute('role','dialog');
-  d.setAttribute('aria-modal','true');
-d.innerHTML=`<div class="pz"><h3>${TR('jn.h')} (${a.length})</h3><ul class="jl">${a.length?a.slice().reverse().map(x=>`<li>${x}</li>`).join(''):`<li>${TR('jn.none')}</li>`}</ul><button class="btn">${TR('jn.close')}</button></div>`;
-d.onclick=x=>{
-    if(x.target===d||x.target.tagName==='BUTTON')d.remove()
-  };
-  document.body.appendChild(d);
-  d.querySelector('button').focus()
-}
-// تلميحات مدرّجة: خطأ أول = رسالة عامة، ثان = راجعوا الدفتر، ثالث فأكثر = التلميح الكامل
-function hint(f,p,base){
-  if(f>=4&&!$('#sk')){
-    const z=$('#ov .pz');
-    if(z){
+/* ═══════════ 14) التشغيل ═══════════
+   كل ما ينفَّذ عند التحميل: ربط الأزرار ولوحة المفاتيح وبدء اللعبة (يأتي آخرا بعد تعريف كل شيء) */
+
+(()=>{
+  const c=document.createElement('div');
+  c.id='cam';
+  const sc=$('#sc');
+  while(sc.firstChild)c.appendChild(sc.firstChild);
+  sc.appendChild(c)
+})();
+
+buildChars();
+
+$('#dl').onclick=e=>{
+  if(e.target.closest('#cx'))return;
+  if(T){
+    clearInterval(T);
+    T=0;
+    $('#ch').classList.remove('tk');
+    $('#tx').textContent=TT;
+    rd=1;
+    $('#dl').classList.add('rd')
+  }else if(rd&&nx){
+    rd=0;
+    $('#dl').classList.remove('rd');
+    const f=nx;
+    nx=0;
+    f()
+  }
+};
+
+$('#bj').onclick=()=>jnl();
+
+$('#bs').onclick=()=>{mute=!mute;if(dr)dr.gain.value=mute?0:.05;ambMute();$('#bs').textContent=mute?'🔇':'🔊'};
+
+$('#br').onclick=()=>ov(`<div class="card"><h2>إعادة من البداية؟</h2><p>سيُحذف التقدّم المحفوظ.</p><button class="btn" onclick="rst()">نعم، من البداية</button><button class="btn" onclick="ov()">إلغاء</button></div>`);
+
+scene('roof');
+
+$('#ct').textContent=GAME.part;
+
+try{
+  const t=localStorage.getItem(LIBK);
+  if(t)applyLib(t)
+}catch(e){}
+
+loadImgs().then(()=>setTimeout(loadMore,400));
+
+home();
+
+// زر سرعة النص (⏩): بطيئة ← عادية ← سريعة ← فورية
+(()=>{
+  const SP=[['بطيئة',45],['عادية',24],['سريعة',10],['فورية',1]];
+  $('#bk').onclick=()=>{
+    const i=SP.findIndex(x=>x[1]===TS),n=SP[(i+1)%SP.length];
+    TS=n[1];
+    try{
+      localStorage.setItem('ts',TS)
+    }catch(x){}
+    toast('سرعة النص: '+n[0]);
+    if(TS===1&&T)$('#dl').click()
+  }
+})();
+
+// إعادة تركيز تلقائي داخل النوافذ (لقارئات الشاشة ولوحة المفاتيح)
+(()=>{const o=ov;ov=function(h){o(h);if(!h)return;const z=$('#ov .pz');
+if(z&&$('#ps')&&!z.querySelector('.jb')){
       const b=document.createElement('button');
-      b.id='sk';
-      b.className='btn';
-      b.textContent=TR('skip.p');
-      b.onclick=()=>win(p,9);
+      b.className='btn jb';
+      b.textContent=TR('jn.btn');
+      b.onclick=()=>jnl();
       z.appendChild(b)
     }
+const f=$('#ov button');if(f)f.focus({preventScroll:true})}})();
+
+// لوحة المفاتيح: مسافة/Enter = متابعة، 1-9 = اختيار، M = القائمة، Esc = إغلاق نافذة قابلة للإغلاق
+document.addEventListener('keydown',e=>{
+  const t=e.target;
+  if(t.closest&&t.closest('input,textarea'))return;
+  const open=!$('#ov').hidden;
+if(e.key==='Escape'&&$('#jn')){$('#jn').remove();return}
+if(e.key==='Escape'){if(open&&$('#ov').querySelector('[onclick="ov()"]'))ov();return}
+if(open||$('#jn'))return;if(e.key==='m'||e.key==='M'){menuUI();return}
+if(e.key==='j'||e.key==='J'){jnl();return}
+const cb=[...document.querySelectorAll('#cx button')];
+  if(/^[1-9]$/.test(e.key)&&cb[+e.key-1]){
+    cb[+e.key-1].click();
+    return
   }
-  return f<2?base:f===2?TR('hint.j'):'تلميح: '+p.h}
+if((e.key===' '||e.key==='Enter')&&t.tagName!=='BUTTON'){e.preventDefault();$('#dl').click()}});
+
 // إشعار تحديث اللعبة من sw.js (فقط إن كانت الخدمة تعمل أصلا، أي ليس في الزيارة الأولى)
 if('serviceWorker' in navigator&&navigator.serviceWorker.controller)navigator.serviceWorker.addEventListener('message',x=>{
   if(x.data==='upd')toast(TR('upd'))
 });
-
-// نبض قلب خفيف يرافق المشهد حين تنزل ثقة أي رفيق تحت ٤ (يتوقف مع الكتم أو عند إخفاء الصفحة)
-function setBeat(on){
-  if(on&&!window.__beat)window.__beat=setInterval(()=>{if(!mute&&au&&!document.hidden)ps(62,38,.2,.1)},1400);
-  else if(!on&&window.__beat){clearInterval(window.__beat);window.__beat=0}}
-// «جرّب قراراً آخر»: العودة لبداية فصل القرار الأخير (أول فصل فيه خيار destroy) من اللقطة المحفوظة
-const decIdx=()=>C.findIndex(c=>JSON.stringify(c.st).includes('"destroy"'));
-function retryBtn(){
-  const q=lsg('_snap',{});
-  return q[decIdx()]?`<button class="btn" onclick="retryEnd()">${TR('retry.b')}</button>`:''
-}
-function retryEnd(){const q=lsg('_snap',{}),s=q[decIdx()];if(s)start(JSON.parse(JSON.stringify(s)))}
-// مشاركة النتيجة: قائمة المشاركة إن وُجدت، وإلا نسخ للحافظة
-function shareEnd(){
-  const e=ending(),t=TR('share.t').replace('{n}',e[3]).replace('{g}',TR('game.homeTitle')).replace('{e}',e[0])+(location.protocol.indexOf('http')===0?' '+location.href.split('#')[0]:'');
-  if(navigator.share)navigator.share({text:t}).catch(()=>{});
-  else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast(TR('copied')),()=>toast(t));
-  else toast(t)}

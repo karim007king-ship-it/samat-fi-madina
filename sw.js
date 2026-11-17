@@ -1,6 +1,6 @@
 // Service Worker — الاستراتيجية: يخدم الملفات من الذاكرة فورا ثم يحدّثها في الخلفية (stale-while-revalidate).
 // عند تغيير أي ملف من اللعبة، غيّر رقم النسخة V ليُنظَّف القديم ويصل إشعار التحديث للاعب.
-const V = 'smm-v4';
+const V = 'smm-v5';
 const FILES = ['./', 'index.html', 'images.js', 'images2.js', 'lang_ar.js', 'story.js', 'engine.js', 'fx.js'];
 
 self.addEventListener('install', e => {
