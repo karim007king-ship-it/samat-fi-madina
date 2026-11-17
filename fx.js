@@ -10,7 +10,7 @@
 (() => {
   const $ = s => document.querySelector(s);
   const wait = (ms, f) => setTimeout(f, ms);
-  const RM = () => matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const RM = () => matchMedia('(prefers-reduced-motion:reduce)').matches || document.documentElement.classList.contains('rm');
 
   /* ───────── أدوات الرسم ───────── */
   const svg = inner => `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet">${inner}</svg>`;
@@ -159,13 +159,22 @@
     return G.c === 0 || p !== GAME.partOf(G.c - 1) ? `<p class="pt">${p}</p>` : '';
   };
 
+  /* ───────── لحظة صمت: يخفت المشهد ثانية قبل المتابعة (بعد المشاهد القوية) ───────── */
+  function hush(ms, done) {
+    const sc = $('#sc');
+    if (!ms || !sc || RM()) { if (done) done(); return; }
+    sc.classList.add('hush');
+    wait(ms, () => { sc.classList.remove('hush'); if (done) done(); });
+  }
+
   /* ───────── التسجيل في المحرك ───────── */
-  Engine.onGate('puzzle:won', (c, go) => cine(AFTER_PUZZLE[c.chapter], go));
+  Engine.onGate('puzzle:won', (c, go) => cine(AFTER_PUZZLE[c.chapter], () => hush(AFTER_PUZZLE[c.chapter] ? 900 : 0, go)));
   Engine.onGate('ending', (c, go) => cine(AFTER_END[c.n], go));
   Engine.on('line', s => Array.isArray(s) && emph(s[3]));
   Engine.on('scene', ambience);
   Engine.on('card:extra', partTag);
   Engine.ops.cine = a => new Promise(r => cine(a, r));
+  Engine.ops.hush = a => new Promise(r => hush(+a || 1000, r));   // {x:'hush 1200'} لحظة صمت من القصة
 
   /* ───────── الأنماط ───────── */
   const css = `
@@ -173,6 +182,7 @@
 #cine::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;box-shadow:inset 0 0 90px #000c}
 #cine svg{position:absolute;inset:0;width:100%;height:100%}
 @keyframes c-in{from{opacity:0}}
+#sc.hush #bgs{filter:brightness(.5)}#sc.hush #ch{filter:brightness(.55)}
 #sc.cin-hide #ch{opacity:0;transition:opacity .3s}
 .cb{position:absolute;left:0;right:0;height:11%;background:#000;z-index:3}.cb.t{top:0;animation:c-bt .5s forwards}.cb.b{bottom:0;animation:c-bb .5s forwards}
 @keyframes c-bt{from{transform:translateY(-100%)}}@keyframes c-bb{from{transform:translateY(100%)}}

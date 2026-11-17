@@ -96,18 +96,37 @@ function toast(t){
 }
 
 // دفتر الأدلة كطبقة مستقلة: يفتح من ☰ أو من داخل اللغز دون إغلاقه (الأحدث أولا)
-function jnl(){let d=$('#jn');if(d){d.remove();return}
-const a=(G&&G.j)||[];
+// سجل الحوار (آخر 40 سطرا في الجلسة): يُملأ من حدث line ويُعرض 15 منها
+const HIST=[];
+Engine.on('line',s=>{
+  if(!Array.isArray(s)||!s[1])return;
+  const e=$('#nm'),L=HIST[HIST.length-1];
+  if(L&&L.t===s[1])return;
+  HIST.push({n:e?e.textContent:'',c:e?e.style.color:'',t:s[1]});
+  if(HIST.length>40)HIST.shift()
+});
+// طبقة قائمة فوق اللعبة دون إغلاق ما تحتها (دفتر الأدلة، سجل الحوار)
+function layer(id,title,rows,empty,bottom){
+  let d=$('#'+id);
+  if(d){d.remove();return}
   d=document.createElement('div');
-  d.id='jn';
+  d.id=id;
   d.setAttribute('role','dialog');
   d.setAttribute('aria-modal','true');
-d.innerHTML=`<div class="pz"><h3>${TR('jn.h')} (${a.length})</h3><ul class="jl">${a.length?a.slice().reverse().map(x=>`<li>${x}</li>`).join(''):`<li>${TR('jn.none')}</li>`}</ul><button class="btn">${TR('jn.close')}</button></div>`;
-d.onclick=x=>{
-    if(x.target===d||x.target.tagName==='BUTTON')d.remove()
-  };
+  d.innerHTML=`<div class="pz"><h3>${title}</h3><ul class="jl">${rows.length?rows.join(''):`<li>${empty}</li>`}</ul><button class="btn">${TR('jn.close')}</button></div>`;
+  d.onclick=x=>{if(x.target===d||x.target.tagName==='BUTTON')d.remove()};
   document.body.appendChild(d);
+  const p=d.querySelector('.pz');
+  if(bottom)p.scrollTop=p.scrollHeight;
   d.querySelector('button').focus()
+}
+// دفتر الأدلة (الأحدث أولا)
+function jnl(){
+  const a=(G&&G.j)||[];
+  layer('jn',`${TR('jn.h')} (${a.length})`,a.slice().reverse().map(x=>`<li>${x}</li>`),TR('jn.none'))
+}
+function hist(){
+  layer('hs',TR('hs.h'),HIST.slice(-15).map(h=>`<li><b style="color:${h.c}">${h.n}</b> ${h.t}</li>`),TR('hs.none'),1)
 }
 
 /* ═══════════ 5) الصوت والأجواء ═══════════
@@ -1160,7 +1179,7 @@ function home(){
 }
 
 function menuUI(){
-  ov(`<div class='card'><h2>القائمة</h2><button class='btn' onclick='slotUI()'>خانات الحفظ</button><button class='btn' onclick='chUI()'>اختيار الفصل</button><button class='btn' onclick='endsUI()'>معرض النهايات</button><button class='btn' onclick='expSave()'>تصدير الحفظ</button><button class='btn' onclick='impSave()'>استيراد الحفظ</button><button class='btn' onclick='setUI()'>الإعدادات</button><button class='btn' onclick='ov()'>إغلاق</button></div>`)
+  ov(`<div class='card'><h2>القائمة</h2><button class='btn' onclick='slotUI()'>خانات الحفظ</button><button class='btn' onclick='chUI()'>اختيار الفصل</button><button class='btn' onclick='hist()'>سجل الحوار</button><button class='btn' onclick='endsUI()'>معرض النهايات</button><button class='btn' onclick='expSave()'>تصدير الحفظ</button><button class='btn' onclick='impSave()'>استيراد الحفظ</button><button class='btn' onclick='setUI()'>الإعدادات</button><button class='btn' onclick='ov()'>إغلاق</button></div>`)
 }
 
 function slotUI(){
@@ -1218,7 +1237,7 @@ function endsUI(){
 }
 
 function setUI(){
-  ov(`<div class='pz'><h3>الإعدادات</h3><p>سرعة النص</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${[['بطيئة',45],['عادية',24],['سريعة',10],['فورية',1]].map(([n,v])=>`<button class='btn' data-ts='${v}' style='${TS===v?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><button class='btn' id='vb'>مستوى الصوت</button><button class='btn' onclick='menuUI()'>رجوع</button></div>`);
+  ov(`<div class='pz'><h3>الإعدادات</h3><p>سرعة النص</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${[['بطيئة',45],['عادية',24],['سريعة',10],['فورية',1]].map(([n,v])=>`<button class='btn' data-ts='${v}' style='${TS===v?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><button class='btn' id='vb'>مستوى الصوت</button><button class='btn' id='rmb'>تقليل الحركة: ${RMon()?'مفعّل':'معطّل'}</button><button class='btn' onclick='menuUI()'>رجوع</button></div>`);
   document.querySelectorAll('#ov [data-ts]').forEach(b=>b.onclick=()=>{
     TS=+b.dataset.ts;
     try{
@@ -1226,11 +1245,12 @@ function setUI(){
     }catch(e){}
     setUI()
   });
-  $('#vb').onclick=volUI
+  $('#vb').onclick=volUI;
+  $('#rmb').onclick=()=>{setRM(!RMon());setUI()}
 }
 
 // تصدير/استيراد الحفظ كملف JSON (كل مفاتيح اللعبة + السرعة والصوت)
-const okKey=k=>k.indexOf(K)===0||k==='ts'||k==='vol';
+const okKey=k=>k.indexOf(K)===0||k==='ts'||k==='vol'||k==='rm';
 
 function expSave(){
   try{
@@ -1326,16 +1346,22 @@ home();
 
 // زر سرعة النص (⏩): بطيئة ← عادية ← سريعة ← فورية
 (()=>{
-  const SP=[['بطيئة',45],['عادية',24],['سريعة',10],['فورية',1]];
-  $('#bk').onclick=()=>{
-    const i=SP.findIndex(x=>x[1]===TS),n=SP[(i+1)%SP.length];
-    TS=n[1];
-    try{
-      localStorage.setItem('ts',TS)
-    }catch(x){}
-    toast('سرعة النص: '+n[0]);
-    if(TS===1&&T)$('#dl').click()
-  }
+  // ⏩ نقرة = تخطّي الجملة (نقرتان سريعتان = أكمل الكتابة وانتقل) | ضغط مطوّل = تبديل سرعة النص
+  const SP=[['بطيئة',45],['عادية',24],['سريعة',10],['فورية',1]],b=$('#bk');
+  let tm=0,long=0;
+  b.oncontextmenu=e=>e.preventDefault();
+  b.onpointerdown=()=>{
+    long=0;
+    tm=setTimeout(()=>{
+      long=1;
+      const i=SP.findIndex(x=>x[1]===TS),n=SP[(i+1)%SP.length];
+      TS=n[1];
+      try{localStorage.setItem('ts',TS)}catch(x){}
+      toast('سرعة النص: '+n[0])
+    },450)
+  };
+  b.onpointerup=b.onpointerleave=b.onpointercancel=()=>clearTimeout(tm);
+  b.onclick=()=>{if(long){long=0;return}$('#dl').click()}
 })();
 
 // إعادة تركيز تلقائي داخل النوافذ (لقارئات الشاشة ولوحة المفاتيح)
@@ -1369,3 +1395,16 @@ if((e.key===' '||e.key==='Enter')&&t.tagName!=='BUTTON'){e.preventDefault();$('#
 if('serviceWorker' in navigator&&navigator.serviceWorker.controller)navigator.serviceWorker.addEventListener('message',x=>{
   if(x.data==='upd')toast(TR('upd'))
 });
+// تقليل الحركة: يُحفظ ويُطبَّق كصنف على الصفحة (يوقف الاهتزاز والضباب والمشاهد الحركية)
+const RMon=()=>{try{return localStorage.getItem('rm')==='1'}catch(x){return 0}};
+function setRM(v){
+  try{localStorage.setItem('rm',v?'1':'0')}catch(x){}
+  document.documentElement.classList.toggle('rm',!!v)
+}
+document.documentElement.classList.toggle('rm',!!RMon());
+// مفاتيح إضافية: H سجل الحوار | Esc يغلق السجل | لا تتقدّم القصة وهو مفتوح
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&$('#hs')){$('#hs').remove();e.stopImmediatePropagation();return}
+  if($('#hs')||$('#jn')){if(e.key===' '||e.key==='Enter')e.stopImmediatePropagation();return}
+  if((e.key==='h'||e.key==='H')&&$('#ov').hidden&&!$('#cine'))hist()
+},true);
