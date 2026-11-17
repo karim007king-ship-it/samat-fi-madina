@@ -132,6 +132,7 @@ const sl=ms=>new Promise(r=>setTimeout(r,ms));
 async function runX(str){nx=0;rd=0;$('#dl').classList.remove('rd');
 for(const c of str.split(';').map(x=>x.trim()).filter(Boolean)){
     const[op,a,b]=c.split(/\s+/),w=$('#w_'+a),v=w&&w.querySelector('svg');
+if(op==='cine'){await new Promise(r=>cine(a,r));continue}
 if(op==='enter'&&v){
       XT.in[a]=1;
       delete XT.out[a];
@@ -293,7 +294,7 @@ if(G.i===0&&G.card!==G.c){
     scene(ch.bg);
     stage(ch);
     hud();
-    ov(`<div class="card"><p>الفصل ${G.c+1}</p><h2>${ch.t}</h2></div>`);
+    ov(`<div class="card">${window.partTag?partTag():''}<p>الفصل ${G.c+1}</p><h2>${ch.t}</h2></div>`);
     XT={
       in:{},out:{}
     };
@@ -362,7 +363,7 @@ function win(p,f){
   for(const k in p.r)trust(k,f>1?0:p.r[k]);
   setTimeout(()=>{
     ov();
-    adv()
+    window.cine?cine(cineFor(G.c+1),adv):adv()
   },900)
 }
 function puz(p){let f=0,busy=1,pos=0,inp='';
@@ -443,7 +444,8 @@ function endScr(){
   endSnd(e[3]);
   endRec(e[3]);
   scene(e[2]);
-  ov(`<div class="card"><p>النهاية ${e[3]} من ٥</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">إعادة من البداية</button><button class="btn" onclick="endsUI()">معرض النهايات</button></div>`)
+  const show=()=>ov(`<div class="card"><p>النهاية ${e[3]} من ٥</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">إعادة من البداية</button><button class="btn" onclick="endsUI()">معرض النهايات</button></div>`)
+  window.cine?cine(cineEnd(e[3]),show):show()
 }
 function start(g){aud();G=g;ov();step()}
 function rst(){try{localStorage.removeItem(K)}catch(e){}start(nw())}
@@ -713,6 +715,7 @@ function headFind(k){
 function exMark(k,e){
   const h=HD[k]||{
     x:30,y:8,h:14
+
 
   },x=h.x,t=h.y,H=h.h,w=H*.8,f=n=>n.toFixed(1),T=(dx,dy,sc)=>`translate(${f(x+dx)} ${f(t+dy)}) scale(${f(sc)})`,st=`<path class='tw' d='M0-1.8L.5-.5 1.8 0 .5 .5 0 1.8-.5 .5-1.8 0-.5-.5Z' fill='#ffe27a'/>`,gl=c=>`<path d='M${f(x-w*.3)} ${f(t+H*.08)}v${f(H*.28)}M${f(x)} ${f(t+H*.04)}v${f(H*.32)}M${f(x+w*.3)} ${f(t+H*.08)}v${f(H*.28)}' stroke='${c}' stroke-width='.45' opacity='.7' fill='none'/>`,ck=`<ellipse cx='${f(x-w*.32)}' cy='${f(t+H*.64)}' rx='${f(H*.15)}' ry='${f(H*.07)}' fill='#ff6b8a' opacity='.5'/><ellipse cx='${f(x+w*.32)}' cy='${f(t+H*.64)}' rx='${f(H*.15)}' ry='${f(H*.07)}' fill='#ff6b8a' opacity='.5'/>`;
 if(e==='joy')return ck+`<g transform='${T(w*.8,H*.05,H/12)}'>${st}</g><g transform='${T(-w*.85,H*.3,H/16)}'>${st}</g>`;
