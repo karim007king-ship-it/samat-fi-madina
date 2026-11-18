@@ -164,7 +164,8 @@
     const sc = $('#sc');
     if (!ms || !sc || RM()) { if (done) done(); return; }
     sc.classList.add('hush');
-    wait(ms, () => { sc.classList.remove('hush'); if (done) done(); });
+    const prev = window.duck ? duck(.15) : 1;   // يخفت الصوت مع المشهد
+    wait(ms, () => { sc.classList.remove('hush'); if (window.duck) duck(prev); if (done) done(); });
   }
 
   /* ───────── التسجيل في المحرك ───────── */
