@@ -649,7 +649,7 @@ LNG.tn={t:{
 "end.secretLabel":"النهاية السرية",
 "end.normalLabel":"النهاية {n} من ٥",
 "ui.restart":"إعادة من البداية",
-"ui.endGallery":"معرض النهايات"
+"ui.endGallery":"معرض النهايات",
 "menu.tapToContinue":"اضغط على الحوار للمتابعة.",
 "menu.title":"القائمة",
 "menu.slots":"خانات الحفظ",
