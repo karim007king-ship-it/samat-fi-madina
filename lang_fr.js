@@ -600,7 +600,7 @@ rx:{
 "lang.ar":"Arabe",
 "lang.fr":"Français",
 "lang.en":"Anglais",
-"lang.select":"Choisir la langue"
+"lang.select":"Choisir la langue",
 "game.browserTitle":"Le silence dans la vieille ville",
 "ui.importStudio":"Importer depuis le studio",
 "ui.copyStory":"Copier l’histoire vers l’éditeur",
