@@ -623,7 +623,6 @@ LNG.en={t:{
 "hud.skipLine":"Skip line",
 "hud.skipLineTitle":"Skip line · Hold to change text speed",
 "hud.clueBook":"Clue notebook",
-"hud.sound":"Audio",
 "hud.chapterProgress":"Chapter progress",
 },
 rx:{
