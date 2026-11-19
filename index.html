@@ -165,7 +165,7 @@ html.rm #amb,html.rm #fxf{display:none!important}
 .pk{display:flex;gap:8px;width:100%}.pk .pl{width:56px;flex:0 0 56px;min-height:46px}.pk .ch{flex:1;width:auto;min-height:46px}
 </style></head><body>
 <div id="app">
-<div id="hud"><span id="ct"></span><span class="tr">ياسمين<u><i id="ty"></i></u></span><span class="tr">سامي<u><i id="ts"></i></u></span><button id="bk" aria-label="تخطي الجملة (اضغط مطولا لتغيير سرعة النص)" title="تخطي الجملة · اضغط مطولا: سرعة النص">⏩</button><button id="bj" aria-label="دفتر الأدلة">📓</button><button id="bs" aria-label="الصوت">🔊</button><button id="br" aria-label="إعادة من البداية">↺</button></div>
+<div id="hud"><span id="ct"></span><span class="tr" id="ny">ياسمين<u><i id="ty"></i></u></span><span class="tr" id="ns">سامي<u><i id="ts"></i></u></span><button id="bk" aria-label="تخطي الجملة" title="تخطي الجملة">⏩</button><button id="bj" aria-label="دفتر الأدلة">📓</button><button id="bs" aria-label="الصوت">🔊</button><button id="br" aria-label="إعادة من البداية">↺</button></div>
 <div id="pg" role="progressbar" aria-label="تقدم الفصل" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div>
 <div id="sr" class="sr" aria-live="polite"></div>
 <div id="sc"><div id="bgs"></div><div id="moon"></div><div id="glow"></div><div id="ch"></div></div>
@@ -174,7 +174,7 @@ html.rm #amb,html.rm #fxf{display:none!important}
 </div>
 <script src="images.js"></script>
 <script src="i18n.js"></script><script>document.title=TR("game.homeTitle").split("<br>").join(" ").split("<br/>").join(" ");</script>
-<script src="story.js"></script>
+<script src="story.js"></script><script>document.querySelector("#ny").firstChild.textContent=TR("name.y");document.querySelector("#ns").firstChild.textContent=TR("name.s");document.querySelector("#bk").setAttribute("aria-label",TR("hud.skipLine"));document.querySelector("#bk").title=TR("hud.skipLineTitle");document.querySelector("#bj").setAttribute("aria-label",TR("hud.clueBook"));document.querySelector("#bs").setAttribute("aria-label",TR("hud.sound"));document.querySelector("#br").setAttribute("aria-label",TR("hud.restart"));document.querySelector("#pg").setAttribute("aria-label",TR("hud.chapterProgress"));</script>
 <script src="audio.js"></script>
 <script src="studio.js"></script>
 <script src="engine.js"></script>
