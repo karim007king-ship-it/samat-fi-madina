@@ -28,10 +28,10 @@ jobs:
           const fs = require('node:fs');
           const s = fs.readFileSync('studio.js', 'utf8');
           const checks = [
-            [/allowed=im\.width>10000\|\|im\.height>10000['image\/png','image\/jpeg','image\/webp','image\/gif'\]/, 'raster MIME allowlist'],
-            [/file\.size>10\*1024\*1024/, '10 MB upload limit'],
-            [/im\.width\*im\.height>40000000/, 'decoded pixel limit'],
-            [/im\.width>12000\|\|im\.height>12000/, 'dimension limit'],
+            [/allowed=\['image\/png','image\/jpeg','image\/webp','image\/gif'\]/, 'raster MIME allowlist'],
+            [/file\.size>8\*1024\*1024/, '8 MB upload limit'],
+            [/im\.width\*im\.height>16000000/, 'decoded pixel limit'],
+            [/im\.width>10000\|\|im\.height>10000/, 'dimension limit'],
             [/URL\.revokeObjectURL\(url\)/, 'object URL cleanup'],
             [/im\.onerror=/, 'image decode error handling'],
             [/f\.accept='image\/png,image\/jpeg,image\/webp,image\/gif'/, 'restricted file picker']
