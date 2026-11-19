@@ -1,32 +1,19 @@
-/* ===== المحرّك — دليل سريع للمتغيرات العامة =====
-G  حالة اللعب المحفوظة {c فصل، i خطوة، y/s ثقة ياسمين/سامي، f أعلام القرارات، j الأدلة}
-au/dr  سياق الصوت وطنين الخلفية | T مؤقّت الكتابة | TT النص الكامل للسطر | rd جاهز للتقدّم | nx دالة الخطوة التالية
-IMG  الصور المفعّلة (الافتراضية أو المرفوعة) | LIGHTS  أضواء كل خلفية | DEF/MORE  الصور المضمّنة (MORE كسولة)
-الخطوات في story.js: ['a'|'y'|'s'|'n', نص, '', تعبير] أو {p:لغز} أو {ch:اختيارات}. أنواع الألغاز: seq، code، ord.
-الأقسام: الحالة والحفظ ← الكاميرا والمشهد ← الكتابة والخطوات ← الألغاز ← الصور ← القوائم ← الصوت ← إضافات (آخر الملف). */
-// ===== محرّك القصص التفاعلية (قابل لإعادة الاستعمال) =====
-// يُحمَّل بعد images.js وlang_ar.js وstory.js. القواعد اللغوية RX تأتي من ملف اللغة، ونصوص القصة من story.js عبر TR().
-// يوفّر: العرض والحوار والكاميرا والألغاز والصوت والأجواء وتعابير الوجوه، ومعالجة الصور (إزالة الخلفية الخضراء)،
-// والحفظ وخانات الحفظ واختيار الفصل ومعرض النهايات والإعدادات.
-// خطوات القصة: ['من','نص','علامة اختيارية','تعبير اختياري'] أو {c:[اختيارات]} أو {p:لغز} أو {j:دليل} أو {x:'أوامر المشهد'}.
+/* ===== engine.js — محرّك القصص التفاعلية (قابل لإعادة الاستعمال) =====
+ترتيب التحميل: images.js ← lang_ar.js ← story.js ← audio.js ← studio.js ← engine.js ← fx.js
+(images2.js يُحمَّل كسولا من المحرك، وsw.js يُسجَّل من index.html).
+يقرأ من story.js: GAME, C, SC2, STG, EN, ALLJ, ending() ومن lang_ar.js: TXT وTR() وRX.
 
-// ===== الإعدادات والثوابت =====
-/* ===== فهرس الأقسام =====
-1) الإعدادات والثوابت — ثوابت عامة ومرجع GAME القادم من story.js
-2) واجهة التوسعة (Engine) — نقاط ربط تسمح بإضافة ميزات من ملفات أخرى دون تعديل المحرك: أحداث، بوابات، ألغاز، أوامر مشهد
-3) الحالة والحفظ — حالة اللعب G، الحفظ التلقائي، الثقة، خانات الحفظ، سجل النهايات
-4) عناصر الواجهة الأساسية — النوافذ المنبثقة، الإشعارات، دفتر الأدلة
-5) الصوت والأجواء — توليد الصوت (Web Audio) والأجواء والمؤثرات والموسيقى التصويرية، بلا أي ملف صوتي
-6) المشهد والكاميرا والشخصيات — توزيع الشخصيات على أرض كل مشهد، انعكاس الأضواء، الكاميرا، المشي
-7) لغة وصف المشهد — خطوة {x:"أمر؛ أمر"}: enter/exit، cam، lights، flash، wait، ويمكن إضافة أوامر عبر Engine.ops
-8) الحوار وتدفق القصة — الكتابة الحرفية، التقدّم، تنفيذ خطوات الفصل
-9) الألغاز — سجل الألغاز Engine.puzzles (seq، ord، code) + الفوز والتلميحات المدرّجة
-10) النهايات — شاشة النهاية، شرح السبب، «جرّب قراراً آخر»، المشاركة، البدء والإعادة
-11) الصور والاستوديو — تحميل الصور (أساسي + كسول)، اكتشاف الأضواء، المعالجة والاستيراد من الاستوديو
-12) تعابير الوجوه — تبديل تعابير الشخصيات حسب مشاعر السطر
-13) القوائم والإعدادات — الشاشة الرئيسية، القائمة، خانات الحفظ، الفصول، معرض النهايات، التصدير والاستيراد
-14) التشغيل — كل ما ينفَّذ عند التحميل: ربط الأزرار ولوحة المفاتيح وبدء اللعبة (يأتي آخرا بعد تعريف كل شيء)
-   قاعدة: ما يجب أن يعمل عند التحميل يوضع في «التشغيل» فقط. الإضافات تستعمل Engine بدل تعديل المحرك. */
+خطوات القصة: ['من','نص','شرط','تعبير'] | {c:[اختيارات]} | {p:لغز} | {j:دليل} | {x:'أمر؛ أمر'}
+  الشرط (العنصر الثالث، أو f: في الخطوات الأخرى): علم | !علم | y<5 | s>=7 (ثقة ياسمين/سامي).
+المتغيرات العامة: G حالة اللعب {c فصل، i خطوة، y/s ثقة، f أعلام، j أدلة، err أخطاء الألغاز}
+  IMG الصور المفعّلة | LIGHTS أضواء الخلفيات | DEF/MORE الصور المضمّنة (MORE كسولة) | HIST سجل الحوار
+  Engine نقاط التوسعة (on/emit/gate/puzzles/ops) — الإضافات مثل fx.js تستعملها بدل تعديل المحرك.
+
+فهرس الأقسام (الصوت في audio.js وأدوات الاستوديو في studio.js):
+ 1 الإعدادات | 2 واجهة التوسعة Engine | 3 الحالة والحفظ | 4 الواجهة الأساسية | 5 الصوت (audio.js)
+ 6 المشهد والكاميرا | 7 لغة وصف المشهد | 8 الحوار والتدفق | 9 الألغاز | 10 النهايات
+ 11 الصور | 12 تعابير الوجوه | 13 القوائم والإعدادات | 14 التشغيل
+قاعدة: ما يجب أن يعمل عند التحميل يوضع في «التشغيل» فقط. */
 
 /* ═══════════ 1) الإعدادات والثوابت ═══════════
    ثوابت عامة ومرجع GAME القادم من story.js */
@@ -65,7 +52,7 @@ const trust=(k,d)=>{
   if(o>=4&&G[k]<4)toast(TR('warn.trust').replace('{n}',k==='y'?'ياسمين':'سامي'))
 };
 
-const nw=()=>({c:0,i:0,y:5,s:5,j:[],f:{},card:-1});
+const nw=()=>({c:0,i:0,y:5,s:5,j:[],f:{},card:-1,err:0});
 
 var TS=(()=>{try{return +localStorage.getItem('ts')||24}catch(e){return 24}})();
 
@@ -82,6 +69,12 @@ function snapSave(){
 }
 
 function endRec(n){const e=lsg('_end',[]);if(!e.includes(n)){e.push(n);lss('_end',e)}}
+// شرط الخطوة: 'علم' | '!علم' | 'y<4' | 's>=7' (ثقة ياسمين/سامي). يُكتب في العنصر الثالث للسطر أو في f: للخطوات الأخرى
+function cond(c){
+  const m=/^(y|s)(<|>=)(\d+)$/.exec(c);
+  if(m){const v=G[m[1]];return m[2]==='<'?v<+m[3]:v>=+m[3]}
+  return c[0]==='!'?!G.f[c.slice(1)]:!!G.f[c]
+}
 
 /* ═══════════ 4) عناصر الواجهة الأساسية ═══════════
    النوافذ المنبثقة، الإشعارات، دفتر الأدلة */
@@ -130,314 +123,7 @@ function hist(){
 }
 
 /* ═══════════ 5) الصوت والأجواء ═══════════
-   توليد الصوت (Web Audio) والأجواء والمؤثرات والموسيقى التصويرية، بلا أي ملف صوتي */
-
-function aud(){
-  if(au)return;
-  try{
-    au=new(window.AudioContext||window.webkitAudioContext)();
-    AMGN=au.createGain();
-    AMGN.gain.value=VOL.a;
-    AMGN.connect(au.destination);
-    FXGN=au.createGain();
-    FXGN.gain.value=VOL.f;
-    FXGN.connect(au.destination);
-    CV=au.createConvolver();
-    CV.buffer=impulse(2.4);
-    REVIN=au.createGain();
-    REVIN.gain.value=3.5;
-    REVIN.connect(CV);
-    CV.connect(FXGN);
-    const o=au.createOscillator(),g=au.createGain(),f=au.createBiquadFilter();
-    o.type='sawtooth';
-    o.frequency.value=48;
-    f.type='lowpass';
-    f.frequency.value=140;
-    g.gain.value=.05;
-    o.connect(f);
-    f.connect(g);
-    g.connect(AMGN);
-    o.start();
-    dr=g;
-    const o2=au.createOscillator(),g2=au.createGain();
-    o2.type='sawtooth';
-    o2.frequency.value=50.6;
-    g2.gain.value=0;
-    o2.connect(g2);
-    g2.connect(f);
-    o2.start();
-    dr2=g2;
-    ambInit()
-  }catch(e){}
-}
-
-function tone(f,d=.35){
-  if(!au||mute)return;
-  const o=au.createOscillator(),g=au.createGain();
-  o.frequency.value=f;
-  g.gain.setValueAtTime(.2,au.currentTime);
-  g.gain.exponentialRampToValueAtTime(.001,au.currentTime+d);
-  o.connect(g);
-  g.connect(FXGN||au.destination);
-  o.start();
-  o.stop(au.currentTime+d)
-}
-
-var AMGN=null,FXGN=null,VOL=(()=>{
-  try{
-    return JSON.parse(localStorage.getItem('vol'))||{
-      a:1,f:.7
-    }
-  }catch(e){
-    return{
-      a:1,f:.7
-    }
-  }
-})();
-
-function volSave(){try{localStorage.setItem('vol',JSON.stringify(VOL))}catch(e){}}
-
-function volUI(){
-  ov(`<div class='pz'><h3>مستوى الصوت</h3><p>الأجواء (الخلفية)</p><input type='range' id='va' min='0' max='150' value='${Math.round(VOL.a*100)}' style='width:100%'><p>المؤثرات (الدقّات والنغمات)</p><input type='range' id='vf' min='0' max='150' value='${Math.round(VOL.f*100)}' style='width:100%'><button class='btn' id='vt'>اختبار الصوت</button><button class='btn' onclick='ov()'>إغلاق</button></div>`);
-$('#va').oninput=e=>{VOL.a=e.target.value/100;if(AMGN)AMGN.gain.value=VOL.a;volSave()};
-$('#vf').oninput=e=>{VOL.f=e.target.value/100;if(FXGN)FXGN.gain.value=VOL.f;volSave()};
-$('#vt').onclick=()=>{aud();ambInit();thump(.6);chime(1)}}
-(()=>{
-  const b=$('#bs');
-  if(!b)return;
-  const v=document.createElement('button');
-  v.id='bv';
-  v.setAttribute('aria-label','القائمة');
-  v.textContent='☰';
-  v.className=b.className;
-  b.before(v);
-  v.onclick=menuUI
-})();
-
-
-var AM=null,AMB_B='roof',AMV=1,AMT=1,AMB_K='',lastSt=0,AMB={
-  roof:[500,.7,.035,55,.02],studio:[260,.5,.02,110,.018],souk:[1100,.5,.018,65,.012],door:[400,.6,.03,70,.02],stairs:[320,.6,.03,62,.02],tunnel:[180,.5,.05,45,.035],lab:[2400,.4,.018,120,.03],hall:[240,.4,.03,52,.03]
-};
-
-function ambInit(){
-  if(AM||!au)return;
-  const n=au.createBuffer(1,au.sampleRate*2,au.sampleRate),d=n.getChannelData(0);
-  for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
-  const ns=au.createBufferSource();
-  ns.buffer=n;
-  ns.loop=true;
-  const f=au.createBiquadFilter();
-  f.type='bandpass';
-  const ng=au.createGain();
-  ng.gain.value=0;
-  const o=au.createOscillator(),og=au.createGain();
-  og.gain.value=0;
-  const lf=au.createOscillator(),lg=au.createGain();
-  lf.frequency.value=.13;
-  lg.gain.value=0;
-  ns.connect(f);
-  f.connect(ng);
-  ng.connect(AMGN);
-  o.connect(og);
-  og.connect(AMGN);
-  lf.connect(lg);
-  lg.connect(ng.gain);
-  ns.start();
-  o.start();
-  lf.start();
-  AM={
-    f,ng,o,og,lg
-  };
-  AMB_K='';
-  ambSet(AMB_B);
-  onesLoop()
-}
-
-function ambSet(b){
-  AMB_B=b||AMB_B;
-  if(!AM||!au)return;
-  const k=AMB_B+'|'+AMV+'|'+AMT+'|'+mute;
-  if(k===AMB_K)return;
-  AMB_K=k;
-  const a=AMB[AMB_B]||AMB.roof,t=au.currentTime,v=mute?0:a[2]*AMV*AMT,w=mute?0:a[4]*AMV*AMT;
-  AM.f.frequency.setTargetAtTime(a[0],t,1.2);
-  AM.f.Q.setTargetAtTime(a[1],t,1.2);
-  AM.ng.gain.setTargetAtTime(v,t,1.2);
-  AM.lg.gain.setTargetAtTime(v*.5,t,1.2);
-  AM.o.frequency.setTargetAtTime(a[3],t,1.2);
-  AM.og.gain.setTargetAtTime(w,t,1.2)
-}
-
-function ambMute(){ambSet(AMB_B)}
-
-function nb(d,fq,g,ty,rev){
-  if(!au||mute)return;
-  const b=au.createBuffer(1,au.sampleRate*d,au.sampleRate),x=b.getChannelData(0);
-  for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1;
-  const n=au.createBufferSource();
-  n.buffer=b;
-  const f=au.createBiquadFilter();
-  f.type=ty||'lowpass';
-  f.frequency.value=fq;
-  const gn=au.createGain();
-  gn.gain.setValueAtTime(g,au.currentTime);
-  gn.gain.exponentialRampToValueAtTime(.001,au.currentTime+d);
-  n.connect(f);
-  f.connect(gn);
-  gn.connect(FXGN);
-  if(rev)send(gn,rev);
-  n.start()
-}
-
-function ps(fr,to,d,g,ty,rev){
-  if(!au||mute)return;
-  const o=au.createOscillator(),gn=au.createGain(),t=au.currentTime;
-  o.type=ty||'sine';
-  o.frequency.setValueAtTime(fr,t);
-  o.frequency.exponentialRampToValueAtTime(to,t+d);
-  gn.gain.setValueAtTime(g,t);
-  gn.gain.exponentialRampToValueAtTime(.001,t+d);
-  o.connect(gn);
-  gn.connect(FXGN);
-  if(rev)send(gn,rev);
-  o.start();
-  o.stop(t+d)
-}
-
-// دقّة تحت الأرض: ضربة منخفضة + جسم أعمق + طقطقة، وكلها تتردد في صدى طويل
-function thump(k){k=k||1;ps(70,28,.6,.35*k,'sine',.5);ps(46,30,1.1,.22*k,'sine',.7);nb(.35,160,.18*k,'lowpass',.5)}
-
-function boom(){ps(90,22,1.1,.4);nb(.9,300,.2);ps(1400,300,.3,.05,'sawtooth')}
-
-function steps(){for(let i=0;i<4;i++)setTimeout(()=>{ps(120,60,.12,.08);nb(.06,500,.05)},i*210)}
-
-function chime(ok){[523,659,784,1047].slice(0,ok?4:2).forEach((f,i)=>setTimeout(()=>ps(f,f,.5,.07),i*110))}
-
-function glitch(){
-  for(let i=0;i<8;i++)setTimeout(()=>ps(200+Math.random()*1800,100+Math.random()*1500,.08,.05,'square'),i*70)
-}
-
-function camS(a){if(a==='shake')thump(1);else if(a==='punch')thump(.6);return 0}
-
-function lightSnd(a){
-  if(a==='off'){
-    nb(1.2,2500,.12);
-    ps(120,40,1.2,.2);
-    AMV=.2
-  }else if(a==='dim')AMV=.6;
-  else{
-    ps(60,120,.4,.08);
-    nb(.2,3000,.06,'highpass');
-    AMV=1
-  }
-  ambSet(AMB_B)
-}
-
-function sting(e){
-  const n=Date.now();
-  if(n-lastSt<1200)return;
-  lastSt=n;
-  if(e==='fear'){
-    ps(196,185,1.4,.09,'triangle');
-    ps(207,196,1.4,.07,'triangle');
-    nb(1.2,200,.05)
-  }else if(e==='surprise'){
-    ps(880,1320,.18,.07,'square');
-    nb(.12,3000,.05,'highpass')
-  }else if(e==='sad'){
-    ps(262,247,1.6,.06);
-    ps(196,185,1.8,.05)
-  }else if(e==='angry'){
-    nb(.3,900,.12);
-    ps(110,80,.5,.1,'sawtooth')
-  }else if(e==='joy')chime(1);
-  else if(e==='think')ps(330,330,.7,.05)
-}
-
-function endSnd(n){
-  n===1?chime(1):n===3?ps(65,40,3,.15):n===5?(thump(.8),ps(110,90,2.5,.08,'sawtooth')):n===2?ps(220,330,2,.07):chime(0)
-}
-// نبض قلب (لَبْ-دَبْ) يرافق المشهد حين تنزل ثقة أي رفيق تحت ٤ (يتوقف مع الكتم أو عند إخفاء الصفحة)
-function setBeat(on){
-  if(on&&!window.__beat)window.__beat=setInterval(()=>{
-    if(mute||!au||document.hidden)return;
-    ps(62,38,.2,.1);
-    setTimeout(()=>ps(56,34,.18,.075),210)
-  },1500);
-  else if(!on&&window.__beat){clearInterval(window.__beat);window.__beat=0}
-}
-
-/* ── أصوات عارضة حسب المكان + صدى + مزاج الثقة (كلها مولّدة بالكود) ── */
-var CV=null,REVIN=null,dr2=null;
-// صدى: send(عقدة, كمية) يمرّر نسخة من الصوت عبر مُرنّن طويل
-function impulse(sec){
-  const n=au.sampleRate*sec|0,b=au.createBuffer(2,n,au.sampleRate);
-  for(let c=0;c<2;c++){const d=b.getChannelData(c);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.6)}
-  return b
-}
-function send(node,a){
-  if(!REVIN)return;
-  const s=au.createGain();
-  s.gain.value=a;
-  node.connect(s);
-  s.connect(REVIN)
-}
-function wind(){ // هبّة ريح
-  if(!au)return;
-  const t=au.currentTime,d=3.5+Math.random()*2,b=au.createBuffer(1,au.sampleRate*d|0,au.sampleRate),x=b.getChannelData(0);
-  for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1;
-  const s=au.createBufferSource(),f=au.createBiquadFilter(),g=au.createGain();
-  s.buffer=b;f.type='bandpass';f.Q.value=.8;
-  f.frequency.setValueAtTime(250,t);f.frequency.linearRampToValueAtTime(900,t+d*.5);f.frequency.linearRampToValueAtTime(300,t+d);
-  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.045,t+d*.4);g.gain.linearRampToValueAtTime(0,t+d);
-  s.connect(f);f.connect(g);g.connect(AMGN);s.start(t)
-}
-function creak(){ // صرير باب/خشب
-  if(!au)return;
-  const t=au.currentTime,d=1.1+Math.random()*.8,o=au.createOscillator(),f=au.createBiquadFilter(),g=au.createGain(),l=au.createOscillator(),lg=au.createGain();
-  o.type='sawtooth';
-  o.frequency.setValueAtTime(150,t);o.frequency.linearRampToValueAtTime(260,t+d*.5);o.frequency.linearRampToValueAtTime(170,t+d);
-  f.type='bandpass';f.frequency.value=720;f.Q.value=7;
-  l.frequency.value=17;lg.gain.value=.012;l.connect(lg);lg.connect(g.gain);
-  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.02,t+.2);g.gain.linearRampToValueAtTime(0,t+d);
-  o.connect(f);f.connect(g);g.connect(AMGN);send(g,.6);
-  o.start(t);l.start(t);o.stop(t+d);l.stop(t+d)
-}
-function drip(){ // قطرة ماء بصدى
-  const f=1100+Math.random()*700;
-  ps(f,f*.4,.1,.045,'sine',1);
-  setTimeout(()=>ps(f*.97,f*.4,.1,.02,'sine',1),260)
-}
-function farHum(){ // حضور بعيد خافت يتموّج ثم يغيب (ليس تقليدا لأي نداء)
-  if(!au)return;
-  const t=au.currentTime,d=7,o=au.createOscillator(),v=au.createOscillator(),vg=au.createGain(),g=au.createGain();
-  o.type='sine';o.frequency.value=196;v.frequency.value=4.5;vg.gain.value=2.5;v.connect(vg);vg.connect(o.frequency);
-  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.022,t+d*.45);g.gain.linearRampToValueAtTime(0,t+d);
-  o.connect(g);g.connect(AMGN);send(g,1);
-  o.start(t);v.start(t);o.stop(t+d);v.stop(t+d)
-}
-function crackle(){for(let i=0,n=5+Math.random()*5|0;i<n;i++)setTimeout(()=>nb(.03,4500,.035,'highpass'),i*(40+Math.random()*90))}
-function relay(){ps(1800,900,.03,.03,'square')}
-function deepPulse(){ps(46,40,2.2,.12,'sine',.5)}
-const ONES={roof:[wind,wind,farHum],door:[creak,wind],stairs:[drip,drip,wind],tunnel:[drip,drip,drip,creak],souk:[wind,creak],lab:[crackle,relay,crackle],studio:[relay,crackle],hall:[deepPulse,crackle]};
-var onesT=0;
-// جدولة عشوائية: تتسارع حين تنخفض الثقة، وتتوقف مع الكتم أو إخفاء الصفحة أو خفوت المشهد
-function onesLoop(){
-  clearTimeout(onesT);
-  onesT=setTimeout(()=>{
-    if(au&&!mute&&!document.hidden&&AMV>.3){const a=ONES[AMB_B]||ONES.roof;a[Math.random()*a.length|0]()}
-    onesLoop()
-  },(2500+Math.random()*5000)*(AMT>1?.6:1))
-}
-// مزاج الثقة: عند نزولها تحت ٤ يعلو الطنين وتظهر نغمة ثانية نشاز
-function trustMood(){
-  const low=!!G&&Math.min(G.y,G.s)<4,k=low?1.5:1;
-  if(dr2&&au)dr2.gain.setTargetAtTime(low&&!mute?1:0,au.currentTime,1.5);
-  if(k!==AMT){AMT=k;ambSet(AMB_B)}
-}
-// خفض الأجواء مؤقتا (لحظات الصمت): يعيد القيمة السابقة
-function duck(v){const p=AMV;AMV=v;ambSet(AMB_B);return p}
-
+   انتقل إلى الملف audio.js (يُحمَّل قبل المحرك). */
 /* ═══════════ 6) المشهد والكاميرا والشخصيات ═══════════
    توزيع الشخصيات على أرض كل مشهد، انعكاس الأضواء، الكاميرا، المشي */
 
@@ -681,8 +367,9 @@ if(G.i===0&&G.card!==G.c){
   }
 const s=ch.st[G.i];if(!s){wide();walk(true,()=>{G.c++;G.i=0;sv();step()});return}
 scene(ch.bg);stage(ch);hud();$('#cx').innerHTML='';
-if(s.x!=null){if(s.f&&!G.f[s.f]){G.i++;return step()}return runX(s.x)}
-if(Array.isArray(s)){if(s[2]&&!G.f[s[2]]){G.i++;return step()}
+if(!Array.isArray(s)&&s.f&&!cond(s.f)){G.i++;return step()}
+if(s.x!=null)return runX(s.x);
+if(Array.isArray(s)){if(s[2]&&!cond(s[2])){G.i++;return step()}
 const [nm,col]=N[s[0]];$('#nm').textContent=nm;$('#nm').style.color=col;
 ['a','y','s'].forEach(k=>{
       const e=$('#c_'+k);
@@ -732,6 +419,7 @@ if(s.j){if(!G.j.includes(s.j)){G.j.push(s.j);toast('📓 دليل جديد في 
    سجل الألغاز Engine.puzzles (seq، ord، code) + الفوز والتلميحات المدرّجة */
 function win(p,f){
   chime(f<2);
+  if(f>0)G.err=(G.err||0)+1;   // أي خطأ أو تخطّي يُسقط النهاية السرية
   const e=$('#ps');
   if(e)e.textContent=f>1?'✔ نجحتم!':'✔ نجحتم! +ثقة';
   for(const k in p.r)trust(k,f>1?0:p.r[k]);
@@ -787,6 +475,21 @@ Engine.puzzles.ord=(p,c)=>{
     }
   })
 };
+// لغز الاختيار بالدليل: كل خيار له زر استماع (نبضات بفاصل x.iv) وزر اختيار؛ الجواب p.a
+Engine.puzzles.pick=(p,c)=>{
+  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div class="ordw">${p.o.map((x,i)=>`<div class="pk"><button class="pad pl" data-i="${i}" aria-label="استمع">🔊</button><button class="pad ch" data-i="${i}">${x.t}</button></div>`).join('')}</div><p id="ps"></p></div>`);
+  document.querySelectorAll('.pl').forEach(b=>b.onclick=()=>{
+    const x=p.o[+b.dataset.i];
+    [0,1,2].forEach(k=>setTimeout(()=>ps(70,40,.3,.22,'sine',.5),k*x.iv*400))
+  });
+  document.querySelectorAll('.ch').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i;
+    if(i===p.a)return win(p,c.f);
+    c.f++;
+    b.disabled=true;
+    say(hint(c.f,p,'ليس هذا الصدى'))
+  })
+};
 // لغز الرمز الرقمي (الافتراضي لأي نوع غير معروف)
 Engine.puzzles.code=(p,c)=>{
   ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div id="dg"></div><div class="kp">${[1,2,3,4,5,6,7,8,9,'⌫',0,'✔'].map(k=>`<button class="pad" data-k="${k}">${k}</button>`).join('')}</div><p id="ps"></p></div>`);
@@ -829,7 +532,7 @@ function endScr(){
   endSnd(e[3]);
   endRec(e[3]);
   scene(e[2]);
-  const show=()=>ov(`<div class="card"><p>النهاية ${e[3]} من ٥</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">إعادة من البداية</button><button class="btn" onclick="endsUI()">معرض النهايات</button></div>`)
+  const show=()=>{ov(`<div class="card"><p>${e[3]===6?'النهاية السرية':'النهاية '+e[3]+' من ٥'}</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">إعادة من البداية</button><button class="btn" onclick="endsUI()">معرض النهايات</button></div>`);Engine.emit('ending:shown',e[3])}
   Engine.emit('ending',e);
   Engine.gate('ending',{n:e[3],e},show)
 }
@@ -847,7 +550,8 @@ function why(n){
 if(n===5)m=TR('why.low').replace('{n}',lo.join(' و '));
   else if(n===3)m=TR('why.destroy');
   else if(n===2)m=TR('why.guard');
-  else if(n===1)m=TR('why.release');
+  else if(n===6)m=TR('why.secret');
+  else if(n===1)m=TR('why.release')+' '+TR('why.secrethint');
   else m=f.release?TR('why.rel_low'):TR('why.none');
 return `<p class="why"><b>${TR('why.h')}</b><br>${m}<br><small>${TR('why.tip')} (ياسمين ${y}/10 · سامي ${s}/10)</small></p>`
 }
@@ -864,13 +568,13 @@ function retryEnd(){const q=lsg('_snap',{}),s=q[decIdx()];if(s)start(JSON.parse(
 
 // مشاركة النتيجة: قائمة المشاركة إن وُجدت، وإلا نسخ للحافظة
 function shareEnd(){
-  const e=ending(),t=TR('share.t').replace('{n}',e[3]).replace('{g}',TR('game.homeTitle')).replace('{e}',e[0])+(location.protocol.indexOf('http')===0?' '+location.href.split('#')[0]:'');
+  const e=ending(),t=(e[3]===6?TR('share.t').replace('النهاية {n} من ٥','النهاية السرية'):TR('share.t').replace('{n}',e[3])).replace('{g}',TR('game.homeTitle')).replace('{e}',e[0])+(location.protocol.indexOf('http')===0?' '+location.href.split('#')[0]:'');
   if(navigator.share)navigator.share({text:t}).catch(()=>{});
   else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast(TR('copied')),()=>toast(t));
   else toast(t)}
 
-/* ═══════════ 11) الصور والاستوديو ═══════════
-   تحميل الصور (أساسي + كسول)، اكتشاف الأضواء، المعالجة والاستيراد من الاستوديو */
+/* ═══════════ 11) الصور ═══════════
+   تحميل الصور (أساسي + كسول) واكتشاف الأضواء. أدوات الاستيراد والمعالجة في studio.js */
 
 const SLAB="<defs><linearGradient id='trg' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#2c3b4b'/><stop offset='1' stop-color='#0d141c'/></linearGradient></defs><path fill='url(#trg)' d='M0 300V236Q200 226 400 236V300Z'/><path d='M0 236Q200 226 400 236' stroke='#5b7186' stroke-width='1.2' fill='none' opacity='.7'/><path stroke='#0a1118' stroke-width='1' opacity='.6' d='M0 262H400M70 236L40 300M170 232L150 300M270 232L290 300M370 236L410 300'/>";
 
@@ -965,43 +669,6 @@ const dbSet=async(k,v)=>{
   }catch(e){}
 };
 
-function cut(x,w,h){
-  const d=x.getImageData(0,0,w,h),a=d.data;
-  if(a[3]<200)return;
-  const r=a[0],g=a[1],b=a[2],seen=new Uint8Array(w*h),st=[];
-const near=i=>Math.abs(a[i*4]-r)+Math.abs(a[i*4+1]-g)+Math.abs(a[i*4+2]-b)<90;
-for(let i=0;i<w;i++)st.push(i,(h-1)*w+i);for(let j=0;j<h;j++)st.push(j*w,j*w+w-1);
-while(st.length){
-    const i=st.pop();
-    if(seen[i]||!near(i))continue;
-    seen[i]=1;
-    a[i*4+3]=0;
-    const cx=i%w;
-    if(cx>0)st.push(i-1);
-    if(cx<w-1)st.push(i+1);
-    if(i>=w)st.push(i-w);
-    if(i<w*h-w)st.push(i+w)
-  }
-x.putImageData(d,0,0)}
-
-function prep(file,isC){
-  return new Promise(ok=>{
-    const im=new Image();
-    im.onload=()=>{
-      const m=isC?[520,760]:[1100,825],s=Math.min(1,m[0]/im.width,m[1]/im.height),c=document.createElement('canvas');
-      c.width=Math.round(im.width*s);
-      c.height=Math.round(im.height*s);
-      const x=c.getContext('2d',{
-        willReadFrequently:true
-      });
-      x.drawImage(im,0,0,c.width,c.height);
-      if(isC)cut(x,c.width,c.height);
-      ok(c.toDataURL('image/webp',.82))
-    };
-    im.src=URL.createObjectURL(file)
-  })
-}
-
 async function loadImgs(){
   for(const [k] of SLOTS){
     const v=(await dbGet(k))||DEF[k];
@@ -1014,32 +681,6 @@ async function loadImgs(){
   buildChars()
 }
 
-function imgUI(){
-  ov(`<div class='pz'><h3>صور حقيقية</h3><p>صورة الشخصية كاملة الجسم، بخلفية شفافة أو لون ثابت (تُزال تلقائيا). صورة الخلفية أفقية. تُحفظ على هذا الجهاز.</p>${SLOTS.map(([k,n])=>`<div style='display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #ffffff14'><span style='flex:1;text-align:right'>${n}</span>${IMG[k]?`<img src='${IMG[k]}' style='height:38px;border-radius:4px'>`:''}<button class='btn' style='min-width:70px;padding:6px' data-k='${k}' data-a='pick'>اختيار</button>${IMG[k]?`<button class='btn' style='min-width:46px;padding:6px' data-k='${k}' data-a='del'>✕</button>`:''}</div>`).join('')}<p id='ps'></p><button class='btn' onclick='home()'>رجوع</button></div>`);
-document.querySelectorAll('#ov [data-a]').forEach(b=>b.onclick=()=>{
-    const k=b.dataset.k;
-    if(b.dataset.a==='del'){
-      dbSet(k,null).then(loadImgs).then(imgUI);
-      return
-    }
-const f=document.createElement('input');
-    f.type='file';
-    f.accept='image/*';
-    f.onchange=async()=>{
-      if(!f.files[0])return;
-      $('#ps').textContent='جارِ المعالجة...';
-      const d=await prep(f.files[0],k[0]==='c');
-      await dbSet(k,d);
-      IMG[k]=d;
-      if(k[0]==='b')LIGHTS[k.slice(2)]=await findLights(d);
-      curBg=null;
-      buildChars();
-      imgUI()
-    };
-    f.click()
-  })
-}
-
 function buildChars(){
   $('#ch').innerHTML=['a','y','s'].map(k=>`<div class='cw' id='w_${k}'>${IMG['c_'+k]?imgChar(k):CHR[k]||fig(k)}</div>`).join('');
   stage(C[G?G.c:0]||C[0]);
@@ -1049,51 +690,6 @@ function buildChars(){
       headFind(k)
     })
   }catch(e){}
-}
-
-function applyLib(t){let j;try{j=JSON.parse(t)}catch(e){return 'نص غير صالح'}if(Array.isArray(j))j={story:j};
-BG0=BG0||{
-    ...BG
-  };
-  Object.assign(BG,BG0);
-  CHR={};
-  OV={};
-  C0=C0||JSON.stringify(C);
-  const ns=Array.isArray(j.story)&&j.story.length;
-  C.length=0;
-  C.push(...(ns?j.story:JSON.parse(C0)));
-  let n=ns?1:0;
-(j.chars||[]).forEach(c=>{
-    const m=MAPC.find(x=>(c.name||'').includes(x[1]));
-    if(m&&c.svg){
-      CHR[m[0]]=c.svg.replace('<svg viewBox="0 0 60 92">',`<svg id="c_${m[0]}" viewBox="0 0 60 92" style="--c:${N[m[0]][1]}">`);
-      n++
-    }
-  });
-(j.bgs||[]).forEach(b=>{
-    const m=MAPB.find(x=>(b.name||'').includes(x[1]));
-    if(m&&b.svg){
-      BG[m[0]]=b.svg;
-      OV[m[0]]=1;
-      n++
-    }
-  });
-let st=$('#imp');
-  if(!st){
-    st=document.createElement('style');
-    st.id='imp';
-    document.head.appendChild(st)
-  }
-  st.textContent=j.css||'';
-curBg=null;buildChars();return 'تم تطبيق '+n+' عنصر'}
-
-function imp(){
-  ov(`<div class="pz"><h3>استيراد من الاستوديو</h3><p>انسخ ملف JSON من تبويب «تصدير» في الاستوديو والصقه هنا. سمِّ الشخصيات: آدم، ياسمين، سامي. وسمِّ الخلفيات: سطح، استوديو، سوق، باب، سلالم، متاهة، مخبر، قاعة.</p><textarea id="jt" style="width:100%;height:110px;box-sizing:border-box;background:#06080f;color:#e9ecf5;border:1px solid #ffffff33;border-radius:8px;padding:8px;direction:ltr;user-select:text;-webkit-user-select:text"></textarea><p id="ps"></p><button class="btn" onclick="const t=$('#jt').value;const r=applyLib(t);if(r[0]==='ت')try{localStorage.setItem(LIBK,t)}catch(e){}$('#ps').textContent=r">تطبيق</button> <button class="btn" onclick="try{localStorage.removeItem(LIBK)}catch(e){}$('#ps').textContent=applyLib('{}')">استعادة الافتراضي</button> <button class="btn" onclick="home()">رجوع</button></div>`)
-}
-
-function expStory(){
-  ov(`<div class="pz"><h3>القصة للمحرر</h3><p>انسخ النص والصقه في تبويب «قصة» داخل الاستوديو.</p><textarea id="jt" readonly style="width:100%;height:110px;box-sizing:border-box;background:#06080f;color:#e9ecf5;border:1px solid #ffffff33;border-radius:8px;padding:8px;direction:ltr;user-select:text;-webkit-user-select:text"></textarea><p id="ps"></p><button class="btn" onclick="const t=$('#jt');t.select();let ok=0;try{ok=document.execCommand('copy')}catch(e){}$('#ps').textContent=ok?'تم النسخ':'حدّد النص وانسخه يدويا'">نسخ</button> <button class="btn" onclick="home()">رجوع</button></div>`);
-  $('#jt').value=JSON.stringify(C)
 }
 
 // تحميل images2.js بعد ظهور الشاشة الأولى ثم تفعيل الصور الجديدة دون إعادة بناء المشهد
@@ -1126,7 +722,6 @@ async function lightsCached(src){
   }catch(x){}
   return r
 }
-
 /* ═══════════ 12) تعابير الوجوه ═══════════
    تبديل تعابير الشخصيات حسب مشاعر السطر */
 
@@ -1300,34 +895,19 @@ function chUI(){
   ov(`<div class='pz'><h3>اختيار الفصل</h3><div style='max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:6px'>${ks.length?ks.map(c=>`<button class='btn' data-c='${c}'>${c+1}. ${C[c].t}</button>`).join(''):'<p>لم تفتح فصولا بعد.</p>'}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`);
   document.querySelectorAll('#ov [data-c]').forEach(b=>b.onclick=()=>start(JSON.parse(JSON.stringify(q[b.dataset.c]))))
 }
-
 function endsUI(){
   const got=lsg('_end',[]),sg=G,df={};
-  [{
-    f:{},y:2,s:2
-  },{
-    f:{
-      destroy:1
-    },y:9,s:9
-  },{
-    f:{
-      guard:1
-    },y:9,s:9
-  },{
-    f:{
-      release:1
-    },y:9,s:9
-  },{
-    f:{},y:9,s:9
-  }].forEach(g=>{
+  const base={f:{},y:9,s:9,j:[],err:1};
+  [{...base,y:2,s:2},{...base,f:{destroy:1}},{...base,f:{guard:1}},{...base,f:{release:1}},{...base},{...base,f:{release:1},j:ALLJ.slice(),err:0}].forEach(g=>{
     G=g;
-    try{
-      const e=ending();
-      df[e[3]]=e
-    }catch(x){}
+    try{const e=ending();df[e[3]]=e}catch(x){}
   });
   G=sg;
-  ov(`<div class='pz'><h3>معرض النهايات (${got.length}/5)</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5].map(n=>{const e=df[n];return got.includes(n)&&e?`<div><b>${n}. ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n}. ؟؟؟</b><br><small>نهاية لم تكتشفها بعد.</small></div>`}).join('')}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`)
+  const row=n=>{
+    const e=df[n];
+    return got.includes(n)&&e?`<div><b>${n===6?'★':n+'.'} ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n===6?'★ نهاية سرية':n+'. ؟؟؟'}</b><br><small>${n===6?'لمن يستحقها فقط.':'نهاية لم تكتشفها بعد.'}</small></div>`
+  };
+  ov(`<div class='pz'><h3>معرض النهايات (${got.length}/6)</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`)
 }
 
 function setUI(){
@@ -1502,11 +1082,16 @@ document.addEventListener('keydown',e=>{
   if($('#hs')||$('#jn')){if(e.key===' '||e.key==='Enter')e.stopImmediatePropagation();return}
   if((e.key==='h'||e.key==='H')&&$('#ov').hidden&&!$('#cine'))hist()
 },true);
-// موثوقية الصوت على أندرويد/iOS: يُنشأ السياق ويُستأنف عند أول لمسة وبعد كل عودة للصفحة
-['pointerdown','touchend','keydown'].forEach(ev=>addEventListener(ev,()=>{
-  aud();
-  if(au&&au.state!=='running')au.resume().catch(()=>{})
-},{passive:true}));
-document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden&&au&&au.state!=='running')au.resume().catch(()=>{})
-});
+
+// زر القائمة ☰ بجانب أزرار الأعلى
+(()=>{
+  const b=$('#bs');
+  if(!b)return;
+  const v=document.createElement('button');
+  v.id='bv';
+  v.setAttribute('aria-label','القائمة');
+  v.textContent='☰';
+  v.className=b.className;
+  b.before(v);
+  v.onclick=menuUI
+})();

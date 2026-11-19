@@ -30,20 +30,28 @@ hall:svgWrap('<ellipse cx="200" cy="270" rx="190" ry="40" fill="#060912"/><circl
 // ===== القصة: ٤٥ فصلا. الخطوة: حوار [من،نص،شرط] أو اختيار {c} أو لغز {p} أو دليل {j} =====
 const C=[
 {t:TR("c01.t"),bg:'roof',st:[
+{x:'title '+TR("part1.t")},
 ['n',TR("c01.s0")],
+['n',TR("c01.s0b")],
 ['a',TR("c01.s1")],
 ['n',TR("c01.s2")],
+{x:'hush 1600'},
 ['a',TR("c01.s3"),'','surprise'],
 ['n',TR("c01.s4"),'','fear'],
+{x:'cine knock; hush 800'},
+
 {j:TR("c01.s5.j")},
-['a',TR("c01.s6"),'','think']]},
+['a',TR("c01.s6"),'','think'],
+['n',TR("c01.s7"),'','fear']]},
 {t:TR("c02.t"),bg:'studio',st:[
 ['n',TR("c02.s0")],
 ['y',TR("c02.s1")],
 ['a',TR("c02.s2")],
+['a',TR("c02.s2b"),'','think'],
 ['y',TR("c02.s3"),'','fear'],
 {j:TR("c02.s4.j")},
 ['y',TR("c02.s5"),'','think'],
+{x:'hush 900'},
 {c:[[TR("c02.s6.o0"),{s:1},'sami'],[TR("c02.s6.o1"),{y:1},'alone']]}]},
 {t:TR("c03.t"),bg:'souk',st:[
 ['n',TR("c03.s0")],
@@ -54,13 +62,15 @@ const C=[
 ['y',TR("c03.s5")],
 {p:{k:'seq',t:TR("c03.s6.pt"),pads:['١','٢','٣','٤'],q:[0,2,1,3],h:TR("c03.s6.ph"),r:{s:1}}},
 ['n',TR("c03.s7"),'','fear'],
+{x:'hush 1200'},
 {j:TR("c03.s8.j")}]},
 {t:TR("c04.t"),bg:'door',st:[
 ['n',TR("c04.s0")],
 ['y',TR("c04.s1"),'','surprise'],
 {j:TR("c04.s2.j")},
 {p:{k:'ord',t:TR("c04.s3.pt"),cl:TR("puz.ord4"),o:[TR("puz.o4a"),TR("puz.o4b"),TR("puz.o4c")],a:[1,2,0],h:TR("c04.s3.ph"),r:{y:1}}},
-['y',TR("c04.s4"),'','joy']]},
+['y',TR("c04.s4"),'','joy'],
+['n',TR("c04.s5"),'','fear']]},
 {t:TR("c05.t"),bg:'stairs',st:[
 ['n',TR("c05.s0")],
 ['a',TR("c05.s1")],
@@ -70,7 +80,9 @@ const C=[
 ['s',TR("c05.s5"),'wait','sad'],
 {j:TR("c05.s6.j")},
 ['y',TR("c05.s7"),'','surprise'],
-['s',TR("c05.s8"),'','sad']]},
+['s',TR("c05.s8"),'','sad'],
+{x:'cine mute'},
+['n',TR("c05.s9"),'','fear']]},
 {t:TR("c06.t"),bg:'tunnel',st:[
 ['n',TR("c06.s0")],
 ['s',TR("c06.s1")],
@@ -78,9 +90,12 @@ const C=[
 ['n',TR("c06.s3")],
 ['y',TR("c06.s4"),'','fear'],
 {j:TR("c06.s5.j")},
+{x:'hush 1200'},
 ['a',TR("c06.s6"),'','fear']]},
 {t:TR("c07.t"),bg:'tunnel',st:[
 ['n',TR("c07.s0")],
+{x:'cine shadow'},
+
 ['y',TR("c07.s1")],
 ['s',TR("c07.s2"),'','surprise'],
 {j:TR("c07.s3.j")},
@@ -99,6 +114,9 @@ const C=[
 ['y',TR("c09.s2"),'','fear'],
 {j:TR("c09.s3.j")},
 ['s',TR("c09.s4"),'','fear'],
+['s',TR("c09.sL"),'s<5','sad'],
+['n',TR("c09.sL2"),'s<5'],
+['s',TR("c09.sH"),'s>=7'],
 ['n',TR("c09.s5")]]},
 {t:TR("c10.t"),bg:'lab',st:[
 ['a',TR("c10.s0")],
@@ -106,6 +124,7 @@ const C=[
 ['s',TR("c10.s2"),'','sad'],
 ['n',TR("c10.s3")],
 {j:TR("c10.s4.j")},
+{x:'hush 900'},
 {c:[[TR("c10.s5.o0"),{s:1},'tape'],[TR("c10.s5.o1"),{y:1},'rush']]}]},
 {t:TR("c11.t"),bg:'lab',st:[
 ['y',TR("c11.s0"),'tape'],
@@ -115,6 +134,7 @@ const C=[
 ['n',TR("c11.s4"),'','fear'],
 ['a',TR("c11.s5"),'','fear']]},
 {t:TR("c12.t"),bg:'lab',st:[
+['s',TR("c12.sL"),'s<5','sad'],
 ['s',TR("c12.s0"),'','sad'],
 ['s',TR("c12.s1"),'','fear'],
 ['y',TR("c12.s2"),'','angry'],
@@ -124,13 +144,18 @@ const C=[
 ['s',TR("c12.s6"),'press']]},
 {t:TR("c13.t"),bg:'hall',st:[
 ['n',TR("c13.s0")],
+['s',TR("c13.sL"),'s<5','fear'],
+['s',TR("c13.sH"),'s>=7'],
 ['y',TR("c13.s1"),'','surprise'],
 ['n',TR("c13.s2")],
 {j:TR("c13.s3.j")},
 ['a',TR("c13.s4"),'','surprise'],
-['n',TR("c13.s5")]]},
+['n',TR("c13.s5")],
+{x:'cine eye; hush 800'}]},
 {t:TR("c14.t"),bg:'hall',st:[
 ['y',TR("c14.s0")],
+['s',TR("c14.sL"),'s<5','sad'],
+['s',TR("c14.sH"),'s>=7'],
 ['s',TR("c14.s1")],
 ['a',TR("c14.s2")],
 {p:{k:'code',t:TR("c14.s3.pt"),cl:'عدد الباحثين × عدد الأبواب',a:'12',h:TR("c14.s3.ph"),r:{s:1}}},
@@ -140,15 +165,22 @@ const C=[
 ['n',TR("c15.s0")],
 ['a',TR("c15.s1"),'','fear'],
 ['y',TR("c15.s2")],
+['s',TR("c15.sL"),'s<5','angry'],
+['s',TR("c15.sH"),'s>=7'],
 ['s',TR("c15.s3"),'','fear'],
 ['n',TR("c15.s4")],
+{x:'cine wave; hush 600'},
 ['n',TR("c15.s5"),'','fear'],
 ['a',TR("c15.s6"),'','surprise'],
-{j:TR("c15.s7.j")}]},
+{j:TR("c15.s7.j")},
+{x:'cine wave; hush 800'},
+['n',TR("c15.s8"),'','fear']]},
 {t:TR("c16.t"),bg:'stairs',st:[
+{x:'title '+TR("part2.t")},
 ['n',TR("c16.s0")],
 ['a',TR("c16.s1"),'','surprise'],
 ['n',TR("c16.s2")],
+{x:'hush 1200'},
 ['y',TR("c16.s3"),'','fear'],
 {c:[[TR("c16.s4.o0"),{y:-1},'answered'],[TR("c16.s4.o1"),{y:1},'silent']]},
 ['n',TR("c16.s5"),'answered','fear'],
@@ -161,6 +193,8 @@ const C=[
 ['s',TR("c17.s2"),'','sad'],
 ['a',TR("c17.s3")],
 {j:TR("c17.s4.j")},
+['s',TR("c17.sH"),'s>=7','sad'],
+['n',TR("c17.sL"),'s<5'],
 ['y',TR("c17.s5"),'','think']]},
 {t:TR("c18.t"),bg:'door',st:[
 ['n',TR("c18.s0")],
@@ -169,6 +203,7 @@ const C=[
 {p:{k:'ord',t:TR("c18.s3.pt"),cl:TR("puz.ord18"),o:[TR("puz.o18a"),TR("puz.o18b"),TR("puz.o18c")],a:[2,0,1],h:TR("c18.s3.ph"),r:{y:1}}},
 ['n',TR("c18.s4")]]},
 {t:TR("c19.t"),bg:'lab',st:[
+{x:'cine scan'},
 ['n',TR("c19.s0")],
 ['a',TR("c19.s1"),'','fear'],
 ['y',TR("c19.s2"),'','fear'],
@@ -178,11 +213,14 @@ const C=[
 {x:'lights dim; flash',f:'cut'},
 ['n',TR("c19.s7"),'keep']]},
 {t:TR("c20.t"),bg:'lab',st:[
+{x:'cine wave; hush 600'},
 ['n',TR("c20.s0")],
 ['s',TR("c20.s1"),'','sad'],
 ['n',TR("c20.s2")],
 {j:TR("c20.s3.j")},
 ['s',TR("c20.s4"),'','sad'],
+['y',TR("c20.yH"),'y>=7'],
+['y',TR("c20.yL"),'y<5','think'],
 ['y',TR("c20.s5"),'','think']]},
 {t:TR("c21.t"),bg:'lab',st:[
 ['a',TR("c21.s0")],
@@ -203,13 +241,18 @@ const C=[
 ['n',TR("c23.s1")],
 ['a',TR("c23.s2"),'','fear'],
 ['n',TR("c23.s3")],
+{x:'hush 1200'},
 {j:TR("c23.s4.j")},
 ['s',TR("c23.s5"),'','sad']]},
 {t:TR("c24.t"),bg:'hall',st:[
 ['n',TR("c24.s0"),'','fear'],
+{x:'cine mute'},
 {x:'cam shake; wait 300'},
 ['y',TR("c24.s2"),'','fear'],
+['n',TR("c24.yH"),'y>=7'],
+['y',TR("c24.yL"),'y<5','angry'],
 ['n',TR("c24.s3"),'','fear'],
+{x:'hush 1000'},
 ['s',TR("c24.s4"),'','fear'],
 ['n',TR("c24.s5")],
 {j:TR("c24.s6.j")}]},
@@ -225,10 +268,15 @@ const C=[
 ['s',TR("c26.s1"),'','sad'],
 {p:{k:'code',t:TR("c26.s2.pt"),cl:TR("puz.cl26"),a:'30',h:TR("c26.s2.ph"),r:{s:1}}},
 ['n',TR("c26.s3")],
-['s',TR("c26.s4"),'','sad']]},
+['s',TR("c26.s4"),'','sad'],
+['s',TR("c26.sH"),'s>=7','sad'],
+['n',TR("c26.sL"),'s<5']]},
 {t:TR("c27.t"),bg:'hall',st:[
 ['n',TR("c27.s0")],
+{x:'cine orb'},
+
 ['y',TR("c27.s1"),'','surprise'],
+{x:'hush 1200'},
 ['n',TR("c27.s2")],
 ['s',TR("c27.s3"),'','sad'],
 ['n',TR("c27.s4"),'','fear'],
@@ -254,13 +302,16 @@ const C=[
 {t:TR("c30.t"),bg:'roof',st:[
 ['n',TR("c30.s0")],
 ['y',TR("c30.s1"),'','sad'],
+{x:'cine wave; hush 800'},
 ['n',TR("c30.s2"),'','fear'],
 ['a',TR("c30.s3"),'','fear'],
 ['s',TR("c30.s4"),'','fear'],
 ['n',TR("c30.s5"),'','fear'],
 {j:TR("c30.s6.j")}]},
 {t:TR("c31.t"),bg:'roof',st:[
+{x:'title '+TR("part3.t")},
 ['n',TR("c31.s0")],
+{x:'hush 1200'},
 ['a',TR("c31.s1"),'','sad'],
 ['y',TR("c31.s2")],
 ['s',TR("c31.s3"),'','fear'],
@@ -268,6 +319,7 @@ const C=[
 {c:[[TR("c31.s5.o0"),{s:1},'rest'],[TR("c31.s5.o1"),{y:1},'go']]}]},
 {t:TR("c32.t"),bg:'souk',st:[
 ['n',TR("c32.s0")],
+{x:'hush 1000'},
 ['y',TR("c32.s1"),'','fear'],
 ['n',TR("c32.s2")],
 {j:TR("c32.s3.j")},
@@ -289,12 +341,15 @@ const C=[
 ['n',TR("c35.s0")],
 ['s',TR("c35.s1"),'','sad'],
 ['a',TR("c35.s2")],
-{p:{k:'seq',t:TR("c35.s3.pt"),pads:['١','٢','٣','٤'],q:[2,0,3,1,2],h:TR("c35.s3.ph"),r:{s:1}}},
+{p:{k:'pick',t:TR("c35.s3.pt"),cl:TR("puz.cl35"),o:[{t:TR("puz.o35a"),iv:5},{t:TR("puz.o35b"),iv:9},{t:TR("puz.o35c"),iv:7}],a:2,h:TR("c35.s3.ph"),r:{s:1}}},
 ['n',TR("c35.s4")],
 {j:TR("c35.s5.j")}]},
 {t:TR("c36.t"),bg:'souk',st:[
 ['n',TR("c36.s0"),'','fear'],
+{x:'cine shadow'},
+
 ['y',TR("c36.s1"),'','fear'],
+{x:'hush 1000'},
 ['n',TR("c36.s2"),'','fear'],
 {c:[[TR("c36.s3.o0"),{s:-1},'run'],[TR("c36.s3.o1"),{s:1,y:1},'face']]},
 ['s',TR("c36.s4"),'run','fear'],
@@ -318,6 +373,9 @@ const C=[
 ['a',TR("c39.s1"),'','fear'],
 ['y',TR("c39.s2"),'','angry'],
 ['a',TR("c39.s2a"),'','calm'],
+['s',TR("c39.sH"),'s>=7'],
+['n',TR("c39.sL"),'s<5'],
+{x:'hush 1000'},
 ['n',TR("c39.s3")]]},
 {t:TR("c40.t"),bg:'tunnel',st:[
 ['n',TR("c40.s0"),'','fear'],
@@ -329,6 +387,8 @@ const C=[
 {t:TR("c41.t"),bg:'lab',st:[
 ['n',TR("c41.s0")],
 ['y',TR("c41.s1"),'','surprise'],
+
+{x:'hush 1000'},
 ['n',TR("c41.s2")],
 ['s',TR("c41.s3"),'','fear'],
 {j:TR("c41.s4.j")}]},
@@ -339,10 +399,18 @@ const C=[
 ['s',TR("c42.s3"),'listen','sad'],
 ['y',TR("c42.s4"),'argue','think'],
 ['n',TR("c42.s5")],
+['y',TR("c42.yH"),'y>=7'],
+['y',TR("c42.yL"),'y<5','angry'],
+{x:'hush 1000'},
 {j:TR("c42.s6.j")}]},
 {t:TR("c43.t"),bg:'hall',st:[
 ['n',TR("c43.s0")],
+{x:'cine orb'},
+
 ['y',TR("c43.s1")],
+['n',TR("c43.sH"),'s>=7'],
+['y',TR("c43.yL"),'y<5','fear'],
+{x:'hush 1200'},
 {c:[[TR("c43.s2.o0"),{},'release'],[TR("c43.s2.o1"),{},'seal'],[TR("c43.s2.o2"),{},'guard'],[TR("c43.s2.o3"),{},'destroy']]},
 ['n',TR("c43.s3"),'','fear']]},
 {t:TR("c44.t"),bg:'hall',st:[
@@ -356,6 +424,7 @@ const C=[
 ['y',TR("c45.s1"),'','sad'],
 ['s',TR("c45.s2"),'','sad'],
 ['a',TR("c45.s3"),'','sad'],
+{x:'hush 2000'},
 ['n',TR("c45.s4")],
 {j:TR("c45.s5.j")}]}
 ];
@@ -363,11 +432,15 @@ const SC2={roof:[.5,.88,.42],studio:[.64,.90,.56],souk:[.5,.90,.44],door:[.5,.90
 // توزيع الشخصيات لكل فصل: رقم التوزيع (0 مجموعة، 1 متبادل، 2 قريب من الشاشة) ثم من يحضر (a آدم، y ياسمين، s سامي)
 const STG=['2a','0ay','0ay','1','0','1','0','2','1','2','0','2','0','1','2','0','1','2','0','2','1','0','1','2','1','2','0','2','2','0','0','1','2','0','1','2','1','2','0','1','2','0','2','1','0'];
 const EN={a:['140px','0px'],y:['0px','60px'],s:['-140px','0px']};
+// كل الأدلة القابلة للجمع دون شروط (تُستعمل للنهاية السرية)
+const ALLJ=[...new Set(C.flatMap(c=>c.st.filter(x=>x.j&&!x.f).map(x=>x.j)))];
 function ending(){const f=G.f;
 if(G.y<4||G.s<4)return[TR("end5.t"),TR("end5.d"),'hall',5];
 if(f.destroy)return[TR("end3.t"),TR("end3.d"),'roof',3];
 if(f.guard)return[TR("end2.t"),TR("end2.d"),'hall',2];
-if(f.release&&G.y>=7&&G.s>=7)return[TR("end1.t"),TR("end1.d"),'roof',1];
+if(f.release&&G.y>=7&&G.s>=7){
+if(!G.err&&ALLJ.every(j=>G.j.includes(j)))return[TR("end6.t"),TR("end6.d"),'roof',6];
+return[TR("end1.t"),TR("end1.d"),'roof',1]}
 return[TR("end4.t"),TR("end4.d"),'roof',4]}
 const MAPB=[['hall',TR("bg.hall")],['lab',TR("bg.lab")],['stairs',TR("bg.stairs")],['tunnel',TR("bg.tunnel")],['souk',TR("bg.souk")],['studio',TR("bg.studio")],['roof',TR("bg.roof")],['door',TR("bg.door")]],MAPC=[['a',TR("name.a")],['y',TR("name.y")],['s',TR("name.s")]];
 const TONE={roof:.85,studio:.95,souk:.85,door:.85,stairs:.8,tunnel:.8,lab:.85,hall:.9};

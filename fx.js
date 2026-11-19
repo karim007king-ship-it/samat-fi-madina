@@ -90,12 +90,60 @@
       html: () => svg(`${dim()}${ring(70, 'c-cn gold', 'pathLength="1"')}${tri([[200, 70], [261, 176], [139, 176]])}${tri([[200, 230], [139, 124], [261, 124]])}`) + flash,
       snd() { ps(80, 60, 1.4, .2); wait(1700, () => chime(1)); }
     },
+    secret: {
+      ms: 3600,
+      html: () => '<div class="c-dw"></div><div class="c-rays2"></div>' + svg(`<path class="c-cn gold" pathLength="1" d="M${STARS.map(p => p.join(' ')).join('L')}"/>${STARS.map((p, i) => `<circle class="c-st" style="animation-delay:${i * 260}ms" cx="${p[0]}" cy="${p[1]}" r="4" fill="#fff"/>`).join('')}`),
+      snd() { [392, 494, 587, 784, 988].forEach((fr, i) => wait(i * 400, () => ps(fr, fr, 1.6, .06))); }
+    },
+    knock: {
+      ms: 1600,
+      html: () => svg(`${dim(.25)}${[0, 260, 520].map(d => `<ellipse class="c-kr" style="animation-delay:${d}ms" cx="200" cy="285" rx="30" ry="9" fill="none" stroke="#35e6ff" stroke-width="3"/>`).join('')}`) + '<div class="c-kv"></div>',
+      start: () => cam(1.06, 0, 0, 'sk'), end: () => wide(),
+      snd() { thump(1); wait(650, () => thump(.8)); }
+    },
+    shadow: {
+      ms: 2400,
+      html: () => svg('<g class="c-s4"><circle cx="42" cy="128" r="15" fill="#02040a"/><path d="M16 150q26-14 52 0l8 100h-68z" fill="#02040a"/></g>') + '<div class="c-flk"></div>',
+      snd() { farHum(); wait(800, () => ps(60, 40, 1.2, .1, 'sine', .6)); }
+    },
+    eye: {
+      ms: 2600, hide: 1,
+      html: () => svg(`${dim(.6)}${ring(86, 'c-r1', 'stroke="#35e6ff" stroke-width="3" stroke-dasharray="40 14"')}${ring(64, 'c-r2', 'stroke="#ffd36a" stroke-width="2" stroke-dasharray="14 10"')}
+        <ellipse class="c-iris" cx="200" cy="150" rx="40" ry="40" fill="#0b2a3a" stroke="#35e6ff" stroke-width="3"/><ellipse class="c-pup" cx="200" cy="150" rx="3" ry="34" fill="#7fe8ff"/>`),
+      snd() { ps(220, 220, 1.8, .05); wait(1200, () => thump(.8)); }
+    },
+    scan: {
+      ms: 2300,
+      html: () => svg('<g fill="none" stroke="#fff" stroke-width="2" opacity=".8"><path d="M30 60V30h30M370 60V30h-30M30 240v30h30M370 240v30h-30"/></g><circle class="c-rec" cx="60" cy="52" r="5" fill="#ff3b3b"/><text x="72" y="57" fill="#fff" font-size="13" font-family="monospace">REC  03:12:47</text>') + '<div class="c-scl"></div>',
+      snd() { [0, 500, 1000].forEach(d => wait(d, relay)); ps(880, 880, .1, .04); }
+    },
+    wave: {
+      ms: 2100,
+      html: () => `<div class="c-wave">${Array.from({ length: 36 }, (_, i) => `<i style="left:${i * 2.7 + 1.5}%;animation-delay:${(i * 47) % 600}ms;height:${20 + (i * 37) % 60}%"></i>`).join('')}</div>`,
+      snd() { ps(320, 520, .9, .05, 'triangle', .6); wait(700, () => ps(260, 420, .9, .05, 'triangle', .6)); }
+    },
+    mute: {   // الصوت يُسحب: المشهد يتحوّل للرمادي والأجواء تصمت تماما
+      ms: 2000, html: () => '<div class="c-mt"></div>',
+      start() { $('#sc').classList.add('c-mute'); window.__mp = window.duck ? duck(0) : 1; },
+      end() { $('#sc').classList.remove('c-mute'); if (window.duck) duck(window.__mp); },
+      snd() { }
+    },
+    orb: {
+      ms: 2800, hide: 1,
+      html: () => `<div class="c-orb"><div class="oc"></div>${[0, 1, 2].map(k => `<div class="or or${k}">${Array.from({ length: 14 }, (_, i) => `<i style="--a:${i * 360 / 14}deg;--r:${70 + k * 38}px"></i>`).join('')}</div>`).join('')}</div>`,
+      snd() { ps(110, 110, 2.6, .08, 'sine', .6); wait(1400, () => chime(1)); }
+    },
+    title: {   // بطاقة عنوان: {x:'title السطر الكبير|السطر الصغير'}
+      ms: 3200,
+      html: () => { const [a, b = ''] = (window.__ttl || '').split('|'); return `<div class="c-tt"><b>${a}</b><small>${b}</small></div>`; },
+      snd() { ps(70, 50, 2.4, .08, 'sine', .7); }
+    },
     fade: { ms: 2000, html: () => '<div class="c-ir"></div>', snd() { ps(110, 45, 1.8, .12); } }
   };
 
   /* ───────── الجدولة: أي مشهد بعد أي لغز/نهاية ───────── */
   const AFTER_PUZZLE = { 3: 'well', 4: 'door', 6: 'speed', 8: 'door', 11: 'pulse', 14: 'lock', 18: 'door', 21: 'pulse', 25: 'speed', 26: 'heart', 29: 'speed', 34: 'lock', 35: 'well', 37: 'stars', 40: 'glitch', 44: 'burst' };
-  const AFTER_END = { 1: 'dawn', 2: 'seal', 3: 'burst', 4: 'fade', 5: 'glitch' };
+  const AFTER_END = { 1: 'dawn', 2: 'seal', 3: 'burst', 4: 'fade', 5: 'glitch', 6: 'secret' };
 
   /* ───────── المشغّل ───────── */
   function cine(kind, done) {
@@ -174,7 +222,15 @@
   Engine.on('line', s => Array.isArray(s) && emph(s[3]));
   Engine.on('scene', ambience);
   Engine.on('card:extra', partTag);
+  /* نبرة كل نهاية: لون المشهد ولون العنوان (1 أمل دافئ، 2 غموض بنفسجي، 3 مأساة رمادية، 4 غموض باهت، 5 رعب أحمر، 6 إشراق) */
+  Engine.on('ending:shown', n => {
+    const sc = $('#sc'), card = $('#ov .card');
+    sc.className = sc.className.replace(/\bend-\d\b/g, '').trim() + ' end-' + n;
+    if (card) card.classList.add('e' + n);
+  });
+  Engine.on('chapter', () => { const sc = $('#sc'); if (sc) sc.className = sc.className.replace(/\bend-\d\b/g, '').trim(); });
   Engine.ops.cine = a => new Promise(r => cine(a, r));
+  Engine.ops.title = (a, b, c) => new Promise(r => { window.__ttl = c.replace(/^title\s+/, ''); cine('title', r); });
   Engine.ops.hush = a => new Promise(r => hush(+a || 1000, r));   // {x:'hush 1200'} لحظة صمت من القصة
 
   /* ───────── الأنماط ───────── */
@@ -227,6 +283,29 @@
 .c-dw{position:absolute;inset:0;mix-blend-mode:screen;background:radial-gradient(circle at 50% 105%,#ffe2a0 0,#ff9a4d88 30%,#ff6a3d22 55%,transparent 75%);opacity:0;transform:translateY(40%);animation:c-up 2.6s ease-out forwards}@keyframes c-up{to{opacity:1;transform:none}}
 .c-rays2{position:absolute;inset:0;mix-blend-mode:screen;background:repeating-conic-gradient(from 0deg at 50% 105%,#ffffff1a 0 3deg,transparent 3deg 12deg);opacity:0;animation:c-ry2 2.6s forwards}@keyframes c-ry2{50%{opacity:1}to{opacity:.4}}
 .c-ir{position:absolute;left:50%;top:50%;width:170%;height:170%;transform:translate(-50%,-50%);border-radius:50%;box-shadow:0 0 0 300vmax #000;animation:c-ir 1.8s ease-in forwards}@keyframes c-ir{to{width:0;height:0}}
+#sc{transition:filter 1.6s}
+#sc.end-1{filter:sepia(.25) saturate(1.2) brightness(1.05)}#sc.end-2{filter:hue-rotate(40deg) saturate(.9) brightness(.9)}
+#sc.end-3{filter:grayscale(.85) brightness(.75) contrast(1.1)}#sc.end-4{filter:saturate(.7) hue-rotate(-15deg) brightness(.85)}
+#sc.end-5{filter:saturate(1.4) hue-rotate(150deg) contrast(1.2) brightness(.8);animation:c-jt .4s steps(2) infinite}@keyframes c-jt{50%{transform:translateX(2px)}}
+#sc.end-6{filter:brightness(1.15) saturate(1.1) contrast(.95)}
+.card.e1 h2{color:#ffd36a}.card.e2 h2{color:#b9a3ff}.card.e3 h2{color:#9aa3b2}.card.e4 h2{color:#7fe8ff}.card.e5 h2{color:#ff4d6d;text-shadow:2px 0 #35e6ff}.card.e6 h2{color:#fff;text-shadow:0 0 14px #fff8}
+.c-kr{transform-box:fill-box;transform-origin:center;opacity:0;animation:c-kr 1.3s ease-out forwards}@keyframes c-kr{from{opacity:.9;transform:scale(.3)}to{opacity:0;transform:scale(9)}}
+.c-kv{position:absolute;inset:0;box-shadow:inset 0 0 120px #000d;animation:c-kv .8s 2}@keyframes c-kv{50%{box-shadow:inset 0 0 190px #000}}
+.k-shadow svg{mix-blend-mode:multiply}.c-s4{opacity:0;animation:c-s4 2.2s forwards}@keyframes c-s4{20%{opacity:.9}70%{opacity:.9}100%{opacity:0}}
+.c-flk{position:absolute;inset:0;background:#000;opacity:0;animation:c-flk .35s steps(2) 4}@keyframes c-flk{0%{opacity:.55}50%{opacity:0}100%{opacity:.4}}
+.k-eye svg{filter:drop-shadow(0 0 8px #35e6ff)}.c-iris{opacity:0;animation:c-ir2 .8s .3s forwards}@keyframes c-ir2{to{opacity:1}}
+.c-pup{transform-box:fill-box;transform-origin:center;animation:c-pup 1.6s .9s forwards}@keyframes c-pup{to{transform:scaleX(9)}}
+.k-scan{background:repeating-linear-gradient(0deg,#00000022 0 2px,transparent 2px 4px)}.c-rec{animation:c-bl .8s steps(2) infinite}@keyframes c-bl{50%{opacity:0}}
+.c-scl{position:absolute;left:0;right:0;height:14%;top:-14%;background:linear-gradient(transparent,#7fe8ff33,transparent);animation:c-sc 2s linear forwards}@keyframes c-sc{to{top:100%}}
+.k-wave{background:#02050a77}.c-wave{position:absolute;inset:0}.c-wave i{position:absolute;top:50%;width:1.6%;background:linear-gradient(#7fe8ff,#fff);border-radius:2px;transform:translateY(-50%) scaleY(.1);opacity:.85;animation:c-wv2 .5s ease-in-out infinite alternate}@keyframes c-wv2{to{transform:translateY(-50%) scaleY(1)}}
+#sc.c-mute{filter:grayscale(1) contrast(1.15) brightness(.8)}.c-mt{position:absolute;inset:0;box-shadow:inset 0 0 140px #000}
+.c-orb{position:absolute;left:50%;top:50%;width:0;height:0}.c-orb .oc{position:absolute;width:120px;height:120px;margin:-60px;border-radius:50%;background:radial-gradient(#fff 0,#7fe8ff 30%,#1a6a9a88 60%,transparent 72%);mix-blend-mode:screen;animation:c-ob 2.8s ease-out forwards}
+@keyframes c-ob{from{transform:scale(.2);opacity:0}30%{opacity:1}to{transform:scale(1.4)}}
+.c-orb .or{position:absolute;animation:c-spn 6s linear infinite}.c-orb .or1{animation-duration:9s;animation-direction:reverse}.c-orb .or2{animation-duration:12s}@keyframes c-spn{to{transform:rotate(360deg)}}
+.c-orb .or i{position:absolute;width:4px;height:4px;margin:-2px;border-radius:50%;background:#bfefff;box-shadow:0 0 6px #7fe8ff;transform:rotate(var(--a)) translateX(var(--r))}
+.k-title{background:#000}.c-tt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:4}
+.c-tt b{font-size:26px;color:#fff;opacity:0;animation:c-ti 2.4s .3s forwards}.c-tt small{color:#35e6ff;margin-top:10px;opacity:0;animation:c-ti 2.2s 1s forwards}
+@keyframes c-ti{0%{opacity:0;filter:blur(8px);transform:scale(1.15)}45%{opacity:1}100%{opacity:1;filter:blur(0);transform:scale(1)}}
 #amb{position:absolute;inset:0;z-index:12;pointer-events:none;overflow:hidden}
 .a-fog i{position:absolute;width:70%;height:45%;border-radius:50%;background:radial-gradient(ellipse,#9fc3d433,transparent 70%);filter:blur(14px);animation:c-fg 22s ease-in-out infinite alternate}
 .a-fog i:nth-child(1){left:-20%;top:45%}.a-fog i:nth-child(2){left:40%;top:55%;animation-duration:30s;animation-delay:-8s}.a-fog i:nth-child(3){left:10%;top:25%;opacity:.6;animation-duration:26s;animation-delay:-14s}
