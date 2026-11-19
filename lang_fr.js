@@ -584,6 +584,12 @@ LNG.fr={t:{
 "menu.save":"Enregistrer",
 "menu.load":"Charger",
 "menu.back":"Retour",
+,
+"menu.history":"Historique du dialogue",
+"menu.endGallery":"Galerie des fins",
+"menu.exportSave":"Exporter la sauvegarde",
+"menu.importSave":"Importer une sauvegarde",
+"menu.close":"Fermer",
 },
 rx:{
   fear:/trembl|noir|obscurité|disparu|disparaît|froid|légende|peur|glac/i,
