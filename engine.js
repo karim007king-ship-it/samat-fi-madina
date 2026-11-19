@@ -970,7 +970,7 @@ function validSaveEntry(k,v){
   if(k===K+'_snap'){
     try{
       const q=JSON.parse(v);
-      return !!q&&typeof q==='object'&&!Array.isArray(q)&&Object.keys(q).length<=C.length&&Object.entries(q).every(([n,g])=>/^(0|[1-9]\\d*)$/.test(n)&&+n<C.length&&validSaveState(g))
+      return !!q&&typeof q==='object'&&!Array.isArray(q)&&Object.keys(q).length<=C.length&&Object.entries(q).every(([n,g])=>/^(0|[1-9]\d*)$/.test(n)&&+n<C.length&&validSaveState(g))
     }catch(e){return false}
   }
   if(k===K+'_slots'){
