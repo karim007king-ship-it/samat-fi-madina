@@ -44,7 +44,7 @@ let G,au,dr,T=0,TT='',rd=0,nx=0,mute=0,CHR={},OV={},BG0=null,curBg=null,C0=null,
 
 const sv=()=>{try{localStorage.setItem(K,JSON.stringify(G))}catch(e){}};
 
-const ld=()=>{try{return JSON.parse(localStorage.getItem(K))}catch(e){return null}};
+const ld=()=>{try{const g=JSON.parse(localStorage.getItem(K));return validSaveState(g)?g:null}catch(e){return null}};
 
 const trust=(k,d)=>{
   const o=G[k];
@@ -57,7 +57,7 @@ const nw=()=>({c:0,i:0,y:5,s:5,j:[],f:{},card:-1,err:0});
 
 var TS=(()=>{try{return +localStorage.getItem('ts')||24}catch(e){return 24}})();
 
-function lsg(k,d){try{return JSON.parse(localStorage.getItem(K+k))||d}catch(e){return d}}
+function lsg(k,d){try{const v=localStorage.getItem(K+k);return v!==null&&validSaveEntry(K+k,v)?JSON.parse(v):d}catch(e){return d}}
 
 function lss(k,v){try{localStorage.setItem(K+k,JSON.stringify(v))}catch(e){}}
 
