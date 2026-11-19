@@ -529,7 +529,7 @@ LNG.en={t:{
 "copied":"Result copied",
 "skip.p":"Skip puzzle",
 "why.secret":"You collected every clue, solved every puzzle without a mistake, and chose to release the voices with trust at 7 or higher. This unlocked the secret ending.",
-"why.secrethint":"They say the Echo has one final message for anyone who finds every clue and never makes a mistake on a lock.",,
+"why.secrethint":"They say the Echo has one final message for anyone who finds every clue and never makes a mistake on a lock.",
 "puz.cl08":"The frequency, then the number of seconds between repetitions",
 "puz.cl14":"Number of researchers × number of doors",
 "puz.cl34":"1, then 4, then ? — three-digit code",
