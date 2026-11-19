@@ -727,7 +727,7 @@ async function lightsCached(src){
    تبديل تعابير الشخصيات حسب مشاعر السطر */
 
 const EXN=['joy','sad','angry','fear','surprise'],EXA={
-  joy:'فرح',sad:'حزن',angry:'غضب',fear:'خوف',surprise:'دهشة'
+  joy:TR('emo.joy'),sad:TR('emo.sad'),angry:TR('emo.angry'),fear:TR('emo.fear'),surprise:TR('emo.surprise')
 },HD={};
 
 const ER=[['fear',RX.fear],['angry',RX.angry],['sad',RX.sad],['joy',RX.joy]];
