@@ -584,6 +584,12 @@ LNG.en={t:{
 "menu.save":"Save",
 "menu.load":"Load",
 "menu.back":"Back",
+,
+"menu.history":"Dialogue history",
+"menu.endGallery":"Endings gallery",
+"menu.exportSave":"Export save",
+"menu.importSave":"Import save",
+"menu.close":"Close",
 },
 rx:{
   fear:/trembl|dark|vanish|disappear|cold|legend|shiver|afraid|fear/i,
