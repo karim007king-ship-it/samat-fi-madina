@@ -878,7 +878,7 @@ function slotUI(){
 document.querySelectorAll('#ov [data-sv]').forEach(b=>b.onclick=()=>{
     const q=lsg('_slots',{}),d=new Date();
     q[b.dataset.sv]={
-      g:JSON.parse(JSON.stringify(G)),t:d.toLocaleDateString('ar')+' '+d.toLocaleTimeString('ar',{
+      g:JSON.parse(JSON.stringify(G)),t:d.toLocaleDateString(LOC)+' '+d.toLocaleTimeString(LOC,{
         hour:'2-digit',minute:'2-digit'
       })
     };
