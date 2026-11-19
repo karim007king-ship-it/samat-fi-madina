@@ -665,6 +665,7 @@ LNG.tn={t:{
 "menu.reduceMotion":"تقليل الحركة",
 "menu.enabled":"مفعّل",
 "menu.disabled":"معطّل",
+"menu.back":"رجوع",
 "save.exported":"تم تصدير الحفظ",
 "save.exportFailed":"تعذّر التصدير",
 "save.imported":"تم الاستيراد، جارِ إعادة التحميل",
