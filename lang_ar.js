@@ -729,7 +729,6 @@ LNG.ar={t:{
 "hud.skipLine":"تخطي السطر",
 "hud.skipLineTitle":"تخطي السطر · اضغط مطولاً لتغيير سرعة النص",
 "hud.clueBook":"دفتر الأدلة",
-"hud.sound":"الصوت",
 "hud.chapterProgress":"التقدم في الفصل",
 },
 rx:{
