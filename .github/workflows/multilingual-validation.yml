@@ -81,11 +81,12 @@ jobs:
           const dictionaries = {};
           for (const lang of languages) {
             const source = fs.readFileSync('lang_' + lang + '.js', 'utf8');
-            const table = source.match(/\\bt:\\s*\\{([\\s\\S]*?)\\n\\},\\s*\\nrx:/);
-            const entries = [...table[1].matchAll(/^\\s*"([^"]+)"\\s*:\\s*"((?:\\\\.|[^"\\\\])*)"\\s*,?\\s*$/gm)];
+            const table = source.match(/\bt:\s*\{([\s\S]*?)\n\},\s*\nrx:/);
+            if (!table) throw new Error('Could not parse content table: ' + lang);
+            const entries = [...table[1].matchAll(/^\s*"([^"]+)"\s*:\s*"((?:\\.|[^"\\])*)"\s*,?\s*$/gm)];
             dictionaries[lang] = new Map(entries.map(m => [m[1], m[2]]));
           }
-          const placeholders = value => [...value.matchAll(/\\{[^{}]+\\}|%[sdif]/g)].map(m => m[0]).sort().join('|');
+          const placeholders = value => [...value.matchAll(/\{[^{}]+\}|%[sdif]/g)].map(m => m[0]).sort().join('|');
           for (const lang of ['ar', 'fr', 'en']) {
             for (const [key, baseValue] of dictionaries.tn) {
               if (placeholders(baseValue) !== placeholders(dictionaries[lang].get(key))) {
@@ -94,7 +95,7 @@ jobs:
             }
           }
           for (const lang of ['fr', 'en']) {
-            const leaks = [...dictionaries[lang]].filter(([key, value]) => /[\\u0600-\\u06FF]/.test(value) && !key.startsWith('name.'));
+            const leaks = [...dictionaries[lang]].filter(([key, value]) => /[\u0600-\u06FF]/.test(value) && !key.startsWith('name.'));
             if (leaks.length) throw new Error(lang + ' contains Arabic-script values: ' + leaks.slice(0, 10).map(x => x[0]).join(', '));
           }
           console.log('Translation content checks passed: placeholders and script consistency');
