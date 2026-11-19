@@ -36,6 +36,20 @@ jobs:
             console.log('Syntax OK:', file);
           }
 
+          // Regression test: untrusted imported slot labels must be rendered as text.
+          const engineSource = fs.readFileSync('engine.js', 'utf8');
+          const helper = engineSource.match(/function htmlText\\(v\\)\\s*\\{[\\s\\S]*?\\n\\}/);
+          if (!helper || !/htmlText\\(x\\.t\\)/.test(engineSource)) {
+            throw new Error('Save-slot HTML escaping is missing');
+          }
+          const htmlText = new Function(helper[0] + '; return htmlText;')();
+          const attack = '<img src=x onerror="alert(1)"> & \' "';
+          const escaped = htmlText(attack);
+          if (escaped.includes('<') || escaped.includes('>') || !escaped.includes('&lt;img')) {
+            throw new Error('Save-slot HTML escaping regression');
+          }
+          console.log('Save-slot HTML injection regression test passed');
+
           const html = fs.readFileSync('index.html', 'utf8');
           for (const [i, match] of [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].entries()) {
             if (match[1].trim()) new Function(match[1]);
