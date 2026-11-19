@@ -599,6 +599,13 @@ LNG.en={t:{
 "ui.successTrust":"✔ Success! + trust",
 "end.secretLabel":"Secret ending",
 "end.normalLabel":"Ending {n} of 5",
+"puz.listenCarefully":"Listen carefully…",
+"puz.yourTurn":"Your turn",
+"puz.wrongListen":"Incorrect. Listen again.",
+"puz.wrongOrder":"That order is incorrect. Try again.",
+"puz.wrongEcho":"That is not the correct echo.",
+"puz.wrongCode":"Incorrect code.",
+"ui.textSpeedChanged":"Text speed: {speed}",
 },
 rx:{
   fear:/trembl|dark|vanish|disappear|cold|legend|shiver|afraid|fear/i,
