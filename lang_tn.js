@@ -726,6 +726,11 @@ LNG.tn={t:{
 "audio.ambience":"الأجواء (الخلفية)",
 "audio.effects":"المؤثرات (الدقّات والنغمات)",
 "audio.test":"اختبار الصوت",
+"hud.skipLine":"تخطي الجملة",
+"hud.skipLineTitle":"تخطي الجملة · اضغط مطولا لتغيير سرعة النص",
+"hud.clueBook":"دفتر الأدلة",
+"hud.sound":"الصوت",
+"hud.chapterProgress":"تقدم الفصل",
 },
 rx:{
  fear:/يرجف|الظلام|اختفى|خرافة|بارد|يختفي/,
