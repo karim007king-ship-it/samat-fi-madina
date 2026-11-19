@@ -1,0 +1,159 @@
+name: Multilingual validation and preview
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [fix/multilingual-main-sync]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-and-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate scripts and translations
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const jsFiles = [
+            'i18n.js', 'lang_tn.js', 'lang_ar.js', 'lang_fr.js', 'lang_en.js',
+            'story.js', 'audio.js', 'studio.js', 'engine.js', 'fx.js', 'sw.js'
+          ];
+
+          for (const file of jsFiles) {
+            new Function(fs.readFileSync(file, 'utf8'));
+            console.log('Syntax OK:', file);
+          }
+
+          // Regression test: untrusted imported slot labels must be rendered as text.
+          const engineSource = fs.readFileSync('engine.js', 'utf8');
+          const helper = engineSource.match(/function htmlText\(v\)\{[^\n]*\}/);
+          if (!helper || !/htmlText\(x\.t\)/.test(engineSource)) {
+            throw new Error('Save-slot HTML escaping is missing');
+          }
+          const htmlText = new Function(helper[0] + '; return htmlText;')();
+          const attack = '<img src=x onerror="alert(1)"> & \' "';
+          const escaped = htmlText(attack);
+          if (escaped.includes('<') || escaped.includes('>') || !escaped.includes('&lt;img')) {
+            throw new Error('Save-slot HTML escaping regression');
+          }
+          console.log('Save-slot HTML injection regression test passed');
+          if (!/validSaveState\(g\)\?g:null/.test(engineSource) ||
+              !/validSaveEntry\(K\+k,v\)/.test(engineSource)) {
+            throw new Error('Local save validation is missing');
+          }
+          console.log('Local save validation regression test passed');
+          const audioSource = fs.readFileSync('audio.js', 'utf8');
+          if (!audioSource.includes('Number.isFinite(v.a)') ||
+              !audioSource.includes('Math.max(0,Math.min(1.5,v.a))') ||
+              !audioSource.includes('Number.isFinite(v.f)') ||
+              !audioSource.includes('Math.max(0,Math.min(1.5,v.f))')) {
+            throw new Error('Stored audio volume is not validated');
+          }
+          console.log('Stored audio volume validation test passed');
+
+          const html = fs.readFileSync('index.html', 'utf8');
+          for (const [i, match] of [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].entries()) {
+            if (match[1].trim()) new Function(match[1]);
+            console.log('Inline script OK:', i + 1);
+          }
+
+          const languages = ['tn', 'ar', 'fr', 'en'];
+          const keySets = {};
+          for (const lang of languages) {
+            const source = fs.readFileSync('lang_' + lang + '.js', 'utf8');
+            const table = source.match(/\bt:\s*\{([\s\S]*?)\n\},\s*\nrx:/);
+            if (!table) throw new Error('Could not parse translation table: ' + lang);
+            const keys = [...table[1].matchAll(/^\s*"([^"]+)"\s*:/gm)].map(m => m[1]);
+            const duplicates = keys.filter((key, i) => keys.indexOf(key) !== i);
+            if (duplicates.length) throw new Error(lang + ' duplicate keys: ' + [...new Set(duplicates)].join(', '));
+            keySets[lang] = new Set(keys);
+            console.log(lang + ':', keys.length, 'unique translation keys');
+          }
+
+          const baseline = [...keySets.tn];
+          for (const lang of languages) {
+            const missing = baseline.filter(key => !keySets[lang].has(key));
+            const extra = [...keySets[lang]].filter(key => !keySets.tn.has(key));
+            if (missing.length || extra.length) {
+              throw new Error(lang + ' translation parity failure; missing=' + missing.join(',') + '; extra=' + extra.join(','));
+            }
+          }
+
+          const sourceFiles = ['index.html', 'engine.js', 'story.js', 'studio.js', 'audio.js'];
+          const used = new Set();
+          for (const file of sourceFiles) {
+            const source = fs.readFileSync(file, 'utf8');
+            for (const match of source.matchAll(/\bTR\(\s*['"]([^'"]+)['"]\s*\)/g)) used.add(match[1]);
+          }
+          for (const lang of languages) {
+            const missing = [...used].filter(key => !keySets[lang].has(key) && key !== 'مفتاح');
+            if (missing.length) throw new Error(lang + ' unresolved TR keys: ' + missing.join(', '));
+          }
+          console.log('Resolved literal TR references:', used.size);
+
+          // Content-level checks: placeholders must survive translation, and
+          // French/English bundles must not accidentally contain Arabic UI/story text.
+          const dictionaries = {};
+          for (const lang of languages) {
+            const source = fs.readFileSync('lang_' + lang + '.js', 'utf8');
+            const table = source.match(/\bt:\s*\{([\s\S]*?)\n\},\s*\nrx:/);
+            if (!table) throw new Error('Could not parse content table: ' + lang);
+            const entries = [...table[1].matchAll(/^\s*"([^"]+)"\s*:\s*"((?:\\.|[^"\\])*)"\s*,?\s*$/gm)];
+            dictionaries[lang] = new Map(entries.map(m => [m[1], m[2]]));
+          }
+          const placeholders = value => [...value.matchAll(/\{[^{}]+\}|%[sdif]/g)].map(m => m[0]).sort().join('|');
+          for (const lang of ['ar', 'fr', 'en']) {
+            for (const [key, baseValue] of dictionaries.tn) {
+              if (placeholders(baseValue) !== placeholders(dictionaries[lang].get(key))) {
+                throw new Error(lang + ' placeholder mismatch: ' + key);
+              }
+            }
+          }
+          for (const lang of ['fr', 'en']) {
+            const leaks = [...dictionaries[lang]].filter(([key, value]) => /[\u0600-\u06FF]/.test(value) && !key.startsWith('name.'));
+            if (leaks.length) throw new Error(lang + ' contains Arabic-script values: ' + leaks.slice(0, 10).map(x => x[0]).join(', '));
+          }
+          console.log('Translation content checks passed: placeholders and script consistency');
+
+          const i18nAt = html.indexOf('<script src="i18n.js"></script>');
+          const storyAt = html.indexOf('<script src="story.js"></script>');
+          const engineAt = html.indexOf('<script src="engine.js"></script>');
+          if (!(i18nAt >= 0 && i18nAt < storyAt && storyAt < engineAt)) {
+            throw new Error('Incorrect script loading order');
+          }
+
+          const sw = fs.readFileSync('sw.js', 'utf8');
+          const version = sw.match(/const V = '([^']+)'/);
+          if (!version) throw new Error('Service worker cache version missing');
+          for (const file of ['i18n.js', 'lang_tn.js', 'lang_ar.js', 'lang_fr.js', 'lang_en.js', 'story.js', 'audio.js', 'studio.js', 'engine.js', 'fx.js']) {
+            if (!sw.includes("'" + file + "'")) throw new Error('Service worker cache missing ' + file);
+          }
+          console.log('Service worker cache version:', version[1]);
+          NODE
+
+      - name: Package browser preview
+        run: |
+          mkdir -p dist/samat-fi-madina
+          cp index.html manifest.json icon-192.png icon-512.png images.js images2.js \
+            i18n.js lang_tn.js lang_ar.js lang_fr.js lang_en.js \
+            story.js audio.js studio.js engine.js fx.js sw.js dist/samat-fi-madina/
+
+      - name: Upload browser preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: samat-fi-madina-browser-preview
+          path: dist/samat-fi-madina/
+          if-no-files-found: error
+          retention-days: 7

@@ -1,7 +1,7 @@
 /* ===== engine.js — محرّك القصص التفاعلية (قابل لإعادة الاستعمال) =====
-ترتيب التحميل: images.js ← lang_ar.js ← story.js ← audio.js ← studio.js ← engine.js ← fx.js
+ترتيب التحميل: images.js ← i18n.js (يحمّل حزمة اللغة المختارة) ← story.js ← audio.js ← studio.js ← engine.js ← fx.js
 (images2.js يُحمَّل كسولا من المحرك، وsw.js يُسجَّل من index.html).
-يقرأ من story.js: GAME, C, SC2, STG, EN, ALLJ, ending() ومن lang_ar.js: TXT وTR() وRX.
+يقرأ من story.js: GAME, C, SC2, STG, EN, ALLJ, ending() ومن i18n.js: TXT وTR() وRX.
 
 خطوات القصة: ['من','نص','شرط','تعبير'] | {c:[اختيارات]} | {p:لغز} | {j:دليل} | {x:'أمر؛ أمر'}
   الشرط (العنصر الثالث، أو f: في الخطوات الأخرى): علم | !علم | y<5 | s>=7 (ثقة ياسمين/سامي).
@@ -19,6 +19,7 @@
    ثوابت عامة ومرجع GAME القادم من story.js */
 
 const $=s=>document.querySelector(s);
+function htmlText(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 var LIBK=GAME.id+'_lib';
 
 /* ═══════════ 2) واجهة التوسعة (Engine) ═══════════
@@ -43,20 +44,20 @@ let G,au,dr,T=0,TT='',rd=0,nx=0,mute=0,CHR={},OV={},BG0=null,curBg=null,C0=null,
 
 const sv=()=>{try{localStorage.setItem(K,JSON.stringify(G))}catch(e){}};
 
-const ld=()=>{try{return JSON.parse(localStorage.getItem(K))}catch(e){return null}};
+const ld=()=>{try{const g=JSON.parse(localStorage.getItem(K));return validSaveState(g)?g:null}catch(e){return null}};
 
 const trust=(k,d)=>{
   const o=G[k];
   G[k]=Math.max(0,Math.min(10,o+d));
   Engine.emit('trust',k,d,G[k]);
-  if(o>=4&&G[k]<4)toast(TR('warn.trust').replace('{n}',k==='y'?'ياسمين':'سامي'))
+  if(o>=4&&G[k]<4)toast(TR('warn.trust').replace('{n}',k==='y'?TR('name.y'):TR('name.s')))
 };
 
 const nw=()=>({c:0,i:0,y:5,s:5,j:[],f:{},card:-1,err:0});
 
 var TS=(()=>{try{return +localStorage.getItem('ts')||24}catch(e){return 24}})();
 
-function lsg(k,d){try{return JSON.parse(localStorage.getItem(K+k))||d}catch(e){return d}}
+function lsg(k,d){try{const v=localStorage.getItem(K+k);return v!==null&&validSaveEntry(K+k,v)?JSON.parse(v):d}catch(e){return d}}
 
 function lss(k,v){try{localStorage.setItem(K+k,JSON.stringify(v))}catch(e){}}
 
@@ -116,7 +117,7 @@ function layer(id,title,rows,empty,bottom){
 // دفتر الأدلة (الأحدث أولا)
 function jnl(){
   const a=(G&&G.j)||[];
-  layer('jn',`${TR('jn.h')} (${a.length})`,a.slice().reverse().map(x=>`<li>${x}</li>`),TR('jn.none'))
+  layer('jn',`${TR('jn.h')} (${D(a.length)})`,a.slice().reverse().map(x=>`<li>${x}</li>`),TR('jn.none'))
 }
 function hist(){
   layer('hs',TR('hs.h'),HIST.slice(-15).map(h=>`<li><b style="color:${h.c}">${h.n}</b> ${h.t}</li>`),TR('hs.none'),1)
@@ -228,8 +229,8 @@ function walk(add,cb){
 
 function direct(s){const t=s[1],w=s[0],e=w!=='n'&&$('#c_'+w);let z=1,x=0,y=0,fx='';
 if(e){x=Math.max(-70,Math.min(70,$('#sc').clientWidth*(.5-LX[w])*.5));z=1.14;y=-6}
-if(/يتفتح|تضوي|يتضي/.test(t)){z=1.28;x*=.4}
-if(/ينزلو|سلالم|الدرج|درج/.test(t)){y=-22;z=1.1}
+if(RX.open.test(t)){z=1.28;x*=.4}
+if(RX.down.test(t)){y=-22;z=1.1}
 if(/!/.test(t))fx='pu';
 if(RX.fear.test(t)){fx='sk';z=Math.max(z,1.2)}
 $('#sc').classList.toggle('lb',w==='n');cam(z,x,y,fx)}
@@ -250,7 +251,7 @@ function scene(b){
 }
 
 function hud(){
-  $('#ct').textContent=`${G.c+1}/${C.length}`;
+  $('#ct').textContent=`${D(G.c+1)}/${D(C.length)}`;
   $('#ct').title=GAME.partOf(G.c);
   $('#ty').style.width=G.y*10+'%';
   $('#ts').style.width=G.s*10+'%';
@@ -351,7 +352,7 @@ if(G.i===0&&G.card!==G.c){
     scene(ch.bg);
     stage(ch);
     hud();
-    ov(`<div class="card">${Engine.fill('card:extra',G.c)}<p>الفصل ${G.c+1}</p><h2>${ch.t}</h2></div>`);
+    ov(`<div class="card">${Engine.fill('card:extra',G.c)}<p>${TR('menu.chapter').replace('{n}',D(G.c+1))}</p><h2>${ch.t}</h2></div>`);
     XT={
       in:{},out:{}
     };
@@ -374,7 +375,7 @@ const [nm,col]=N[s[0]];$('#nm').textContent=nm;$('#nm').style.color=col;
 ['a','y','s'].forEach(k=>{
       const e=$('#c_'+k);
       e.classList.toggle('on',k===s[0]);
-      e.classList.toggle('al',k===s[0]&&/[!؟]/.test(s[1]))
+      e.classList.toggle('al',k===s[0]&&/[!?؟]/.test(s[1]))
     });
 const t=s[1],rx=/!/.test(t)?'jp':/\u061f/.test(t)?'tl':RX.fear.test(t)?'sh':'';
     document.querySelectorAll('#ch svg').forEach(x=>x.classList.remove('jp','tl','sh'));
@@ -388,7 +389,7 @@ const t=s[1],rx=/!/.test(t)?'jp':/\u061f/.test(t)?'tl':RX.fear.test(t)?'sh':'';
       thump()
     }
 $('#tx').style.color=s[0]==='n'?'#b9c0d8':'var(--ink)';direct(s);express(s);Engine.emit('line',s);typ(s[1]);nx=adv;return}
-if(s.c){wide();$('#nm').textContent='';$('#tx').textContent='ماذا تقرّرون؟';nx=0;rd=0;
+if(s.c){wide();$('#nm').textContent='';$('#tx').textContent=TR('ui.decision');nx=0;rd=0;
 s.c.forEach(o=>{
       const b=document.createElement('button');
       b.textContent=o[0];
@@ -413,7 +414,7 @@ s.c.forEach(o=>{
     return
   }
 if(s.p){nx=0;wide();return puz(s.p)}
-if(s.j){if(!G.j.includes(s.j)){G.j.push(s.j);toast('📓 دليل جديد في الدفتر')}G.i++;sv();return step()}}
+if(s.j){if(!G.j.includes(s.j)){G.j.push(s.j);toast(TR('ui.newClue'))}G.i++;sv();return step()}}
 
 /* ═══════════ 9) الألغاز ═══════════
    سجل الألغاز Engine.puzzles (seq، ord، code) + الفوز والتلميحات المدرّجة */
@@ -421,7 +422,7 @@ function win(p,f){
   chime(f<2);
   if(f>0)G.err=(G.err||0)+1;   // أي خطأ أو تخطّي يُسقط النهاية السرية
   const e=$('#ps');
-  if(e)e.textContent=f>1?'✔ نجحتم!':'✔ نجحتم! +ثقة';
+  if(e)e.textContent=f>1?TR('ui.success'):TR('ui.successTrust');
   for(const k in p.r)trust(k,f>1?0:p.r[k]);
   Engine.emit('puzzle:won',p,f);
   setTimeout(()=>{
@@ -437,10 +438,10 @@ Engine.puzzles.seq=(p,c)=>{
   const fl=i=>{if(!B[i])return;B[i].classList.add('lit');tone(F[i]);setTimeout(()=>B[i].classList.remove('lit'),350)};
   const play=()=>{
     c.busy=1;c.pos=0;
-    say('استمع جيدا...');
+    say(TR('puz.listenCarefully'));
     p.q.forEach((q,k)=>setTimeout(()=>{
       fl(q);
-      if(k===p.q.length-1)setTimeout(()=>{c.busy=0;say('دورك')},500)
+      if(k===p.q.length-1)setTimeout(()=>{c.busy=0;say(TR('puz.yourTurn'))},500)
     },700+k*700))
   };
   B.forEach(b=>b.onclick=()=>{
@@ -451,7 +452,7 @@ Engine.puzzles.seq=(p,c)=>{
       if(++c.pos===p.q.length){c.busy=1;win(p,c.f)}
     }else{
       c.f++;c.busy=1;
-      say(hint(c.f,p,'خطأ. أعد الاستماع'));
+      say(hint(c.f,p,TR('puz.wrongListen')));
       setTimeout(play,1600)
     }
   });
@@ -466,18 +467,18 @@ Engine.puzzles.ord=(p,c)=>{
     tone(300,.1);
     if(i===p.a[c.pos]){
       b.disabled=true;b.classList.add('lit');
-      b.textContent=(c.pos+1)+'. '+p.o[i];
+      b.textContent=D(c.pos+1)+'. '+p.o[i];
       if(++c.pos===p.a.length)win(p,c.f)
     }else{
       c.f++;c.pos=0;
       B.forEach((x,k)=>{x.disabled=false;x.classList.remove('lit');x.textContent=p.o[k]});
-      say(hint(c.f,p,'الترتيب غير صحيح، حاولوا من جديد'))
+      say(hint(c.f,p,TR('puz.wrongOrder')))
     }
   })
 };
 // لغز الاختيار بالدليل: كل خيار له زر استماع (نبضات بفاصل x.iv) وزر اختيار؛ الجواب p.a
 Engine.puzzles.pick=(p,c)=>{
-  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div class="ordw">${p.o.map((x,i)=>`<div class="pk"><button class="pad pl" data-i="${i}" aria-label="استمع">🔊</button><button class="pad ch" data-i="${i}">${x.t}</button></div>`).join('')}</div><p id="ps"></p></div>`);
+  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div class="ordw">${p.o.map((x,i)=>`<div class="pk"><button class="pad pl" data-i="${i}" aria-label="${TR('ui.listen')}">🔊</button><button class="pad ch" data-i="${i}">${x.t}</button></div>`).join('')}</div><p id="ps"></p></div>`);
   document.querySelectorAll('.pl').forEach(b=>b.onclick=()=>{
     const x=p.o[+b.dataset.i];
     [0,1,2].forEach(k=>setTimeout(()=>ps(70,40,.3,.22,'sine',.5),k*x.iv*400))
@@ -487,12 +488,12 @@ Engine.puzzles.pick=(p,c)=>{
     if(i===p.a)return win(p,c.f);
     c.f++;
     b.disabled=true;
-    say(hint(c.f,p,'ليس هذا الصدى'))
+    say(hint(c.f,p,TR('puz.wrongEcho')))
   })
 };
 // لغز الرمز الرقمي (الافتراضي لأي نوع غير معروف)
 Engine.puzzles.code=(p,c)=>{
-  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div id="dg"></div><div class="kp">${[1,2,3,4,5,6,7,8,9,'⌫',0,'✔'].map(k=>`<button class="pad" data-k="${k}">${k}</button>`).join('')}</div><p id="ps"></p></div>`);
+  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div id="dg"></div><div class="kp">${[1,2,3,4,5,6,7,8,9,'⌫',0,'✔'].map(k=>`<button class="pad" data-k="${k}">${typeof k==='number'?D(k):k}</button>`).join('')}</div><p id="ps"></p></div>`);
   const sh=()=>{const e=$('#dg');if(e)e.textContent=c.inp.padEnd(p.a.length,'·')};
   sh();
   document.querySelectorAll('.pad').forEach(b=>b.onclick=()=>{
@@ -502,7 +503,7 @@ Engine.puzzles.code=(p,c)=>{
     else if(k==='✔'){
       if(c.inp===p.a)return win(p,c.f);
       c.f++;c.inp='';
-      say(hint(c.f,p,'الرمز غير صحيح'))
+      say(hint(c.f,p,TR('puz.wrongCode')))
     }else if(c.inp.length<p.a.length)c.inp+=k;
     sh()
   })
@@ -522,7 +523,7 @@ function hint(f,p,base){
       z.appendChild(b)
     }
   }
-  return f<2?base:f===2?TR('hint.j'):'تلميح: '+p.h}
+  return f<2?base:f===2?TR('hint.j'):TR('ui.hintPrefix')+p.h}
 
 /* ═══════════ 10) النهايات ═══════════
    شاشة النهاية، شرح السبب، «جرّب قراراً آخر»، المشاركة، البدء والإعادة */
@@ -532,7 +533,7 @@ function endScr(){
   endSnd(e[3]);
   endRec(e[3]);
   scene(e[2]);
-  const show=()=>{ov(`<div class="card"><p>${e[3]===6?'النهاية السرية':'النهاية '+e[3]+' من ٥'}</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">إعادة من البداية</button><button class="btn" onclick="endsUI()">معرض النهايات</button></div>`);Engine.emit('ending:shown',e[3])}
+  const show=()=>{ov(`<div class="card"><p>${e[3]===6?TR('end.secretLabel'):TR('end.normalLabel').replace('{n}',D(e[3]))}</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">${TR('hud.restart')}</button><button class="btn" onclick="endsUI()">${TR('ui.endGallery')}</button></div>`);Engine.emit('ending:shown',e[3])}
   Engine.emit('ending',e);
   Engine.gate('ending',{n:e[3],e},show)
 }
@@ -544,16 +545,16 @@ function rst(){try{localStorage.removeItem(K)}catch(e){}start(nw())}
 // شرح سبب النهاية (يطابق شروط ending() في story.js)
 function why(n){
   const y=G.y,s=G.s,f=G.f||{},lo=[];
-  if(y<4)lo.push('ياسمين ('+y+'/10)');
-  if(s<4)lo.push('سامي ('+s+'/10)');
+  if(y<4)lo.push(TR('name.y')+' ('+y+'/10)');
+  if(s<4)lo.push(TR('name.s')+' ('+s+'/10)');
   let m;
-if(n===5)m=TR('why.low').replace('{n}',lo.join(' و '));
+if(n===5)m=TR('why.low').replace('{n}',lo.join(TR('ui.and')));
   else if(n===3)m=TR('why.destroy');
   else if(n===2)m=TR('why.guard');
   else if(n===6)m=TR('why.secret');
   else if(n===1)m=TR('why.release')+' '+TR('why.secrethint');
   else m=f.release?TR('why.rel_low'):TR('why.none');
-return `<p class="why"><b>${TR('why.h')}</b><br>${m}<br><small>${TR('why.tip')} (ياسمين ${y}/10 · سامي ${s}/10)</small></p>`
+return `<p class="why"><b>${TR('why.h')}</b><br>${m}<br><small>${TR('why.tip')} (${TR('name.y')} ${D(y)}/10 · ${TR('name.s')} ${D(s)}/10)</small></p>`
 }
 
 // «جرّب قراراً آخر»: العودة لبداية فصل القرار الأخير (أول فصل فيه خيار destroy) من اللقطة المحفوظة
@@ -568,7 +569,7 @@ function retryEnd(){const q=lsg('_snap',{}),s=q[decIdx()];if(s)start(JSON.parse(
 
 // مشاركة النتيجة: قائمة المشاركة إن وُجدت، وإلا نسخ للحافظة
 function shareEnd(){
-  const e=ending(),t=(e[3]===6?TR('share.t').replace('النهاية {n} من ٥','النهاية السرية'):TR('share.t').replace('{n}',e[3])).replace('{g}',TR('game.homeTitle')).replace('{e}',e[0])+(location.protocol.indexOf('http')===0?' '+location.href.split('#')[0]:'');
+  const e=ending(),t=(e[3]===6?TR('share.secret'):TR('share.t').replace('{n}',e[3])).replace('{g}',TR('game.homeTitle')).replace('{e}',e[0])+(location.protocol.indexOf('http')===0?' '+location.href.split('#')[0]:'');
   if(navigator.share)navigator.share({text:t}).catch(()=>{});
   else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast(TR('copied')),()=>toast(t));
   else toast(t)}
@@ -578,7 +579,7 @@ function shareEnd(){
 
 const SLAB="<defs><linearGradient id='trg' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#2c3b4b'/><stop offset='1' stop-color='#0d141c'/></linearGradient></defs><path fill='url(#trg)' d='M0 300V236Q200 226 400 236V300Z'/><path d='M0 236Q200 226 400 236' stroke='#5b7186' stroke-width='1.2' fill='none' opacity='.7'/><path stroke='#0a1118' stroke-width='1' opacity='.6' d='M0 262H400M70 236L40 300M170 232L150 300M270 232L290 300M370 236L410 300'/>";
 
-const SLOTS=[...Object.keys(N).map(k=>['c_'+k,N[k][0]]),...MAPB.map(([k,n])=>['b_'+k,'خلفية: '+n])];
+const SLOTS=[...Object.keys(N).map(k=>['c_'+k,N[k][0]]),...MAPB.map(([k,n])=>['b_'+k,TR('studio.background')+': '+n])];
 
 const DUSTG='<g fill=\'#cfe9ff\'>'+[[60,270,0],[130,250,2],[200,280,4],[270,240,1],[330,265,3],[370,230,5]].map(d=>`<circle class='du' cx='${d[0]}' cy='${d[1]}' r='1.6' style='animation-delay:-${d[2]}s'/>`).join('')+'</g>';
 
@@ -726,7 +727,7 @@ async function lightsCached(src){
    تبديل تعابير الشخصيات حسب مشاعر السطر */
 
 const EXN=['joy','sad','angry','fear','surprise'],EXA={
-  joy:'فرح',sad:'حزن',angry:'غضب',fear:'خوف',surprise:'دهشة'
+  joy:TR('emo.joy'),sad:TR('emo.sad'),angry:TR('emo.angry'),fear:TR('emo.fear'),surprise:TR('emo.surprise')
 },HD={};
 
 const ER=[['fear',RX.fear],['angry',RX.angry],['sad',RX.sad],['joy',RX.joy]];
@@ -834,7 +835,7 @@ async function loadExp(){
 }
 
 function expUI(){
-  ov(`<div class='pz'><h3>تعابير الوجوه</h3><p>اختياري: لكل شخصية صورة كاملة الجسم بنفس الوضعية والإطار وبتعبير مختلف، وتظهر عند ذلك الشعور. بدونها تعمل التعابير تلقائيا بالرموز والحركة.</p>${Object.keys(N).map(c=>[c,N[c][0]]).map(([c,n])=>`<div style='padding:6px 0;border-bottom:1px solid #ffffff14'><b>${n}</b><div style='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px'>${EXN.map(e=>{const k='x_'+c+'_'+e;return `<button class='btn' data-x='${k}' style='padding:6px 10px;font-size:13px'>${EXA[e]}${IMG[k]?' ✓':''}</button>`}).join('')}</div></div>`).join('')}<p id='ps'></p><button class='btn' id='xc'>مسح كل التعابير</button><button class='btn' onclick='ov()'>إغلاق</button></div>`);
+  ov(`<div class='pz'><h3>${TR('ui.expressions')}</h3><p>${TR('ui.expressionsHelp')}</p>${Object.keys(N).map(c=>[c,N[c][0]]).map(([c,n])=>`<div style='padding:6px 0;border-bottom:1px solid #ffffff14'><b>${n}</b><div style='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px'>${EXN.map(e=>{const k='x_'+c+'_'+e;return `<button class='btn' data-x='${k}' style='padding:6px 10px;font-size:13px'>${EXA[e]}${IMG[k]?' ✓':''}</button>`}).join('')}</div></div>`).join('')}<p id='ps'></p><button class='btn' id='xc'>${TR('ui.clearExpressions')}</button><button class='btn' onclick='ov()'>${TR('menu.close')}</button></div>`);
 $('#xc').onclick=async()=>{
     for(const c of'ays')for(const e of EXN){
       const k='x_'+c+'_'+e;
@@ -849,7 +850,7 @@ document.querySelectorAll('#ov [data-x]').forEach(b=>b.onclick=()=>{
     f.accept='image/*';
     f.onchange=async()=>{
       if(!f.files[0])return;
-      $('#ps').textContent='جارِ المعالجة...';
+      $('#ps').textContent=TR('ui.processing');
       const d=await prep(f.files[0],true);
       await dbSet(k,d);
       IMG[k]=d;
@@ -864,20 +865,20 @@ document.querySelectorAll('#ov [data-x]').forEach(b=>b.onclick=()=>{
 
 function home(){
   const s=ld();
-  ov(`<div class="card"><p>${GAME.homePart}</p><h1>${GAME.homeTitle}</h1><p>اضغط على الحوار للمتابعة.</p><button class="btn" onclick="start(nw())">ابدأ</button>${s?'<button class="btn" onclick="start(ld())">تابع</button>':''}<button class="btn" onclick="imp()">استيراد من الاستوديو</button><button class="btn" onclick="expStory()">نسخ القصة للمحرر</button><button class="btn" onclick="imgUI()">صور حقيقية (شخصيات وخلفيات)</button><button class="btn" onclick="expUI()">تعابير الوجوه</button><button class="btn" onclick="menuUI()">القائمة</button></div>`)
+  ov(`<div class="card"><p>${GAME.homePart}</p><h1>${GAME.homeTitle}</h1><p>${TR('menu.tapToContinue')}</p><button class="btn" onclick="start(nw())">${TR('ui.start')}</button>${s?`<button class="btn" onclick="start(ld())">${TR('ui.continue')}</button>`:''}<button class="btn" onclick="imp()">${TR('ui.importStudio')}</button><button class="btn" onclick="expStory()">${TR('ui.copyStory')}</button><button class="btn" onclick="imgUI()">${TR('ui.realImages')}</button><button class="btn" onclick="expUI()">${TR('ui.expressions')}</button><button class="btn" onclick="menuUI()">${TR('hud.menu')}</button></div>`)
 }
 
 function menuUI(){
-  ov(`<div class='card'><h2>القائمة</h2><button class='btn' onclick='slotUI()'>خانات الحفظ</button><button class='btn' onclick='chUI()'>اختيار الفصل</button><button class='btn' onclick='hist()'>سجل الحوار</button><button class='btn' onclick='endsUI()'>معرض النهايات</button><button class='btn' onclick='expSave()'>تصدير الحفظ</button><button class='btn' onclick='impSave()'>استيراد الحفظ</button><button class='btn' onclick='setUI()'>الإعدادات</button><button class='btn' onclick='ov()'>إغلاق</button></div>`)
+  ov(`<div class='card'><h2>${TR('menu.title')}</h2><button class='btn' onclick='slotUI()'>${TR('menu.slots')}</button><button class='btn' onclick='chUI()'>${TR('menu.chapters')}</button><button class='btn' onclick='hist()'>${TR('menu.history')}</button><button class='btn' onclick='endsUI()'>${TR('menu.endGallery')}</button><button class='btn' onclick='expSave()'>${TR('menu.exportSave')}</button><button class='btn' onclick='impSave()'>${TR('menu.importSave')}</button><button class='btn' onclick='setUI()'>${TR('menu.settings')}</button><button class='btn' onclick='ov()'>${TR('menu.close')}</button></div>`)
 }
 
 function slotUI(){
   const sl=lsg('_slots',{});
-  ov(`<div class='pz'><h3>خانات الحفظ</h3>${[1,2,3].map(n=>{const x=sl[n];return `<div style='padding:8px 0;border-bottom:1px solid #ffffff14'><b>خانة ${n}</b><br><small>${x?'الفصل '+(x.g.c+1)+' · '+x.t:'فارغة'}</small><div style='display:flex;gap:6px;justify-content:center;margin-top:6px'><button class='btn' data-sv='${n}' ${G?'':'disabled'}>حفظ</button><button class='btn' data-ld='${n}' ${x?'':'disabled'}>تحميل</button></div></div>`}).join('')}<button class='btn' onclick='menuUI()'>رجوع</button></div>`);
+  ov(`<div class='pz'><h3>${TR('menu.slots')}</h3>${[1,2,3].map(n=>{const x=sl[n];return `<div style='padding:8px 0;border-bottom:1px solid #ffffff14'><b>${TR('menu.slot')} ${D(n)}</b><br><small>${x?TR('menu.chapter').replace('{n}',D(x.g.c+1))+' · '+htmlText(x.t):TR('menu.empty')}</small><div style='display:flex;gap:6px;justify-content:center;margin-top:6px'><button class='btn' data-sv='${n}' ${G?'':'disabled'}>${TR('menu.save')}</button><button class='btn' data-ld='${n}' ${x?'':'disabled'}>${TR('menu.load')}</button></div></div>`}).join('')}<button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`);
 document.querySelectorAll('#ov [data-sv]').forEach(b=>b.onclick=()=>{
     const q=lsg('_slots',{}),d=new Date();
     q[b.dataset.sv]={
-      g:JSON.parse(JSON.stringify(G)),t:d.toLocaleDateString('ar')+' '+d.toLocaleTimeString('ar',{
+      g:JSON.parse(JSON.stringify(G)),t:d.toLocaleDateString(LOC)+' '+d.toLocaleTimeString(LOC,{
         hour:'2-digit',minute:'2-digit'
       })
     };
@@ -892,7 +893,7 @@ document.querySelectorAll('#ov [data-ld]').forEach(b=>b.onclick=()=>{
 
 function chUI(){
   const q=lsg('_snap',{}),ks=Object.keys(q).map(Number).sort((a,b)=>a-b);
-  ov(`<div class='pz'><h3>اختيار الفصل</h3><div style='max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:6px'>${ks.length?ks.map(c=>`<button class='btn' data-c='${c}'>${c+1}. ${C[c].t}</button>`).join(''):'<p>لم تفتح فصولا بعد.</p>'}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`);
+  ov(`<div class='pz'><h3>${TR('menu.chapters')}</h3><div style='max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:6px'>${ks.length?ks.map(c=>`<button class='btn' data-c='${c}' >${D(c+1)}. ${C[c].t}</button>`).join(''):`<p>${TR('ui.noChapters')}</p>`}</div><button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`);
   document.querySelectorAll('#ov [data-c]').forEach(b=>b.onclick=()=>start(JSON.parse(JSON.stringify(q[b.dataset.c]))))
 }
 function endsUI(){
@@ -905,13 +906,13 @@ function endsUI(){
   G=sg;
   const row=n=>{
     const e=df[n];
-    return got.includes(n)&&e?`<div><b>${n===6?'★':n+'.'} ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n===6?'★ نهاية سرية':n+'. ؟؟؟'}</b><br><small>${n===6?'لمن يستحقها فقط.':'نهاية لم تكتشفها بعد.'}</small></div>`
+    return got.includes(n)&&e?`<div><b>${n===6?'★':D(n)+'.'} ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n===6?'★ '+TR('end.secretLabel'):D(n)+'. '+TR('ui.unknown')}</b><br><small>${n===6?TR('ui.secretHint'):TR('ui.undiscoveredEnding')}</small></div>`
   };
-  ov(`<div class='pz'><h3>معرض النهايات (${got.length}/6)</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`)
+  ov(`<div class='pz'><h3>${TR('ui.endGallery')} (${D(got.length)}/${D(6)})</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`)
 }
 
 function setUI(){
-  ov(`<div class='pz'><h3>الإعدادات</h3><p>${TR('ui.language')||'Language'}</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${LANGS.map(([c,n])=>`<button class='btn' data-lang='${c}' style='${LANG===c?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><p>سرعة النص</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${[['بطيئة',45],['عادية',24],['سريعة',10],['فورية',1]].map(([n,v])=>`<button class='btn' data-ts='${v}' style='${TS===v?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><button class='btn' id='vb'>مستوى الصوت</button><button class='btn' id='rmb'>تقليل الحركة: ${RMon()?'مفعّل':'معطّل'}</button><button class='btn' onclick='menuUI()'>رجوع</button></div>`);
+  ov(`<div class='pz'><h3>${TR('menu.settings')}</h3><p>${TR('ui.language')}</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${LANGS.map(([c,n])=>`<button class='btn' data-lang='${c}' style='${LANG===c?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><p>${TR('menu.textSpeed')}</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${[[TR('menu.slow'),45],[TR('menu.normal'),24],[TR('menu.fast'),10],[TR('menu.instant'),1]].map(([n,v])=>`<button class='btn' data-ts='${v}' style='${TS===v?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><button class='btn' id='vb'>${TR('menu.volume')}</button><button class='btn' id='rmb'>${TR('menu.reduceMotion')}: ${RMon()?TR('menu.enabled'):TR('menu.disabled')}</button><button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`);
   document.querySelectorAll('#ov [data-lang]').forEach(b=>b.onclick=()=>setLang(b.dataset.lang));
   document.querySelectorAll('#ov [data-ts]').forEach(b=>b.onclick=()=>{
     TS=+b.dataset.ts;
@@ -945,9 +946,9 @@ const b=new Blob([JSON.stringify({
     a.click();
     a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-    toast('تم تصدير الحفظ')
+    toast(TR('save.exported'))
   }catch(x){
-    toast('تعذّر التصدير')
+    toast(TR('save.exportFailed'))
   }
 }
 
@@ -998,16 +999,16 @@ function impSave(){
   f.accept='application/json,.json';
   f.onchange=async()=>{
     try{
-      if(!f.files||!f.files[0]||f.files[0].size>1200000)return toast('حجم ملف الحفظ غير مقبول');
+      if(!f.files||!f.files[0]||f.files[0].size>1200000)return toast(TR('save.badSize'));
       const j=JSON.parse(await f.files[0].text());
-      if(!j||j.v!==1||j.k!==K||!j.d||typeof j.d!=='object'||Array.isArray(j.d))return toast('ملف حفظ لا يخص هذه اللعبة');
+      if(!j||j.v!==1||j.k!==K||!j.d||typeof j.d!=='object'||Array.isArray(j.d))return toast(TR('save.wrongGame'));
       const keys=Object.keys(j.d);
-      if(!keys.length||keys.length>20||!keys.every(k=>okKey(k)&&validSaveEntry(k,j.d[k])))return toast('بيانات الحفظ غير صالحة');
+      if(!keys.length||keys.length>20||!keys.every(k=>okKey(k)&&validSaveEntry(k,j.d[k])))return toast(TR('save.invalidData'));
       keys.forEach(k=>localStorage.setItem(k,j.d[k]));
-      toast('تم الاستيراد، جارِ إعادة التحميل');
+      toast(TR('save.imported'));
       setTimeout(()=>location.reload(),900)
     }catch(x){
-      toast('ملف غير صالح')
+      toast(TR('save.invalidFile'))
     }
   };
   f.click()
@@ -1048,7 +1049,7 @@ $('#bj').onclick=()=>jnl();
 
 $('#bs').onclick=()=>{mute=!mute;if(dr)dr.gain.value=mute?0:.05;ambMute();$('#bs').textContent=mute?'🔇':'🔊'};
 
-$('#br').onclick=()=>ov(`<div class="card"><h2>إعادة من البداية؟</h2><p>سيُحذف التقدّم المحفوظ.</p><button class="btn" onclick="rst()">نعم، من البداية</button><button class="btn" onclick="ov()">إلغاء</button></div>`);
+$('#br').onclick=()=>ov(`<div class="card"><h2>${TR('ui.restartConfirm')}</h2><p>${TR('ui.deleteProgress')}</p><button class="btn" onclick="rst()">${TR('ui.yesRestart')}</button><button class="btn" onclick="ov()">${TR('ui.cancel')}</button></div>`);
 
 scene('roof');
 
@@ -1066,7 +1067,7 @@ home();
 // زر سرعة النص (⏩): بطيئة ← عادية ← سريعة ← فورية
 (()=>{
   // ⏩ نقرة = تخطّي الجملة (نقرتان سريعتان = أكمل الكتابة وانتقل) | ضغط مطوّل = تبديل سرعة النص
-  const SP=[['بطيئة',45],['عادية',24],['سريعة',10],['فورية',1]],b=$('#bk');
+  const SP=[[TR('menu.slow'),45],[TR('menu.normal'),24],[TR('menu.fast'),10],[TR('menu.instant'),1]],b=$('#bk');
   let tm=0,long=0;
   b.oncontextmenu=e=>e.preventDefault();
   b.onpointerdown=()=>{
@@ -1076,7 +1077,7 @@ home();
       const i=SP.findIndex(x=>x[1]===TS),n=SP[(i+1)%SP.length];
       TS=n[1];
       try{localStorage.setItem('ts',TS)}catch(x){}
-      toast('سرعة النص: '+n[0])
+      toast(TR('ui.textSpeedChanged').replace('{speed}',n[0]))
     },450)
   };
   b.onpointerup=b.onpointerleave=b.onpointercancel=()=>clearTimeout(tm);
@@ -1134,7 +1135,7 @@ document.addEventListener('keydown',e=>{
   if(!b)return;
   const v=document.createElement('button');
   v.id='bv';
-  v.setAttribute('aria-label','القائمة');
+  v.setAttribute('aria-label',TR('hud.menu'));
   v.textContent='☰';
   v.className=b.className;
   b.before(v);

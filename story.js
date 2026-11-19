@@ -60,7 +60,7 @@ const C=[
 ['s',TR("c03.s3"),'alone','angry'],
 ['s',TR("c03.s4"),'','sad'],
 ['y',TR("c03.s5")],
-{p:{k:'seq',t:TR("c03.s6.pt"),pads:['١','٢','٣','٤'],q:[0,2,1,3],h:TR("c03.s6.ph"),r:{s:1}}},
+{p:{k:'seq',t:TR("c03.s6.pt"),pads:[1,2,3,4].map(D),q:[0,2,1,3],h:TR("c03.s6.ph"),r:{s:1}}},
 ['n',TR("c03.s7"),'','fear'],
 {x:'hush 1200'},
 {j:TR("c03.s8.j")}]},
@@ -106,7 +106,7 @@ const C=[
 ['s',TR("c08.s1"),'force','angry'],
 ['y',TR("c08.s2")],
 ['a',TR("c08.s3")],
-{p:{k:'code',t:TR("c08.s4.pt"),cl:'التردد ثم عدد الثواني بين كل تكرار',a:'177',h:TR("c08.s4.ph"),r:{y:1}}},
+{p:{k:'code',t:TR("c08.s4.pt"),cl:TR('puz.cl08'),a:'177',h:TR("c08.s4.ph"),r:{y:1}}},
 ['n',TR("c08.s5")]]},
 {t:TR("c09.t"),bg:'lab',st:[
 ['n',TR("c09.s0")],
@@ -130,7 +130,7 @@ const C=[
 ['y',TR("c11.s0"),'tape'],
 ['y',TR("c11.s1"),'rush','fear'],
 ['a',TR("c11.s2")],
-{p:{k:'seq',t:TR("c11.s3.pt"),pads:['١','٢','٣','٤'],q:[1,3,0,2,3],h:TR("c11.s3.ph"),r:{y:1}}},
+{p:{k:'seq',t:TR("c11.s3.pt"),pads:[1,2,3,4].map(D),q:[1,3,0,2,3],h:TR("c11.s3.ph"),r:{y:1}}},
 ['n',TR("c11.s4"),'','fear'],
 ['a',TR("c11.s5"),'','fear']]},
 {t:TR("c12.t"),bg:'lab',st:[
@@ -158,7 +158,7 @@ const C=[
 ['s',TR("c14.sH"),'s>=7'],
 ['s',TR("c14.s1")],
 ['a',TR("c14.s2")],
-{p:{k:'code',t:TR("c14.s3.pt"),cl:'عدد الباحثين × عدد الأبواب',a:'12',h:TR("c14.s3.ph"),r:{s:1}}},
+{p:{k:'code',t:TR("c14.s3.pt"),cl:TR('puz.cl14'),a:'12',h:TR("c14.s3.ph"),r:{s:1}}},
 ['n',TR("c14.s4")],
 {j:TR("c14.s5.j")}]},
 {t:TR("c15.t"),bg:'hall',st:[
@@ -227,7 +227,7 @@ const C=[
 ['n',TR("c21.s1")],
 ['y',TR("c21.s1a"),'','think'],
 ['s',TR("c21.s1b")],
-{p:{k:'seq',t:TR("c21.s2.pt"),pads:['١','٢','٣','٤'],q:[0,2,1,3,1,0],h:TR("c21.s2.ph"),r:{s:1}}},
+{p:{k:'seq',t:TR("c21.s2.pt"),pads:[1,2,3,4].map(D),q:[0,2,1,3,1,0],h:TR("c21.s2.ph"),r:{s:1}}},
 ['n',TR("c21.s3")],
 ['a',TR("c21.s4"),'','think']]},
 {t:TR("c22.t"),bg:'hall',st:[
@@ -294,7 +294,7 @@ const C=[
 ['y',TR("c29.s2"),'','fear'],
 ['n',TR("c29.s3"),'','fear'],
 ['s',TR("c29.s4")],
-{p:{k:'seq',t:TR("c29.s5.pt"),pads:['١','٢','٣','٤'],q:[3,1,2,0,2,1],h:TR("c29.s5.ph"),r:{y:1}}},
+{p:{k:'seq',t:TR("c29.s5.pt"),pads:[1,2,3,4].map(D),q:[3,1,2,0,2,1],h:TR("c29.s5.ph"),r:{y:1}}},
 {x:'lights dim'},
 ['n',TR("c29.s7")],
 {x:'lights on'},
@@ -334,7 +334,7 @@ const C=[
 {t:TR("c34.t"),bg:'souk',st:[
 ['n',TR("c34.s0")],
 ['y',TR("c34.s1")],
-{p:{k:'code',t:TR("c34.s2.pt"),cl:'١ ثم ٤ ثم ؟ — ثلاث خانات',a:'147',h:TR("c34.s2.ph"),r:{y:1}}},
+{p:{k:'code',t:TR("c34.s2.pt"),cl:TR('puz.cl34'),a:'147',h:TR("c34.s2.ph"),r:{y:1}}},
 ['n',TR("c34.s3")],
 {j:TR("c34.s4.j")}]},
 {t:TR("c35.t"),bg:'door',st:[
@@ -357,7 +357,7 @@ const C=[
 {t:TR("c37.t"),bg:'roof',st:[
 ['n',TR("c37.s0")],
 ['y',TR("c37.s1"),'','think'],
-{p:{k:'code',t:TR("c37.s2.pt"),cl:'أصغر عدد أكبر من ٩٠ ويقبل القسمة على ٧',a:'91',h:TR("c37.s2.ph"),r:{y:1}}},
+{p:{k:'code',t:TR("c37.s2.pt"),cl:TR('puz.cl37'),a:'91',h:TR("c37.s2.ph"),r:{y:1}}},
 ['n',TR("c37.s3")],
 {j:TR("c37.s4.j")}]},
 {t:TR("c38.t"),bg:'studio',st:[
@@ -415,7 +415,7 @@ const C=[
 ['n',TR("c43.s3"),'','fear']]},
 {t:TR("c44.t"),bg:'hall',st:[
 ['n',TR("c44.s0")],
-{p:{k:'seq',t:TR("c44.s1.pt"),pads:['١','٢','٣','٤'],q:[1,0,3,2,0,1],h:TR("c44.s1.ph"),r:{y:1,s:1}}},
+{p:{k:'seq',t:TR("c44.s1.pt"),pads:[1,2,3,4].map(D),q:[1,0,3,2,0,1],h:TR("c44.s1.ph"),r:{y:1,s:1}}},
 ['n',TR("c44.s2")],
 ['a',TR("c44.s3"),'','fear'],
 ['n',TR("c44.s4")]]},
