@@ -577,5 +577,16 @@ rx:{
  question:/\?/,
  open:/s'ouvre|ouvre|brille|s'allume|illumine/i,
  down:/descend|escalier|marches|sous-sol/i,
- alert:/[!?]/
+ alert:/[!?]/,
+"hud.skipTitle":"Passer la phrase · maintenir pour changer la vitesse",
+"hud.skip":"Passer la phrase",
+"hud.clues":"Carnet d’indices",
+"hud.sound":"Son",
+"hud.restart":"Recommencer",
+"hud.progress":"Progression du chapitre",
+"hud.menu":"Menu",
+"lang.tn":"Tunisien",
+"lang.ar":"Arabe",
+"lang.fr":"Français",
+"lang.en":"Anglais"
 }};
