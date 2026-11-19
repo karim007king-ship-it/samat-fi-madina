@@ -1,0 +1,44 @@
+name: Mobile security validation
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [security/harden-image-import]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check JavaScript syntax
+        run: |
+          for file in *.js; do
+            node --check "$file"
+          done
+      - name: Check image import safeguards
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const s = fs.readFileSync('studio.js', 'utf8');
+          const checks = [
+            [/allowed=\['image\/png','image\/jpeg','image\/webp','image\/gif'\]/, 'raster MIME allowlist'],
+            [/file\.size>10\*1024\*1024/, '10 MB upload limit'],
+            [/im\.width\*im\.height>40000000/, 'decoded pixel limit'],
+            [/im\.width>12000\|\|im\.height>12000/, 'dimension limit'],
+            [/URL\.revokeObjectURL\(url\)/, 'object URL cleanup'],
+            [/im\.onerror=/, 'image decode error handling'],
+            [/f\.accept='image\/png,image\/jpeg,image\/webp,image\/gif'/, 'restricted file picker']
+          ];
+          for (const [pattern, label] of checks) {
+            if (!pattern.test(s)) throw new Error('Missing safeguard: ' + label);
+            console.log('OK:', label);
+          }
+          if (s.includes("f.accept='image/*'")) throw new Error('Wildcard image picker still enabled');
+          NODE
