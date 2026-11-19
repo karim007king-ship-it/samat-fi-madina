@@ -54,15 +54,12 @@ function tone(f,d=.35){
 }
 
 var AMGN=null,FXGN=null,VOL=(()=>{
+  const fallback={a:1,f:.7};
   try{
-    return JSON.parse(localStorage.getItem('vol'))||{
-      a:1,f:.7
-    }
-  }catch(e){
-    return{
-      a:1,f:.7
-    }
-  }
+    const v=JSON.parse(localStorage.getItem('vol'));
+    if(!v||typeof v!=='object'||!Number.isFinite(v.a)||!Number.isFinite(v.f))return fallback;
+    return {a:Math.max(0,Math.min(1.5,v.a)),f:Math.max(0,Math.min(1.5,v.f))};
+  }catch(e){return fallback}
 })();
 
 function volSave(){try{localStorage.setItem('vol',JSON.stringify(VOL))}catch(e){}}
