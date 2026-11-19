@@ -55,9 +55,10 @@ jobs:
           }
           console.log('Local save validation regression test passed');
           const audioSource = fs.readFileSync('audio.js', 'utf8');
-          if (!/Number\\.isFinite\\(v\\.a\\)/.test(audioSource) ||
-              !/Math\\.max\\(0,Math\\.min\\(1\\.5,v\\.a\\)\\)/.test(audioSource) ||
-              !/Number\\.isFinite\\(v\\.f\\)/.test(audioSource)) {
+          if (!audioSource.includes('Number.isFinite(v.a)') ||
+              !audioSource.includes('Math.max(0,Math.min(1.5,v.a))') ||
+              !audioSource.includes('Number.isFinite(v.f)') ||
+              !audioSource.includes('Math.max(0,Math.min(1.5,v.f))')) {
             throw new Error('Stored audio volume is not validated');
           }
           console.log('Stored audio volume validation test passed');
