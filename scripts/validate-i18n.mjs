@@ -28,7 +28,7 @@ for (const code of ['ar', 'fr', 'en']) {
 // Completeness is not translation quality: reject a locale that silently copies
 // the Tunisian source for most story dialogue. Names and shared UI constants are
 // excluded; story titles, dialogue, clues, choices and puzzle text are included.
-const storyKeys = baseKeys.filter(key => /^(c\\d{2}\\.|end\\.|part\\.)/.test(key));
+const storyKeys = baseKeys.filter(key => /^(c\d{2}\.|end\.|part\.)/.test(key));
 for (const code of ['ar', 'fr', 'en']) {
   const untranslated = storyKeys.filter(key => dictionaries[code][key] === dictionaries.tn[key]);
   const translatedRatio = storyKeys.length
