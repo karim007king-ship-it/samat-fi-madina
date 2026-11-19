@@ -20,20 +20,39 @@ while(st.length){
   }
 x.putImageData(d,0,0)}
 function prep(file,isC){
-  return new Promise(ok=>{
-    const im=new Image();
+  return new Promise((resolve,reject)=>{
+    const allowed=['image/png','image/jpeg','image/webp','image/gif'];
+    if(!file||!allowed.includes(file.type)||file.size>10*1024*1024){
+      reject(new Error('Unsupported or oversized image'));
+      return
+    }
+    const url=URL.createObjectURL(file),im=new Image();
+    const cleanup=()=>URL.revokeObjectURL(url);
     im.onload=()=>{
-      const m=isC?[520,760]:[1100,825],s=Math.min(1,m[0]/im.width,m[1]/im.height),c=document.createElement('canvas');
-      c.width=Math.round(im.width*s);
-      c.height=Math.round(im.height*s);
-      const x=c.getContext('2d',{
-        willReadFrequently:true
-      });
-      x.drawImage(im,0,0,c.width,c.height);
-      if(isC)cut(x,c.width,c.height);
-      ok(c.toDataURL('image/webp',.82))
+      try{
+        if(!Number.isFinite(im.width)||!Number.isFinite(im.height)||im.width<1||im.height<1||
+          im.width>12000||im.height>12000||im.width*im.height>40000000){
+          throw new Error('Image dimensions exceed safe limits')
+        }
+        const m=isC?[520,760]:[1100,825],scale=Math.min(1,m[0]/im.width,m[1]/im.height),c=document.createElement('canvas');
+        c.width=Math.max(1,Math.round(im.width*scale));
+        c.height=Math.max(1,Math.round(im.height*scale));
+        const x=c.getContext('2d',{willReadFrequently:true});
+        if(!x)throw new Error('Canvas unavailable');
+        x.drawImage(im,0,0,c.width,c.height);
+        if(isC)cut(x,c.width,c.height);
+        resolve(c.toDataURL('image/webp',.82))
+      }catch(error){
+        reject(error)
+      }finally{
+        cleanup()
+      }
     };
-    im.src=URL.createObjectURL(file)
+    im.onerror=()=>{
+      cleanup();
+      reject(new Error('Image decode failed'))
+    };
+    im.src=url
   })
 }
 function imgUI(){
@@ -46,17 +65,21 @@ document.querySelectorAll('#ov [data-a]').forEach(b=>b.onclick=()=>{
     }
 const f=document.createElement('input');
     f.type='file';
-    f.accept='image/*';
+    f.accept='image/png,image/jpeg,image/webp,image/gif';
     f.onchange=async()=>{
       if(!f.files[0])return;
       $('#ps').textContent='جارِ المعالجة...';
-      const d=await prep(f.files[0],k[0]==='c');
-      await dbSet(k,d);
-      IMG[k]=d;
-      if(k[0]==='b')LIGHTS[k.slice(2)]=await findLights(d);
-      curBg=null;
-      buildChars();
-      imgUI()
+      try{
+        const d=await prep(f.files[0],k[0]==='c');
+        await dbSet(k,d);
+        IMG[k]=d;
+        if(k[0]==='b')LIGHTS[k.slice(2)]=await findLights(d);
+        curBg=null;
+        buildChars();
+        imgUI()
+      }catch(error){
+        $('#ps').textContent=TR('save.invalidFile')
+      }
     };
     f.click()
   })
