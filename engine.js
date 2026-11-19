@@ -19,6 +19,7 @@
    ثوابت عامة ومرجع GAME القادم من story.js */
 
 const $=s=>document.querySelector(s);
+const htmlText=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 var LIBK=GAME.id+'_lib';
 
 /* ═══════════ 2) واجهة التوسعة (Engine) ═══════════
@@ -873,7 +874,7 @@ function menuUI(){
 
 function slotUI(){
   const sl=lsg('_slots',{});
-  ov(`<div class='pz'><h3>${TR('menu.slots')}</h3>${[1,2,3].map(n=>{const x=sl[n];return `<div style='padding:8px 0;border-bottom:1px solid #ffffff14'><b>${TR('menu.slot')} ${n}</b><br><small>${x?TR('menu.chapter').replace('{n}',x.g.c+1)+' · '+x.t:TR('menu.empty')}</small><div style='display:flex;gap:6px;justify-content:center;margin-top:6px'><button class='btn' data-sv='${n}' ${G?'':'disabled'}>${TR('menu.save')}</button><button class='btn' data-ld='${n}' ${x?'':'disabled'}>${TR('menu.load')}</button></div></div>`}).join('')}<button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`);
+  ov(`<div class='pz'><h3>${TR('menu.slots')}</h3>${[1,2,3].map(n=>{const x=sl[n];return `<div style='padding:8px 0;border-bottom:1px solid #ffffff14'><b>${TR('menu.slot')} ${n}</b><br><small>${x?TR('menu.chapter').replace('{n}',x.g.c+1)+' · '+htmlText(x.t):TR('menu.empty')}</small><div style='display:flex;gap:6px;justify-content:center;margin-top:6px'><button class='btn' data-sv='${n}' ${G?'':'disabled'}>${TR('menu.save')}</button><button class='btn' data-ld='${n}' ${x?'':'disabled'}>${TR('menu.load')}</button></div></div>`}).join('')}<button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`);
 document.querySelectorAll('#ov [data-sv]').forEach(b=>b.onclick=()=>{
     const q=lsg('_slots',{}),d=new Date();
     q[b.dataset.sv]={
