@@ -80,6 +80,8 @@ LNG.en={t:{
 "puz.c37":"The smallest number above 90 divisible by 7",
 "game.partWord":"Part",
 "game.partNums":"123",
+"game.part":"Part 1 · Silence",
+"game.homePart":"Part One: Silence",
 "game.homeTitle":"Silence in<br>the Old Medina",
 "name.a":"Adam",
 "name.y":"Yasmine",

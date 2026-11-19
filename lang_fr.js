@@ -80,6 +80,8 @@ LNG.fr={t:{
 "puz.c37":"Le plus petit nombre supérieur à 90 divisible par 7",
 "game.partWord":"Partie",
 "game.partNums":"123",
+"game.part":"Partie 1 · Silence",
+"game.homePart":"Première partie : Silence",
 "game.homeTitle":"Le Silence<br>de la Vieille Médina",
 "name.a":"Adam",
 "name.y":"Yasmine",
