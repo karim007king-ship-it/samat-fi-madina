@@ -582,6 +582,12 @@ LNG.en={t:{
 
 "lang.select":"Select language",
 
+"ui.history":"Dialogue history",
+"ui.importStudio":"Import from studio",
+"ui.storyEditor":"Copy story to editor",
+"ui.realImages":"Real images (characters and backgrounds)",
+"ui.faceExpressions":"Facial expressions",
+
 },
 rx:{
   fear:/trembl|dark|vanish|disappear|cold|legend|shiver|afraid|fear/i,
