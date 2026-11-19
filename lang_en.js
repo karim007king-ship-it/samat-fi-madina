@@ -566,7 +566,7 @@ LNG.en={t:{
 "save.invalidFile":"Invalid file",
 "save.badSize":"Invalid save-file size",
 "save.wrongGame":"This save does not belong to this game",
-"save.invalidData":"Invalid save data"
+"save.invalidData":"Invalid save data",
 "lang.select":"Select language",
 },
 rx:{
