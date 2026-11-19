@@ -228,8 +228,8 @@ function walk(add,cb){
 
 function direct(s){const t=s[1],w=s[0],e=w!=='n'&&$('#c_'+w);let z=1,x=0,y=0,fx='';
 if(e){x=Math.max(-70,Math.min(70,$('#sc').clientWidth*(.5-LX[w])*.5));z=1.14;y=-6}
-if(/يتفتح|تضوي|يتضي/.test(t)){z=1.28;x*=.4}
-if(/ينزلو|سلالم|الدرج|درج/.test(t)){y=-22;z=1.1}
+if(RX.open.test(t)){z=1.28;x*=.4}
+if(RX.down.test(t)){y=-22;z=1.1}
 if(/!/.test(t))fx='pu';
 if(RX.fear.test(t)){fx='sk';z=Math.max(z,1.2)}
 $('#sc').classList.toggle('lb',w==='n');cam(z,x,y,fx)}
@@ -374,7 +374,7 @@ const [nm,col]=N[s[0]];$('#nm').textContent=nm;$('#nm').style.color=col;
 ['a','y','s'].forEach(k=>{
       const e=$('#c_'+k);
       e.classList.toggle('on',k===s[0]);
-      e.classList.toggle('al',k===s[0]&&/[!؟]/.test(s[1]))
+      e.classList.toggle('al',k===s[0]&&/[!?؟]/.test(s[1]))
     });
 const t=s[1],rx=/!/.test(t)?'jp':/\u061f/.test(t)?'tl':RX.fear.test(t)?'sh':'';
     document.querySelectorAll('#ch svg').forEach(x=>x.classList.remove('jp','tl','sh'));
