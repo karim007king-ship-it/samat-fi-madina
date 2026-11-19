@@ -38,7 +38,7 @@ jobs:
 
           // Regression test: untrusted imported slot labels must be rendered as text.
           const engineSource = fs.readFileSync('engine.js', 'utf8');
-          const helper = engineSource.match(/function htmlText\(v\)\s*\{[\s\S]*?\n\}/);
+          const helper = engineSource.match(/function htmlText\(v\)\{[^\n]*\}/);
           if (!helper || !/htmlText\(x\.t\)/.test(engineSource)) {
             throw new Error('Save-slot HTML escaping is missing');
           }
