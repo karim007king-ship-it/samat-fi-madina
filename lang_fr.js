@@ -599,6 +599,13 @@ LNG.fr={t:{
 "ui.successTrust":"✔ Réussi ! + confiance",
 "end.secretLabel":"Fin secrète",
 "end.normalLabel":"Fin {n} sur 5",
+"puz.listenCarefully":"Écoutez attentivement…",
+"puz.yourTurn":"À vous de jouer",
+"puz.wrongListen":"Erreur. Écoutez à nouveau.",
+"puz.wrongOrder":"L’ordre est incorrect. Réessayez.",
+"puz.wrongEcho":"Ce n’est pas le bon écho.",
+"puz.wrongCode":"Code incorrect.",
+"ui.textSpeedChanged":"Vitesse du texte : {speed}",
 },
 rx:{
   fear:/trembl|noir|obscurité|disparu|disparaît|froid|légende|peur|glac/i,
