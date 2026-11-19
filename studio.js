@@ -37,7 +37,7 @@ function prep(file,isC){
   })
 }
 function imgUI(){
-  ov(`<div class='pz'><h3>صور حقيقية</h3><p>صورة الشخصية كاملة الجسم، بخلفية شفافة أو لون ثابت (تُزال تلقائيا). صورة الخلفية أفقية. تُحفظ على هذا الجهاز.</p>${SLOTS.map(([k,n])=>`<div style='display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #ffffff14'><span style='flex:1;text-align:right'>${n}</span>${IMG[k]?`<img src='${IMG[k]}' style='height:38px;border-radius:4px'>`:''}<button class='btn' style='min-width:70px;padding:6px' data-k='${k}' data-a='pick'>اختيار</button>${IMG[k]?`<button class='btn' style='min-width:46px;padding:6px' data-k='${k}' data-a='del'>✕</button>`:''}</div>`).join('')}<p id='ps'></p><button class='btn' onclick='home()'>رجوع</button></div>`);
+  ov(`<div class='pz'><h3>${TR('ui.photoTitle')}</h3><p>${TR('ui.photoHelp')}</p>${SLOTS.map(([k,n])=>`<div style='display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #ffffff14'><span style='flex:1;text-align:right'>${n}</span>${IMG[k]?`<img src='${IMG[k]}' style='height:38px;border-radius:4px'>`:''}<button class='btn' style='min-width:70px;padding:6px' data-k='${k}' data-a='pick'>${TR('ui.choose')}</button>${IMG[k]?`<button class='btn' style='min-width:46px;padding:6px' data-k='${k}' data-a='del'>✕</button>`:''}</div>`).join('')}<p id='ps'></p><button class='btn' onclick='home()'>رجوع</button></div>`);
 document.querySelectorAll('#ov [data-a]').forEach(b=>b.onclick=()=>{
     const k=b.dataset.k;
     if(b.dataset.a==='del'){
@@ -49,7 +49,7 @@ const f=document.createElement('input');
     f.accept='image/*';
     f.onchange=async()=>{
       if(!f.files[0])return;
-      $('#ps').textContent='جارِ المعالجة...';
+      $('#ps').textContent=TR('ui.processing');
       const d=await prep(f.files[0],k[0]==='c');
       await dbSet(k,d);
       IMG[k]=d;
@@ -64,12 +64,12 @@ const f=document.createElement('input');
 // الاستيراد معطّل مؤقتا في نسخة التجربة: ملفات المكتبة قد تحتوي SVG/CSS/HTML
 // وتحتاج إلى تنظيف بنيوي قبل إدخالها إلى DOM. تبقى القصة والموارد الافتراضية متاحة.
 function applyLib(t){
-  return 'استيراد المكتبات متوقف مؤقتا لحماية نسخة التجربة'
+  return TR('ui.importBlocked')
 }
 function imp(){
-  ov(`<div class="pz"><h3>استيراد مكتبة الاستوديو</h3><p>الاستيراد متوقف مؤقتا في نسخة التجربة لحماية اللعبة من ملفات SVG وCSS غير الموثوقة. القصة الأصلية والصور والصوت تعمل بشكل عادي.</p><button class="btn" onclick="home()">رجوع</button></div>`)
+  ov(`<div class="pz"><h3>${TR('ui.importStudioTitle')}</h3><p>${TR('ui.importStudioBlocked')}</p><button class="btn" onclick="home()">${TR('ui.back')}</button></div>`)
 }
 function expStory(){
-  ov(`<div class="pz"><h3>القصة للمحرر</h3><p>انسخ النص والصقه في تبويب «قصة» داخل الاستوديو.</p><textarea id="jt" readonly style="width:100%;height:110px;box-sizing:border-box;background:#06080f;color:#e9ecf5;border:1px solid #ffffff33;border-radius:8px;padding:8px;direction:ltr;user-select:text;-webkit-user-select:text"></textarea><p id="ps"></p><button class="btn" onclick="const t=$('#jt');t.select();let ok=0;try{ok=document.execCommand('copy')}catch(e){}$('#ps').textContent=ok?'تم النسخ':'حدّد النص وانسخه يدويا'">نسخ</button> <button class="btn" onclick="home()">رجوع</button></div>`);
+  ov(`<div class="pz"><h3>${TR('ui.storyEditorTitle')}</h3><p>${TR('ui.storyEditorHelp')}</p><textarea id="jt" readonly style="width:100%;height:110px;box-sizing:border-box;background:#06080f;color:#e9ecf5;border:1px solid #ffffff33;border-radius:8px;padding:8px;direction:ltr;user-select:text;-webkit-user-select:text"></textarea><p id="ps"></p><button class="btn" onclick="const t=$('#jt');t.select();let ok=0;try{ok=document.execCommand('copy')}catch(e){}$('#ps').textContent=ok?TR('ui.copied'):TR('ui.copyManual')">${TR('ui.copy')}</button> <button class="btn" onclick="home()">رجوع</button></div>`);
   $('#jt').value=JSON.stringify(C)
 }
