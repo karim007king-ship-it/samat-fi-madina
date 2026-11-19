@@ -669,7 +669,7 @@ LNG.tn={t:{
 "save.invalidFile":"ملف غير صالح",
 "save.badSize":"حجم ملف الحفظ غير مقبول",
 "save.wrongGame":"ملف حفظ لا يخص هذه اللعبة",
-"save.invalidData":"بيانات الحفظ غير صالحة"
+"save.invalidData":"بيانات الحفظ غير صالحة",
 "hud.skipTitle":"تخطّي الجملة · اضغط مطوّلا لتغيير السرعة",
 "hud.skip":"تخطّي الجملة",
 "hud.clues":"دفتر الأدلة",
