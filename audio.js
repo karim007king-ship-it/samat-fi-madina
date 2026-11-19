@@ -68,7 +68,7 @@ var AMGN=null,FXGN=null,VOL=(()=>{
 function volSave(){try{localStorage.setItem('vol',JSON.stringify(VOL))}catch(e){}}
 
 function volUI(){
-  ov(`<div class='pz'><h3>مستوى الصوت</h3><p>الأجواء (الخلفية)</p><input type='range' id='va' min='0' max='150' value='${Math.round(VOL.a*100)}' style='width:100%'><p>المؤثرات (الدقّات والنغمات)</p><input type='range' id='vf' min='0' max='150' value='${Math.round(VOL.f*100)}' style='width:100%'><button class='btn' id='vt'>اختبار الصوت</button><button class='btn' onclick='ov()'>إغلاق</button></div>`);
+  ov(`<div class='pz'><h3>${TR('audio.volumeTitle')}</h3><p>${TR('audio.ambience')}</p><input type='range' id='va' min='0' max='150' value='${Math.round(VOL.a*100)}' style='width:100%'><p>${TR('audio.effects')}</p><input type='range' id='vf' min='0' max='150' value='${Math.round(VOL.f*100)}' style='width:100%'><button class='btn' id='vt'>${TR('audio.test')}</button><button class='btn' onclick='ov()'>${TR('menu.close')}</button></div>`);
 $('#va').oninput=e=>{VOL.a=e.target.value/100;if(AMGN)AMGN.gain.value=VOL.a;volSave()};
 $('#vf').oninput=e=>{VOL.f=e.target.value/100;if(FXGN)FXGN.gain.value=VOL.f;volSave()};
 $('#vt').onclick=()=>{aud();ambInit();thump(.6);chime(1)}}
