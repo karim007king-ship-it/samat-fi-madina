@@ -690,6 +690,12 @@ LNG.ar={t:{
 "menu.save":"حفظ",
 "menu.load":"تحميل",
 "menu.back":"رجوع",
+,
+"menu.history":"سجل الحوار",
+"menu.endGallery":"معرض النهايات",
+"menu.exportSave":"تصدير الحفظ",
+"menu.importSave":"استيراد الحفظ",
+"menu.close":"إغلاق",
 },
 rx:{
  fear:/يرجف|الظلام|اختفى|خرافة|بارد|يختفي/,
