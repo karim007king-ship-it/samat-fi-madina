@@ -49,7 +49,7 @@ const trust=(k,d)=>{
   const o=G[k];
   G[k]=Math.max(0,Math.min(10,o+d));
   Engine.emit('trust',k,d,G[k]);
-  if(o>=4&&G[k]<4)toast(TR('warn.trust').replace('{n}',k==='y'?'ياسمين':'سامي'))
+  if(o>=4&&G[k]<4)toast(TR('warn.trust').replace('{n}',k==='y'?TR('name.y'):TR('name.s')))
 };
 
 const nw=()=>({c:0,i:0,y:5,s:5,j:[],f:{},card:-1,err:0});
@@ -413,7 +413,7 @@ s.c.forEach(o=>{
     return
   }
 if(s.p){nx=0;wide();return puz(s.p)}
-if(s.j){if(!G.j.includes(s.j)){G.j.push(s.j);toast('📓 دليل جديد في الدفتر')}G.i++;sv();return step()}}
+if(s.j){if(!G.j.includes(s.j)){G.j.push(s.j);toast(TR('ui.newClue'))}G.i++;sv();return step()}}
 
 /* ═══════════ 9) الألغاز ═══════════
    سجل الألغاز Engine.puzzles (seq، ord، code) + الفوز والتلميحات المدرّجة */
@@ -437,10 +437,10 @@ Engine.puzzles.seq=(p,c)=>{
   const fl=i=>{if(!B[i])return;B[i].classList.add('lit');tone(F[i]);setTimeout(()=>B[i].classList.remove('lit'),350)};
   const play=()=>{
     c.busy=1;c.pos=0;
-    say('استمع جيدا...');
+    say(TR('puz.listenCarefully'));
     p.q.forEach((q,k)=>setTimeout(()=>{
       fl(q);
-      if(k===p.q.length-1)setTimeout(()=>{c.busy=0;say('دورك')},500)
+      if(k===p.q.length-1)setTimeout(()=>{c.busy=0;say(TR('puz.yourTurn'))},500)
     },700+k*700))
   };
   B.forEach(b=>b.onclick=()=>{
@@ -451,7 +451,7 @@ Engine.puzzles.seq=(p,c)=>{
       if(++c.pos===p.q.length){c.busy=1;win(p,c.f)}
     }else{
       c.f++;c.busy=1;
-      say(hint(c.f,p,'خطأ. أعد الاستماع'));
+      say(hint(c.f,p,TR('puz.wrongListen')));
       setTimeout(play,1600)
     }
   });
@@ -471,7 +471,7 @@ Engine.puzzles.ord=(p,c)=>{
     }else{
       c.f++;c.pos=0;
       B.forEach((x,k)=>{x.disabled=false;x.classList.remove('lit');x.textContent=p.o[k]});
-      say(hint(c.f,p,'الترتيب غير صحيح، حاولوا من جديد'))
+      say(hint(c.f,p,TR('puz.wrongOrder')))
     }
   })
 };
@@ -487,7 +487,7 @@ Engine.puzzles.pick=(p,c)=>{
     if(i===p.a)return win(p,c.f);
     c.f++;
     b.disabled=true;
-    say(hint(c.f,p,'ليس هذا الصدى'))
+    say(hint(c.f,p,TR('puz.wrongEcho')))
   })
 };
 // لغز الرمز الرقمي (الافتراضي لأي نوع غير معروف)
@@ -502,7 +502,7 @@ Engine.puzzles.code=(p,c)=>{
     else if(k==='✔'){
       if(c.inp===p.a)return win(p,c.f);
       c.f++;c.inp='';
-      say(hint(c.f,p,'الرمز غير صحيح'))
+      say(hint(c.f,p,TR('puz.wrongCode')))
     }else if(c.inp.length<p.a.length)c.inp+=k;
     sh()
   })
@@ -522,7 +522,7 @@ function hint(f,p,base){
       z.appendChild(b)
     }
   }
-  return f<2?base:f===2?TR('hint.j'):'تلميح: '+p.h}
+  return f<2?base:f===2?TR('hint.j'):TR('ui.hintPrefix')+p.h}
 
 /* ═══════════ 10) النهايات ═══════════
    شاشة النهاية، شرح السبب، «جرّب قراراً آخر»، المشاركة، البدء والإعادة */
@@ -544,8 +544,8 @@ function rst(){try{localStorage.removeItem(K)}catch(e){}start(nw())}
 // شرح سبب النهاية (يطابق شروط ending() في story.js)
 function why(n){
   const y=G.y,s=G.s,f=G.f||{},lo=[];
-  if(y<4)lo.push('ياسمين ('+y+'/10)');
-  if(s<4)lo.push('سامي ('+s+'/10)');
+  if(y<4)lo.push(TR('name.y')+' ('+y+'/10)');
+  if(s<4)lo.push(TR('name.s')+' ('+s+'/10)');
   let m;
 if(n===5)m=TR('why.low').replace('{n}',lo.join(' و '));
   else if(n===3)m=TR('why.destroy');
@@ -553,7 +553,7 @@ if(n===5)m=TR('why.low').replace('{n}',lo.join(' و '));
   else if(n===6)m=TR('why.secret');
   else if(n===1)m=TR('why.release')+' '+TR('why.secrethint');
   else m=f.release?TR('why.rel_low'):TR('why.none');
-return `<p class="why"><b>${TR('why.h')}</b><br>${m}<br><small>${TR('why.tip')} (ياسمين ${y}/10 · سامي ${s}/10)</small></p>`
+return `<p class="why"><b>${TR('why.h')}</b><br>${m}<br><small>${TR('why.tip')} (${TR('name.y')} ${y}/10 · ${TR('name.s')} ${s}/10)</small></p>`
 }
 
 // «جرّب قراراً آخر»: العودة لبداية فصل القرار الأخير (أول فصل فيه خيار destroy) من اللقطة المحفوظة
@@ -568,7 +568,7 @@ function retryEnd(){const q=lsg('_snap',{}),s=q[decIdx()];if(s)start(JSON.parse(
 
 // مشاركة النتيجة: قائمة المشاركة إن وُجدت، وإلا نسخ للحافظة
 function shareEnd(){
-  const e=ending(),t=(e[3]===6?TR('share.t').replace('النهاية {n} من ٥','النهاية السرية'):TR('share.t').replace('{n}',e[3])).replace('{g}',TR('game.homeTitle')).replace('{e}',e[0])+(location.protocol.indexOf('http')===0?' '+location.href.split('#')[0]:'');
+  const e=ending(),t=(e[3]===6?TR('share.secret'):TR('share.t').replace('{n}',e[3])).replace('{g}',TR('game.homeTitle')).replace('{e}',e[0])+(location.protocol.indexOf('http')===0?' '+location.href.split('#')[0]:'');
   if(navigator.share)navigator.share({text:t}).catch(()=>{});
   else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast(TR('copied')),()=>toast(t));
   else toast(t)}
@@ -945,9 +945,9 @@ const b=new Blob([JSON.stringify({
     a.click();
     a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-    toast('تم تصدير الحفظ')
+    toast(TR('save.exported'))
   }catch(x){
-    toast('تعذّر التصدير')
+    toast(TR('save.exportFailed'))
   }
 }
 
@@ -998,16 +998,16 @@ function impSave(){
   f.accept='application/json,.json';
   f.onchange=async()=>{
     try{
-      if(!f.files||!f.files[0]||f.files[0].size>1200000)return toast('حجم ملف الحفظ غير مقبول');
+      if(!f.files||!f.files[0]||f.files[0].size>1200000)return toast(TR('save.badSize'));
       const j=JSON.parse(await f.files[0].text());
-      if(!j||j.v!==1||j.k!==K||!j.d||typeof j.d!=='object'||Array.isArray(j.d))return toast('ملف حفظ لا يخص هذه اللعبة');
+      if(!j||j.v!==1||j.k!==K||!j.d||typeof j.d!=='object'||Array.isArray(j.d))return toast(TR('save.wrongGame'));
       const keys=Object.keys(j.d);
-      if(!keys.length||keys.length>20||!keys.every(k=>okKey(k)&&validSaveEntry(k,j.d[k])))return toast('بيانات الحفظ غير صالحة');
+      if(!keys.length||keys.length>20||!keys.every(k=>okKey(k)&&validSaveEntry(k,j.d[k])))return toast(TR('save.invalidData'));
       keys.forEach(k=>localStorage.setItem(k,j.d[k]));
-      toast('تم الاستيراد، جارِ إعادة التحميل');
+      toast(TR('save.imported'));
       setTimeout(()=>location.reload(),900)
     }catch(x){
-      toast('ملف غير صالح')
+      toast(TR('save.invalidFile'))
     }
   };
   f.click()
@@ -1066,7 +1066,7 @@ home();
 // زر سرعة النص (⏩): بطيئة ← عادية ← سريعة ← فورية
 (()=>{
   // ⏩ نقرة = تخطّي الجملة (نقرتان سريعتان = أكمل الكتابة وانتقل) | ضغط مطوّل = تبديل سرعة النص
-  const SP=[['بطيئة',45],['عادية',24],['سريعة',10],['فورية',1]],b=$('#bk');
+  const SP=[[TR('menu.slow'),45],[TR('menu.normal'),24],[TR('menu.fast'),10],[TR('menu.instant'),1]],b=$('#bk');
   let tm=0,long=0;
   b.oncontextmenu=e=>e.preventDefault();
   b.onpointerdown=()=>{
@@ -1076,7 +1076,7 @@ home();
       const i=SP.findIndex(x=>x[1]===TS),n=SP[(i+1)%SP.length];
       TS=n[1];
       try{localStorage.setItem('ts',TS)}catch(x){}
-      toast('سرعة النص: '+n[0])
+      toast(TR('ui.textSpeedChanged').replace('{speed}',n[0]))
     },450)
   };
   b.onpointerup=b.onpointerleave=b.onpointercancel=()=>clearTimeout(tm);
