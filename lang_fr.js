@@ -563,7 +563,7 @@ LNG.fr={t:{
 "save.invalidFile":"Fichier invalide",
 "save.badSize":"Taille du fichier de sauvegarde invalide",
 "save.wrongGame":"Cette sauvegarde ne correspond pas au jeu",
-"save.invalidData":"Données de sauvegarde invalides"
+"save.invalidData":"Données de sauvegarde invalides",
 "hud.skipTitle":"Passer la phrase · maintenir pour changer la vitesse",
 "hud.skip":"Passer la phrase",
 "hud.clues":"Carnet d’indices",
