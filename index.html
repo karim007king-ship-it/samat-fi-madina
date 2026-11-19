@@ -139,7 +139,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 #ch svg.e-fear image{filter:saturate(.5) brightness(1.12)}
 #ch svg.e-angry image{filter:saturate(1.4) sepia(.35) hue-rotate(-30deg)}
 #ch svg.e-joy image{filter:brightness(1.1) saturate(1.2)}
-#hud{gap:6px}#hud button{width:42px;height:42px;font-size:18px}@media (pointer:coarse){#hud button{width:46px;height:46px}}
+#hud{gap:6px}#hud button{width:42px;height:42px;font-size:18px}#lang{flex:0 0 auto;max-width:92px;height:38px;padding:0 4px;border:1px solid #ffffff1f;border-radius:8px;background:#ffffff0f;color:inherit;font:inherit;font-size:11px}@media (pointer:coarse){#hud button{width:46px;height:46px}}
 #pg{height:3px;background:#ffffff14}#pg i{display:block;height:100%;width:0;background:#35e6ff;transition:width .3s}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 :focus-visible{outline:2px solid #35e6ff;outline-offset:2px}
@@ -165,7 +165,7 @@ html.rm #amb,html.rm #fxf{display:none!important}
 .pk{display:flex;gap:8px;width:100%}.pk .pl{width:56px;flex:0 0 56px;min-height:46px}.pk .ch{flex:1;width:auto;min-height:46px}
 </style></head><body>
 <div id="app">
-<div id="hud"><span id="ct"></span><span class="tr">ياسمين<u><i id="ty"></i></u></span><span class="tr">سامي<u><i id="ts"></i></u></span><button id="bk" aria-label="تخطي الجملة (اضغط مطولا لتغيير سرعة النص)" title="تخطي الجملة · اضغط مطولا: سرعة النص">⏩</button><button id="bj" aria-label="دفتر الأدلة">📓</button><button id="bs" aria-label="الصوت">🔊</button><button id="br" aria-label="إعادة من البداية">↺</button></div>
+<div id="hud"><span id="ct"></span><span class="tr">ياسمين<u><i id="ty"></i></u></span><span class="tr">سامي<u><i id="ts"></i></u></span><select id="lang" aria-label="Language" title="اختيار اللغة"><option value="tn">🇹🇳 تونسي</option><option value="ar">🇸🇦 العربية</option><option value="fr">🇫🇷 Français</option><option value="en">🇬🇧 English</option></select><button id="bk" aria-label="تخطي الجملة (اضغط مطولا لتغيير سرعة النص)" title="تخطي الجملة · اضغط مطولا: سرعة النص">⏩</button><button id="bj" aria-label="دفتر الأدلة">📓</button><button id="bs" aria-label="الصوت">🔊</button><button id="br" aria-label="إعادة من البداية">↺</button></div>
 <div id="pg" role="progressbar" aria-label="تقدم الفصل" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div>
 <div id="sr" class="sr" aria-live="polite"></div>
 <div id="sc"><div id="bgs"></div><div id="moon"></div><div id="glow"></div><div id="ch"></div></div>
@@ -173,10 +173,10 @@ html.rm #amb,html.rm #fxf{display:none!important}
 <div id="ov" role="dialog" aria-modal="true" hidden></div><div id="toast"></div>
 </div>
 <script src="images.js"></script>
-<script src="lang_ar.js"></script>
+<script src="i18n.js"></script>
 <script src="story.js"></script>
 <script src="audio.js"></script>
 <script src="studio.js"></script>
 <script src="engine.js"></script>
 <script src="fx.js"></script>
-<script>if("serviceWorker" in navigator&&location.protocol!=="file:")navigator.serviceWorker.register("sw.js").catch(function(){})</script></body></html>
+<script>var languagePicker=document.getElementById("lang");if(languagePicker){languagePicker.value=LANG;languagePicker.addEventListener("change",function(){setLang(this.value)})}if("serviceWorker" in navigator&&location.protocol!=="file:")navigator.serviceWorker.register("sw.js").catch(function(){})</script></body></html>
