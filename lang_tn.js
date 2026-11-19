@@ -672,7 +672,7 @@ LNG.tn={t:{
 "save.invalidFile":"ملف غير صالح",
 "save.badSize":"حجم ملف الحفظ غير مقبول",
 "save.wrongGame":"ملف حفظ لا يخص هذه اللعبة",
-"save.invalidData":"بيانات الحفظ غير صالحة"
+"save.invalidData":"بيانات الحفظ غير صالحة",
 "lang.select":"اختيار اللغة",
 },
 rx:{
