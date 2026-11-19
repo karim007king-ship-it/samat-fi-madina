@@ -706,7 +706,7 @@ rx:{
 "lang.ar":"العربية",
 "lang.fr":"الفرنسية",
 "lang.en":"الإنجليزية",
-"lang.select":"اختيار اللغة"
+"lang.select":"اختيار اللغة",
 "game.browserTitle":"الصمت في المدينة العتيقة",
 "ui.importStudio":"استيراد من الاستوديو",
 "ui.copyStory":"نسخ القصة للمحرر",
