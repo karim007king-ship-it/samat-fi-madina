@@ -563,7 +563,7 @@ LNG.en={t:{
 "save.invalidFile":"Invalid file",
 "save.badSize":"Invalid save-file size",
 "save.wrongGame":"This save does not belong to this game",
-"save.invalidData":"Invalid save data"
+"save.invalidData":"Invalid save data",
 "hud.skipTitle":"Skip line · hold to change text speed",
 "hud.skip":"Skip line",
 "hud.clues":"Clue notebook",
