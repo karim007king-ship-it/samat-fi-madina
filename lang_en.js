@@ -600,7 +600,7 @@ rx:{
 "lang.ar":"Arabic",
 "lang.fr":"French",
 "lang.en":"English",
-"lang.select":"Select language"
+"lang.select":"Select language",
 "game.browserTitle":"Silence in the Old City",
 "ui.importStudio":"Import from Studio",
 "ui.copyStory":"Copy story to editor",
