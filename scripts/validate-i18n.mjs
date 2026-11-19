@@ -25,6 +25,19 @@ for (const code of ['ar', 'fr', 'en']) {
   assert.deepEqual(missing, [], `Missing ${code} translations: ${missing.join(', ')}`);
 }
 
+// Completeness is not translation quality: reject a locale that silently copies
+// the Tunisian source for most story dialogue. Names and shared UI constants are
+// excluded; story titles, dialogue, clues, choices and puzzle text are included.
+const storyKeys = baseKeys.filter(key => /^(c\\d{2}\\.|end\\.|part\\.)/.test(key));
+for (const code of ['ar', 'fr', 'en']) {
+  const untranslated = storyKeys.filter(key => dictionaries[code][key] === dictionaries.tn[key]);
+  const translatedRatio = storyKeys.length
+    ? (storyKeys.length - untranslated.length) / storyKeys.length
+    : 1;
+  assert.ok(translatedRatio >= 0.95,
+    `${code} story translation coverage is only ${(translatedRatio * 100).toFixed(1)}%; ${untranslated.length} story strings still match Tunisian source (examples: ${untranslated.slice(0, 12).join(', ')})`);
+}
+
 for (const file of ['engine.js', 'story.js']) {
   const source = readFileSync(file, 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '')
