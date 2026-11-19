@@ -548,7 +548,7 @@ function why(n){
   if(y<4)lo.push(TR('name.y')+' ('+y+'/10)');
   if(s<4)lo.push(TR('name.s')+' ('+s+'/10)');
   let m;
-if(n===5)m=TR('why.low').replace('{n}',lo.join(' و '));
+if(n===5)m=TR('why.low').replace('{n}',lo.join(TR('ui.and')));
   else if(n===3)m=TR('why.destroy');
   else if(n===2)m=TR('why.guard');
   else if(n===6)m=TR('why.secret');
@@ -906,7 +906,7 @@ function endsUI(){
   G=sg;
   const row=n=>{
     const e=df[n];
-    return got.includes(n)&&e?`<div><b>${n===6?'★':D(n)+'.'} ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n===6?'★ '+TR('end.secretLabel'):D(n)+'. ؟؟؟'}</b><br><small>${n===6?TR('ui.secretHint'):TR('ui.undiscoveredEnding')}</small></div>`
+    return got.includes(n)&&e?`<div><b>${n===6?'★':D(n)+'.'} ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n===6?'★ '+TR('end.secretLabel'):D(n)+'. '+TR('ui.unknown')}</b><br><small>${n===6?TR('ui.secretHint'):TR('ui.undiscoveredEnding')}</small></div>`
   };
   ov(`<div class='pz'><h3>${TR('ui.endGallery')} (${D(got.length)}/${D(6)})</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`)
 }
