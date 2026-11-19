@@ -529,7 +529,7 @@ LNG.fr={t:{
 "copied":"Résultat copié",
 "skip.p":"Passer l’énigme",
 "why.secret":"Vous avez rassemblé tous les indices, résolu toutes les énigmes sans erreur et choisi de libérer les voix avec une confiance d’au moins 7. Cela vous a ouvert la fin secrète.",
-"why.secrethint":"On raconte que l’Écho a un dernier message pour ceux qui ont trouvé tous les indices sans se tromper sur aucune serrure.",,
+"why.secrethint":"On raconte que l’Écho a un dernier message pour ceux qui ont trouvé tous les indices sans se tromper sur aucune serrure.",
 "puz.cl08":"La fréquence, puis le nombre de secondes entre chaque répétition",
 "puz.cl14":"Nombre de chercheurs × nombre de portes",
 "puz.cl34":"1, puis 4, puis ? — code à trois chiffres",
