@@ -952,12 +952,13 @@ const b=new Blob([JSON.stringify({
 
 function validSaveState(g){
   if(!g||typeof g!=='object'||Array.isArray(g))return false;
-  if(!Number.isInteger(g.c)||g.c<0||g.c>=C.length)return false;
+  if(!Number.isInteger(g.c)||g.c<0||g.c>C.length)return false;
   if(!Number.isInteger(g.i)||g.i<0||g.i>20000)return false;
+  if(g.c===C.length&&(g.i!==0||g.card!==C.length-1))return false;
   if(!Number.isFinite(g.y)||g.y<0||g.y>10||!Number.isFinite(g.s)||g.s<0||g.s>10)return false;
-  if(!Array.isArray(g.j)||g.j.length>300||!g.j.every(x=>typeof x==='string'&&x.length<=2000&&!/[<>]/.test(x)))return false;
+  if(!Array.isArray(g.j)||g.j.length>300||!g.j.every(x=>typeof x==='string'&&x.length<=2000&&ALLJ.includes(x)))return false;
   if(!g.f||typeof g.f!=='object'||Array.isArray(g.f)||Object.keys(g.f).length>500)return false;
-  if(!Object.values(g.f).every(x=>x===true||x===false||x===1||x===0))return false;
+  if(!Object.entries(g.f).every(([k,x])=>/^[a-zA-Z][a-zA-Z0-9_]{0,40}$/.test(k)&&(x===true||x===false||x===1||x===0)))return false;
   if(g.card!=null&&(!Number.isInteger(g.card)||g.card< -1||g.card>=C.length))return false;
   if(g.err!=null&&(!Number.isFinite(g.err)||g.err<0||g.err>10000))return false;
   return true
