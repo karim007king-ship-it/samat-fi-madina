@@ -868,7 +868,7 @@ function home(){
 }
 
 function menuUI(){
-  ov(`<div class='card'><h2>${TR('menu.title')}</h2><button class='btn' onclick='slotUI()'>${TR('ui.slots')}</button><button class='btn' onclick='chUI()'>${TR('ui.pickChapter')}</button><button class='btn' onclick='hist()'>${TR('ui.history')}</button><button class='btn' onclick='endsUI()'>${TR('ui.endGallery')}</button><button class='btn' onclick='expSave()'>${TR('ui.exportSave')}</button><button class='btn' onclick='impSave()'>${TR('ui.importSave')}</button><button class='btn' onclick='setUI()'>${TR('ui.settings')}</button><button class='btn' onclick='ov()'>إغلاق</button></div>`)
+  ov(`<div class='card'><h2>${TR('menu.title')}</h2><button class='btn' onclick='slotUI()'>${TR('ui.slots')}</button><button class='btn' onclick='chUI()'>${TR('ui.pickChapter')}</button><button class='btn' onclick='hist()'>${TR('ui.history')}</button><button class='btn' onclick='endsUI()'>${TR('ui.endGallery')}</button><button class='btn' onclick='expSave()'>${TR('ui.exportSave')}</button><button class='btn' onclick='impSave()'>${TR('ui.importSave')}</button><button class='btn' onclick='setUI()'>${TR('ui.settings')}</button><button class='btn' onclick='ov()'>${TR('ui.close')}</button></div>`)
 }
 
 function slotUI(){
@@ -892,7 +892,7 @@ document.querySelectorAll('#ov [data-ld]').forEach(b=>b.onclick=()=>{
 
 function chUI(){
   const q=lsg('_snap',{}),ks=Object.keys(q).map(Number).sort((a,b)=>a-b);
-  ov(`<div class='pz'><h3>${TR('menu.chapters')}</h3><div style='max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:6px'>${ks.length?ks.map(c=>`<button class='btn' data-c='${c}'>${c+1}. ${C[c].t}</button>`).join(''):'<p>لم تفتح فصولا بعد.</p>'}</div><button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`);
+  ov(`<div class='pz'><h3>${TR('menu.chapters')}</h3><div style='max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:6px'>${ks.length?ks.map(c=>`<button class='btn' data-c='${c}'>${c+1}. ${C[c].t}</button>`).join(''):`<p>${TR('ui.noChapters')}</p>`}</div><button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`);
   document.querySelectorAll('#ov [data-c]').forEach(b=>b.onclick=()=>start(JSON.parse(JSON.stringify(q[b.dataset.c]))))
 }
 function endsUI(){
@@ -911,7 +911,7 @@ function endsUI(){
 }
 
 function setUI(){
-  ov(`<div class='pz'><h3>${TR('menu.settings')}</h3><p>${TR('lang.select')}</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${LANGS.map(([c,n])=>`<button class='btn' data-lang='${c}' style='${LANG===c?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><p>${TR('menu.textSpeed')}</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${[[TR('menu.slow'),45],[TR('menu.normal'),24],[TR('menu.fast'),10],[TR('menu.instant'),1]].map(([n,v])=>`<button class='btn' data-ts='${v}' style='${TS===v?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><button class='btn' id='vb'>${TR('menu.volume')}</button><button class='btn' id='rmb'>${TR('menu.reduceMotion')}: ${RMon()?TR('menu.enabled'):TR('menu.disabled')}</button><button class='btn' onclick='menuUI()'>رجوع</button></div>`);
+  ov(`<div class='pz'><h3>${TR('menu.settings')}</h3><p>${TR('lang.select')}</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${LANGS.map(([c,n])=>`<button class='btn' data-lang='${c}' style='${LANG===c?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><p>${TR('menu.textSpeed')}</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${[[TR('menu.slow'),45],[TR('menu.normal'),24],[TR('menu.fast'),10],[TR('menu.instant'),1]].map(([n,v])=>`<button class='btn' data-ts='${v}' style='${TS===v?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><button class='btn' id='vb'>${TR('menu.volume')}</button><button class='btn' id='rmb'>${TR('menu.reduceMotion')}: ${RMon()?TR('menu.enabled'):TR('menu.disabled')}</button><button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`);
   document.querySelectorAll('#ov [data-lang]').forEach(b=>b.onclick=()=>setLang(b.dataset.lang));
   document.querySelectorAll('#ov [data-ts]').forEach(b=>b.onclick=()=>{
     TS=+b.dataset.ts;
