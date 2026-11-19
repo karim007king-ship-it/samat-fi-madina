@@ -567,6 +567,7 @@ LNG.en={t:{
 "save.badSize":"Invalid save-file size",
 "save.wrongGame":"This save does not belong to this game",
 "save.invalidData":"Invalid save data"
+"lang.select":"Select language",
 },
 rx:{
   fear:/trembl|dark|vanish|disappear|cold|legend|shiver|afraid|fear/i,
