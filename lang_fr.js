@@ -588,6 +588,9 @@ LNG.fr={t:{
 "ui.realImages":"Images réelles (personnages et décors)",
 "ui.faceExpressions":"Expressions faciales",
 
+"ui.faceExpressionsHelp":"Facultatif : ajoutez pour chaque personnage des images en pied avec différentes expressions. Sans images, le jeu utilise automatiquement des symboles et des animations.",
+"ui.clearExpressions":"Effacer toutes les expressions",
+"ui.processing":"Traitement en cours…",
 },
 rx:{
   fear:/trembl|noir|obscurité|disparu|disparaît|froid|légende|peur|glac/i,
