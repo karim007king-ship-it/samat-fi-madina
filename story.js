@@ -106,7 +106,7 @@ const C=[
 ['s',TR("c08.s1"),'force','angry'],
 ['y',TR("c08.s2")],
 ['a',TR("c08.s3")],
-{p:{k:'code',t:TR("c08.s4.pt"),cl:'التردد ثم عدد الثواني بين كل تكرار',a:'177',h:TR("c08.s4.ph"),r:{y:1}}},
+{p:{k:'code',t:TR("c08.s4.pt"),cl:TR('puz.cl08'),a:'177',h:TR("c08.s4.ph"),r:{y:1}}},
 ['n',TR("c08.s5")]]},
 {t:TR("c09.t"),bg:'lab',st:[
 ['n',TR("c09.s0")],
@@ -158,7 +158,7 @@ const C=[
 ['s',TR("c14.sH"),'s>=7'],
 ['s',TR("c14.s1")],
 ['a',TR("c14.s2")],
-{p:{k:'code',t:TR("c14.s3.pt"),cl:'عدد الباحثين × عدد الأبواب',a:'12',h:TR("c14.s3.ph"),r:{s:1}}},
+{p:{k:'code',t:TR("c14.s3.pt"),cl:TR('puz.cl14'),a:'12',h:TR("c14.s3.ph"),r:{s:1}}},
 ['n',TR("c14.s4")],
 {j:TR("c14.s5.j")}]},
 {t:TR("c15.t"),bg:'hall',st:[
@@ -334,7 +334,7 @@ const C=[
 {t:TR("c34.t"),bg:'souk',st:[
 ['n',TR("c34.s0")],
 ['y',TR("c34.s1")],
-{p:{k:'code',t:TR("c34.s2.pt"),cl:'١ ثم ٤ ثم ؟ — ثلاث خانات',a:'147',h:TR("c34.s2.ph"),r:{y:1}}},
+{p:{k:'code',t:TR("c34.s2.pt"),cl:TR('puz.cl34'),a:'147',h:TR("c34.s2.ph"),r:{y:1}}},
 ['n',TR("c34.s3")],
 {j:TR("c34.s4.j")}]},
 {t:TR("c35.t"),bg:'door',st:[
@@ -357,7 +357,7 @@ const C=[
 {t:TR("c37.t"),bg:'roof',st:[
 ['n',TR("c37.s0")],
 ['y',TR("c37.s1"),'','think'],
-{p:{k:'code',t:TR("c37.s2.pt"),cl:'أصغر عدد أكبر من ٩٠ ويقبل القسمة على ٧',a:'91',h:TR("c37.s2.ph"),r:{y:1}}},
+{p:{k:'code',t:TR("c37.s2.pt"),cl:TR('puz.cl37'),a:'91',h:TR("c37.s2.ph"),r:{y:1}}},
 ['n',TR("c37.s3")],
 {j:TR("c37.s4.j")}]},
 {t:TR("c38.t"),bg:'studio',st:[
