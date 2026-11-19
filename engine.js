@@ -950,15 +950,59 @@ const b=new Blob([JSON.stringify({
   }
 }
 
+function validSaveState(g){
+  if(!g||typeof g!=='object'||Array.isArray(g))return false;
+  if(!Number.isInteger(g.c)||g.c<0||g.c>C.length)return false;
+  if(!Number.isInteger(g.i)||g.i<0||g.i>20000)return false;
+  if(g.c===C.length&&(g.i!==0||g.card!==C.length-1))return false;
+  if(!Number.isFinite(g.y)||g.y<0||g.y>10||!Number.isFinite(g.s)||g.s<0||g.s>10)return false;
+  if(!Array.isArray(g.j)||g.j.length>300||!g.j.every(x=>typeof x==='string'&&x.length<=2000&&ALLJ.includes(x)))return false;
+  if(!g.f||typeof g.f!=='object'||Array.isArray(g.f)||Object.keys(g.f).length>500)return false;
+  if(!Object.entries(g.f).every(([k,x])=>/^[a-zA-Z][a-zA-Z0-9_]{0,40}$/.test(k)&&(x===true||x===false||x===1||x===0)))return false;
+  if(g.card!=null&&(!Number.isInteger(g.card)||g.card< -1||g.card>=C.length))return false;
+  if(g.err!=null&&(!Number.isFinite(g.err)||g.err<0||g.err>10000))return false;
+  return true
+}
+function validSaveEntry(k,v){
+  if(typeof v!=='string'||v.length>600000)return false;
+  if(k===K){
+    try{return validSaveState(JSON.parse(v))}catch(e){return false}
+  }
+  if(k===K+'_snap'){
+    try{
+      const q=JSON.parse(v);
+      return !!q&&typeof q==='object'&&!Array.isArray(q)&&Object.keys(q).length<=C.length&&Object.entries(q).every(([n,g])=>/^(0|[1-9]\d*)$/.test(n)&&+n<C.length&&validSaveState(g))
+    }catch(e){return false}
+  }
+  if(k===K+'_slots'){
+    try{
+      const q=JSON.parse(v);
+      return !!q&&typeof q==='object'&&!Array.isArray(q)&&Object.keys(q).every(n=>['1','2','3'].includes(n)&&q[n]&&validSaveState(q[n].g)&&typeof q[n].t==='string'&&q[n].t.length<=100)
+    }catch(e){return false}
+  }
+  if(k===K+'_end'){
+    try{const q=JSON.parse(v);return Array.isArray(q)&&q.length<=6&&q.every(n=>Number.isInteger(n)&&n>=1&&n<=6)}catch(e){return false}
+  }
+  if(k==='ts')return ['1','10','24','45'].includes(v);
+  if(k==='vol'){
+    try{const q=JSON.parse(v);return !!q&&Number.isFinite(q.a)&&q.a>=0&&q.a<=1.5&&Number.isFinite(q.f)&&q.f>=0&&q.f<=1.5}catch(e){return false}
+  }
+  if(k==='rm')return ['0','1','true','false'].includes(v);
+  return false
+}
+
 function impSave(){
   const f=document.createElement('input');
   f.type='file';
   f.accept='application/json,.json';
   f.onchange=async()=>{
     try{
+      if(!f.files||!f.files[0]||f.files[0].size>1200000)return toast('حجم ملف الحفظ غير مقبول');
       const j=JSON.parse(await f.files[0].text());
-      if(!j||j.k!==K||!j.d)return toast('ملف حفظ لا يخص هذه اللعبة');
-      for(const k in j.d)if(okKey(k))localStorage.setItem(k,j.d[k]);
+      if(!j||j.v!==1||j.k!==K||!j.d||typeof j.d!=='object'||Array.isArray(j.d))return toast('ملف حفظ لا يخص هذه اللعبة');
+      const keys=Object.keys(j.d);
+      if(!keys.length||keys.length>20||!keys.every(k=>okKey(k)&&validSaveEntry(k,j.d[k])))return toast('بيانات الحفظ غير صالحة');
+      keys.forEach(k=>localStorage.setItem(k,j.d[k]));
       toast('تم الاستيراد، جارِ إعادة التحميل');
       setTimeout(()=>location.reload(),900)
     }catch(x){
