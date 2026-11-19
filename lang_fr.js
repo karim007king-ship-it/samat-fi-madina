@@ -543,7 +543,7 @@ LNG.fr={t:{
 "end.secretLabel":"Fin secrète",
 "end.normalLabel":"Fin {n} sur 5",
 "ui.restart":"Recommencer",
-"ui.endGallery":"Galerie des fins"
+"ui.endGallery":"Galerie des fins",
 "menu.tapToContinue":"Touchez le dialogue pour continuer.",
 "menu.title":"Menu",
 "menu.slots":"Emplacements de sauvegarde",
