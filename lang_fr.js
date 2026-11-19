@@ -580,6 +580,8 @@ LNG.fr={t:{
 "lang.fr":"Français",
 "lang.en":"Anglais",
 
+"lang.select":"Choisir la langue",
+
 },
 rx:{
   fear:/trembl|noir|obscurité|disparu|disparaît|froid|légende|peur|glac/i,
@@ -592,5 +594,4 @@ rx:{
  open:/s'ouvre|ouvre|brille|s'allume|illumine/i,
  down:/descend|escalier|marches|sous-sol/i,
  alert:/[!?]/,
-"lang.select":"Choisir la langue"
 }};
