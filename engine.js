@@ -388,7 +388,7 @@ const t=s[1],rx=/!/.test(t)?'jp':/\u061f/.test(t)?'tl':RX.fear.test(t)?'sh':'';
       thump()
     }
 $('#tx').style.color=s[0]==='n'?'#b9c0d8':'var(--ink)';direct(s);express(s);Engine.emit('line',s);typ(s[1]);nx=adv;return}
-if(s.c){wide();$('#nm').textContent='';$('#tx').textContent='ماذا تقرّرون؟';nx=0;rd=0;
+if(s.c){wide();$('#nm').textContent='';$('#tx').textContent=TR('ui.decision');nx=0;rd=0;
 s.c.forEach(o=>{
       const b=document.createElement('button');
       b.textContent=o[0];
@@ -421,7 +421,7 @@ function win(p,f){
   chime(f<2);
   if(f>0)G.err=(G.err||0)+1;   // أي خطأ أو تخطّي يُسقط النهاية السرية
   const e=$('#ps');
-  if(e)e.textContent=f>1?'✔ نجحتم!':'✔ نجحتم! +ثقة';
+  if(e)e.textContent=f>1?TR('ui.success'):TR('ui.successTrust');
   for(const k in p.r)trust(k,f>1?0:p.r[k]);
   Engine.emit('puzzle:won',p,f);
   setTimeout(()=>{
@@ -477,7 +477,7 @@ Engine.puzzles.ord=(p,c)=>{
 };
 // لغز الاختيار بالدليل: كل خيار له زر استماع (نبضات بفاصل x.iv) وزر اختيار؛ الجواب p.a
 Engine.puzzles.pick=(p,c)=>{
-  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div class="ordw">${p.o.map((x,i)=>`<div class="pk"><button class="pad pl" data-i="${i}" aria-label="استمع">🔊</button><button class="pad ch" data-i="${i}">${x.t}</button></div>`).join('')}</div><p id="ps"></p></div>`);
+  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div class="ordw">${p.o.map((x,i)=>`<div class="pk"><button class="pad pl" data-i="${i}" aria-label="${TR('ui.listen')}">🔊</button><button class="pad ch" data-i="${i}">${x.t}</button></div>`).join('')}</div><p id="ps"></p></div>`);
   document.querySelectorAll('.pl').forEach(b=>b.onclick=()=>{
     const x=p.o[+b.dataset.i];
     [0,1,2].forEach(k=>setTimeout(()=>ps(70,40,.3,.22,'sine',.5),k*x.iv*400))
@@ -532,7 +532,7 @@ function endScr(){
   endSnd(e[3]);
   endRec(e[3]);
   scene(e[2]);
-  const show=()=>{ov(`<div class="card"><p>${e[3]===6?'النهاية السرية':'النهاية '+e[3]+' من ٥'}</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">إعادة من البداية</button><button class="btn" onclick="endsUI()">معرض النهايات</button></div>`);Engine.emit('ending:shown',e[3])}
+  const show=()=>{ov(`<div class="card"><p>${e[3]===6?TR('end.secretLabel'):TR('end.normalLabel').replace('{n}',e[3])}</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">${TR('hud.restart')}</button><button class="btn" onclick="endsUI()">${TR('ui.endGallery')}</button></div>`);Engine.emit('ending:shown',e[3])}
   Engine.emit('ending',e);
   Engine.gate('ending',{n:e[3],e},show)
 }
@@ -834,7 +834,7 @@ async function loadExp(){
 }
 
 function expUI(){
-  ov(`<div class='pz'><h3>تعابير الوجوه</h3><p>اختياري: لكل شخصية صورة كاملة الجسم بنفس الوضعية والإطار وبتعبير مختلف، وتظهر عند ذلك الشعور. بدونها تعمل التعابير تلقائيا بالرموز والحركة.</p>${Object.keys(N).map(c=>[c,N[c][0]]).map(([c,n])=>`<div style='padding:6px 0;border-bottom:1px solid #ffffff14'><b>${n}</b><div style='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px'>${EXN.map(e=>{const k='x_'+c+'_'+e;return `<button class='btn' data-x='${k}' style='padding:6px 10px;font-size:13px'>${EXA[e]}${IMG[k]?' ✓':''}</button>`}).join('')}</div></div>`).join('')}<p id='ps'></p><button class='btn' id='xc'>مسح كل التعابير</button><button class='btn' onclick='ov()'>إغلاق</button></div>`);
+  ov(`<div class='pz'><h3>${TR('ui.expressions')}</h3><p>${TR('ui.expressionsHelp')}</p>${Object.keys(N).map(c=>[c,N[c][0]]).map(([c,n])=>`<div style='padding:6px 0;border-bottom:1px solid #ffffff14'><b>${n}</b><div style='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px'>${EXN.map(e=>{const k='x_'+c+'_'+e;return `<button class='btn' data-x='${k}' style='padding:6px 10px;font-size:13px'>${EXA[e]}${IMG[k]?' ✓':''}</button>`}).join('')}</div></div>`).join('')}<p id='ps'></p><button class='btn' id='xc'>${TR('ui.clearExpressions')}</button><button class='btn' onclick='ov()'>${TR('menu.close')}</button></div>`);
 $('#xc').onclick=async()=>{
     for(const c of'ays')for(const e of EXN){
       const k='x_'+c+'_'+e;
@@ -849,7 +849,7 @@ document.querySelectorAll('#ov [data-x]').forEach(b=>b.onclick=()=>{
     f.accept='image/*';
     f.onchange=async()=>{
       if(!f.files[0])return;
-      $('#ps').textContent='جارِ المعالجة...';
+      $('#ps').textContent=TR('ui.processing');
       const d=await prep(f.files[0],true);
       await dbSet(k,d);
       IMG[k]=d;
@@ -864,7 +864,7 @@ document.querySelectorAll('#ov [data-x]').forEach(b=>b.onclick=()=>{
 
 function home(){
   const s=ld();
-  ov(`<div class="card"><p>${GAME.homePart}</p><h1>${GAME.homeTitle}</h1><p>اضغط على الحوار للمتابعة.</p><button class="btn" onclick="start(nw())">ابدأ</button>${s?'<button class="btn" onclick="start(ld())">تابع</button>':''}<button class="btn" onclick="imp()">استيراد من الاستوديو</button><button class="btn" onclick="expStory()">نسخ القصة للمحرر</button><button class="btn" onclick="imgUI()">صور حقيقية (شخصيات وخلفيات)</button><button class="btn" onclick="expUI()">تعابير الوجوه</button><button class="btn" onclick="menuUI()">القائمة</button></div>`)
+  ov(`<div class="card"><p>${GAME.homePart}</p><h1>${GAME.homeTitle}</h1><p>${TR('menu.tapToContinue')}</p><button class="btn" onclick="start(nw())">${TR('ui.start')}</button>${s?'<button class="btn" onclick="start(ld())">${TR('ui.continue')}</button>':''}<button class="btn" onclick="imp()">${TR('ui.importStudio')}</button><button class="btn" onclick="expStory()">${TR('ui.copyStory')}</button><button class="btn" onclick="imgUI()">${TR('ui.realImages')}</button><button class="btn" onclick="expUI()">${TR('ui.expressions')}</button><button class="btn" onclick="menuUI()">القائمة</button></div>`)
 }
 
 function menuUI(){
@@ -892,7 +892,7 @@ document.querySelectorAll('#ov [data-ld]').forEach(b=>b.onclick=()=>{
 
 function chUI(){
   const q=lsg('_snap',{}),ks=Object.keys(q).map(Number).sort((a,b)=>a-b);
-  ov(`<div class='pz'><h3>اختيار الفصل</h3><div style='max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:6px'>${ks.length?ks.map(c=>`<button class='btn' data-c='${c}'>${c+1}. ${C[c].t}</button>`).join(''):'<p>لم تفتح فصولا بعد.</p>'}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`);
+  ov(`<div class='pz'><h3>${TR('menu.chapters')}</h3><div style='max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:6px'>${ks.length?ks.map(c=>`<button class='btn' data-c='${c}'>${c+1}. ${C[c].t}</button>`).join(''):'<p>لم تفتح فصولا بعد.</p>'}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`);
   document.querySelectorAll('#ov [data-c]').forEach(b=>b.onclick=()=>start(JSON.parse(JSON.stringify(q[b.dataset.c]))))
 }
 function endsUI(){
@@ -905,9 +905,9 @@ function endsUI(){
   G=sg;
   const row=n=>{
     const e=df[n];
-    return got.includes(n)&&e?`<div><b>${n===6?'★':n+'.'} ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n===6?'★ نهاية سرية':n+'. ؟؟؟'}</b><br><small>${n===6?'لمن يستحقها فقط.':'نهاية لم تكتشفها بعد.'}</small></div>`
+    return got.includes(n)&&e?`<div><b>${n===6?'★':n+'.'} ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n===6?'★ '+TR('end.secretLabel'):n+'. ؟؟؟'}</b><br><small>${n===6?TR('ui.secretHint'):TR('ui.undiscoveredEnding')}</small></div>`
   };
-  ov(`<div class='pz'><h3>معرض النهايات (${got.length}/6)</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`)
+  ov(`<div class='pz'><h3>${TR('ui.endGallery')} (${got.length}/6)</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`)
 }
 
 function setUI(){
@@ -1048,7 +1048,7 @@ $('#bj').onclick=()=>jnl();
 
 $('#bs').onclick=()=>{mute=!mute;if(dr)dr.gain.value=mute?0:.05;ambMute();$('#bs').textContent=mute?'🔇':'🔊'};
 
-$('#br').onclick=()=>ov(`<div class="card"><h2>إعادة من البداية؟</h2><p>سيُحذف التقدّم المحفوظ.</p><button class="btn" onclick="rst()">نعم، من البداية</button><button class="btn" onclick="ov()">إلغاء</button></div>`);
+$('#br').onclick=()=>ov(`<div class="card"><h2>${TR('ui.restartConfirm')}</h2><p>${TR('ui.deleteProgress')}</p><button class="btn" onclick="rst()">${TR('ui.yesRestart')}</button><button class="btn" onclick="ov()">${TR('ui.cancel')}</button></div>`);
 
 scene('roof');
 
@@ -1134,7 +1134,7 @@ document.addEventListener('keydown',e=>{
   if(!b)return;
   const v=document.createElement('button');
   v.id='bv';
-  v.setAttribute('aria-label','القائمة');
+  v.setAttribute('aria-label',TR('hud.menu'));
   v.textContent='☰';
   v.className=b.className;
   b.before(v);
