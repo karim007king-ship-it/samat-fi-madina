@@ -49,7 +49,7 @@ const trust=(k,d)=>{
   const o=G[k];
   G[k]=Math.max(0,Math.min(10,o+d));
   Engine.emit('trust',k,d,G[k]);
-  if(o>=4&&G[k]<4)toast(TR('warn.trust').replace('{n}',k==='y'?'ياسمين':'سامي'))
+  if(o>=4&&G[k]<4)toast(TR('warn.trust').replace('{n}',k==='y'?TR('name.y'):TR('name.s')))
 };
 
 const nw=()=>({c:0,i:0,y:5,s:5,j:[],f:{},card:-1,err:0});
@@ -388,7 +388,7 @@ const t=s[1],rx=/!/.test(t)?'jp':/\u061f/.test(t)?'tl':RX.fear.test(t)?'sh':'';
       thump()
     }
 $('#tx').style.color=s[0]==='n'?'#b9c0d8':'var(--ink)';direct(s);express(s);Engine.emit('line',s);typ(s[1]);nx=adv;return}
-if(s.c){wide();$('#nm').textContent='';$('#tx').textContent='ماذا تقرّرون؟';nx=0;rd=0;
+if(s.c){wide();$('#nm').textContent='';$('#tx').textContent=TR('ui.decide');nx=0;rd=0;
 s.c.forEach(o=>{
       const b=document.createElement('button');
       b.textContent=o[0];
@@ -413,7 +413,7 @@ s.c.forEach(o=>{
     return
   }
 if(s.p){nx=0;wide();return puz(s.p)}
-if(s.j){if(!G.j.includes(s.j)){G.j.push(s.j);toast('📓 دليل جديد في الدفتر')}G.i++;sv();return step()}}
+if(s.j){if(!G.j.includes(s.j)){G.j.push(s.j);toast(TR('ui.newclue'))}G.i++;sv();return step()}}
 
 /* ═══════════ 9) الألغاز ═══════════
    سجل الألغاز Engine.puzzles (seq، ord، code) + الفوز والتلميحات المدرّجة */
@@ -421,7 +421,7 @@ function win(p,f){
   chime(f<2);
   if(f>0)G.err=(G.err||0)+1;   // أي خطأ أو تخطّي يُسقط النهاية السرية
   const e=$('#ps');
-  if(e)e.textContent=f>1?'✔ نجحتم!':'✔ نجحتم! +ثقة';
+  if(e)e.textContent=f>1?TR('ui.won'):TR('ui.wonTrust');
   for(const k in p.r)trust(k,f>1?0:p.r[k]);
   Engine.emit('puzzle:won',p,f);
   setTimeout(()=>{
@@ -437,10 +437,10 @@ Engine.puzzles.seq=(p,c)=>{
   const fl=i=>{if(!B[i])return;B[i].classList.add('lit');tone(F[i]);setTimeout(()=>B[i].classList.remove('lit'),350)};
   const play=()=>{
     c.busy=1;c.pos=0;
-    say('استمع جيدا...');
+    say(TR('ui.listening'));
     p.q.forEach((q,k)=>setTimeout(()=>{
       fl(q);
-      if(k===p.q.length-1)setTimeout(()=>{c.busy=0;say('دورك')},500)
+      if(k===p.q.length-1)setTimeout(()=>{c.busy=0;say(TR('ui.yourTurn'))},500)
     },700+k*700))
   };
   B.forEach(b=>b.onclick=()=>{
@@ -451,7 +451,7 @@ Engine.puzzles.seq=(p,c)=>{
       if(++c.pos===p.q.length){c.busy=1;win(p,c.f)}
     }else{
       c.f++;c.busy=1;
-      say(hint(c.f,p,'خطأ. أعد الاستماع'));
+      say(hint(c.f,p,TR('ui.wrongSeq')));
       setTimeout(play,1600)
     }
   });
@@ -471,7 +471,7 @@ Engine.puzzles.ord=(p,c)=>{
     }else{
       c.f++;c.pos=0;
       B.forEach((x,k)=>{x.disabled=false;x.classList.remove('lit');x.textContent=p.o[k]});
-      say(hint(c.f,p,'الترتيب غير صحيح، حاولوا من جديد'))
+      say(hint(c.f,p,TR('ui.wrongOrd')))
     }
   })
 };
@@ -487,7 +487,7 @@ Engine.puzzles.pick=(p,c)=>{
     if(i===p.a)return win(p,c.f);
     c.f++;
     b.disabled=true;
-    say(hint(c.f,p,'ليس هذا الصدى'))
+    say(hint(c.f,p,TR('ui.wrongPick')))
   })
 };
 // لغز الرمز الرقمي (الافتراضي لأي نوع غير معروف)
@@ -502,7 +502,7 @@ Engine.puzzles.code=(p,c)=>{
     else if(k==='✔'){
       if(c.inp===p.a)return win(p,c.f);
       c.f++;c.inp='';
-      say(hint(c.f,p,'الرمز غير صحيح'))
+      say(hint(c.f,p,TR('ui.wrongCode')))
     }else if(c.inp.length<p.a.length)c.inp+=k;
     sh()
   })
@@ -522,7 +522,7 @@ function hint(f,p,base){
       z.appendChild(b)
     }
   }
-  return f<2?base:f===2?TR('hint.j'):'تلميح: '+p.h}
+  return f<2?base:f===2?TR('hint.j'):TR('ui.hint')+p.h}
 
 /* ═══════════ 10) النهايات ═══════════
    شاشة النهاية، شرح السبب، «جرّب قراراً آخر»، المشاركة، البدء والإعادة */
@@ -911,19 +911,28 @@ function endsUI(){
 }
 
 function setUI(){
-  ov(`<div class='pz'><h3>الإعدادات</h3><p>${TR('ui.language')||'Language'}</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${LANGS.map(([c,n])=>`<button class='btn' data-lang='${c}' style='${LANG===c?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><p>سرعة النص</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${[['بطيئة',45],['عادية',24],['سريعة',10],['فورية',1]].map(([n,v])=>`<button class='btn' data-ts='${v}' style='${TS===v?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><button class='btn' id='vb'>مستوى الصوت</button><button class='btn' id='rmb'>تقليل الحركة: ${RMon()?'مفعّل':'معطّل'}</button><button class='btn' onclick='menuUI()'>رجوع</button></div>`);
+  ov(`<div class='pz'><h3>${TR('ui.settings')}</h3>
+    <p>${TR('ui.language')}</p>
+    <div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>
+      ${LANGS.map(([c,n])=>`<button class='btn' data-lang='${c}' style='${LANG===c?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}
+    </div>
+    <p>${TR('ui.textSpeed')}</p>
+    <div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>
+      ${[[TR('ui.slow'),45],[TR('ui.normal'),24],[TR('ui.fast'),10],[TR('ui.instant'),1]].map(([n,v])=>`<button class='btn' data-ts='${v}' style='${TS===v?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}
+    </div>
+    <button class='btn' id='vb'>${TR('ui.volume')}</button>
+    <button class='btn' id='rmb'>${TR('ui.reduceMotion')}: ${RMon()?TR('ui.on'):TR('ui.off')}</button>
+    <button class='btn' onclick='menuUI()'>${TR('ui.back')}</button>
+  </div>`);
   document.querySelectorAll('#ov [data-lang]').forEach(b=>b.onclick=()=>setLang(b.dataset.lang));
   document.querySelectorAll('#ov [data-ts]').forEach(b=>b.onclick=()=>{
     TS=+b.dataset.ts;
-    try{
-      localStorage.setItem('ts',TS)
-    }catch(e){}
-    setUI()
+    try{localStorage.setItem('ts',TS)}catch(e){}
+    setUI();
   });
   $('#vb').onclick=volUI;
-  $('#rmb').onclick=()=>{setRM(!RMon());setUI()}
+  $('#rmb').onclick=()=>{setRM(!RMon());setUI()};
 }
-
 // تصدير/استيراد الحفظ كملف JSON (كل مفاتيح اللعبة + السرعة والصوت)
 const okKey=k=>k.indexOf(K)===0||k==='ts'||k==='vol'||k==='rm';
 
@@ -945,9 +954,9 @@ const b=new Blob([JSON.stringify({
     a.click();
     a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-    toast('تم تصدير الحفظ')
+    toast(TR('ui.exported'))
   }catch(x){
-    toast('تعذّر التصدير')
+    toast(TR('ui.exportFail'))
   }
 }
 
@@ -1000,14 +1009,14 @@ function impSave(){
     try{
       if(!f.files||!f.files[0]||f.files[0].size>1200000)return toast('حجم ملف الحفظ غير مقبول');
       const j=JSON.parse(await f.files[0].text());
-      if(!j||j.v!==1||j.k!==K||!j.d||typeof j.d!=='object'||Array.isArray(j.d))return toast('ملف حفظ لا يخص هذه اللعبة');
+      if(!j||j.v!==1||j.k!==K||!j.d||typeof j.d!=='object'||Array.isArray(j.d))return toast(TR('ui.badSave'));
       const keys=Object.keys(j.d);
       if(!keys.length||keys.length>20||!keys.every(k=>okKey(k)&&validSaveEntry(k,j.d[k])))return toast('بيانات الحفظ غير صالحة');
       keys.forEach(k=>localStorage.setItem(k,j.d[k]));
-      toast('تم الاستيراد، جارِ إعادة التحميل');
+      toast(TR('ui.imported'));
       setTimeout(()=>location.reload(),900)
     }catch(x){
-      toast('ملف غير صالح')
+      toast(TR('ui.badFile'))
     }
   };
   f.click()
@@ -1076,7 +1085,7 @@ home();
       const i=SP.findIndex(x=>x[1]===TS),n=SP[(i+1)%SP.length];
       TS=n[1];
       try{localStorage.setItem('ts',TS)}catch(x){}
-      toast('سرعة النص: '+n[0])
+      toast(TR('ui.speedToast').replace('{n}',n[0]))
     },450)
   };
   b.onpointerup=b.onpointerleave=b.onpointercancel=()=>clearTimeout(tm);
