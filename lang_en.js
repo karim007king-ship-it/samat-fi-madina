@@ -588,5 +588,6 @@ rx:{
 "lang.tn":"Tunisian",
 "lang.ar":"Arabic",
 "lang.fr":"French",
-"lang.en":"English"
+"lang.en":"English",
+"lang.select":"Select language"
 }};
