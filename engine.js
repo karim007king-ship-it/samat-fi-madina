@@ -1,7 +1,7 @@
 /* ===== engine.js — محرّك القصص التفاعلية (قابل لإعادة الاستعمال) =====
-ترتيب التحميل: images.js ← lang_ar.js ← story.js ← audio.js ← studio.js ← engine.js ← fx.js
+ترتيب التحميل: images.js ← i18n.js (يحمّل حزمة اللغة المختارة) ← story.js ← audio.js ← studio.js ← engine.js ← fx.js
 (images2.js يُحمَّل كسولا من المحرك، وsw.js يُسجَّل من index.html).
-يقرأ من story.js: GAME, C, SC2, STG, EN, ALLJ, ending() ومن lang_ar.js: TXT وTR() وRX.
+يقرأ من story.js: GAME, C, SC2, STG, EN, ALLJ, ending() ومن i18n.js: TXT وTR() وRX.
 
 خطوات القصة: ['من','نص','شرط','تعبير'] | {c:[اختيارات]} | {p:لغز} | {j:دليل} | {x:'أمر؛ أمر'}
   الشرط (العنصر الثالث، أو f: في الخطوات الأخرى): علم | !علم | y<5 | s>=7 (ثقة ياسمين/سامي).
