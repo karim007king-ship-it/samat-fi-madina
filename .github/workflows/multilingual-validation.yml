@@ -122,12 +122,11 @@ jobs:
           cp index.html manifest.json icon-192.png icon-512.png images.js images2.js \
             i18n.js lang_tn.js lang_ar.js lang_fr.js lang_en.js \
             story.js audio.js studio.js engine.js fx.js sw.js dist/samat-fi-madina/
-          (cd dist && zip -qr ../samat-fi-madina-preview.zip samat-fi-madina)
 
       - name: Upload browser preview
         uses: actions/upload-artifact@v4
         with:
-          name: samat-fi-madina-multilingual-preview
-          path: samat-fi-madina-preview.zip
+          name: samat-fi-madina-browser-preview
+          path: dist/samat-fi-madina/
           if-no-files-found: error
           retention-days: 7
