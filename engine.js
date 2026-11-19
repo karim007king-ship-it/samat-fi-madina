@@ -849,7 +849,7 @@ document.querySelectorAll('#ov [data-x]').forEach(b=>b.onclick=()=>{
     f.accept='image/*';
     f.onchange=async()=>{
       if(!f.files[0])return;
-      $('#ps').textContent='جارِ المعالجة...';
+      $('#ps').textContent=TR('ui.processing');
       const d=await prep(f.files[0],true);
       await dbSet(k,d);
       IMG[k]=d;
@@ -892,7 +892,7 @@ document.querySelectorAll('#ov [data-ld]').forEach(b=>b.onclick=()=>{
 
 function chUI(){
   const q=lsg('_snap',{}),ks=Object.keys(q).map(Number).sort((a,b)=>a-b);
-  ov(`<div class='pz'><h3>${TR('menu.chapters')}</h3><div style='max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:6px'>${ks.length?ks.map(c=>`<button class='btn' data-c='${c}'>${c+1}. ${C[c].t}</button>`).join(''):'<p>'+TR('ui.noChapters')+'</p>'}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`);
+  ov(`<div class='pz'><h3>${TR('menu.chapters')}</h3><div style='max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:6px'>${ks.length?ks.map(c=>`<button class='btn' data-c='${c}'>${c+1}. ${C[c].t}</button>`).join(''):'<p>'+TR('ui.noChapters')+'</p>'}</div><button class='btn' onclick='menuUI()'>${TR('ui.back')}</button></div>`);
   document.querySelectorAll('#ov [data-c]').forEach(b=>b.onclick=()=>start(JSON.parse(JSON.stringify(q[b.dataset.c]))))
 }
 function endsUI(){
@@ -907,11 +907,11 @@ function endsUI(){
     const e=df[n];
     return got.includes(n)&&e?`<div><b>${n===6?'★':n+'.'} ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n===6?'★ '+TR('ui.secretEnd'):n+'. '+TR('ui.unknown')}</b><br><small>${n===6?TR('ui.secretLocked'):TR('ui.endLocked')}</small></div>`
   };
-  ov(`<div class='pz'><h3>${TR('ui.endGallery')} (${got.length}/6)</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`)
+  ov(`<div class='pz'><h3>${TR('ui.endGallery')} (${got.length}/6)</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>${TR('ui.back')}</button></div>`)
 }
 
 function setUI(){
-  ov(`<div class='pz'><h3>${TR('menu.settings')}</h3><p>${TR('menu.textSpeed')}</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${[[TR('menu.slow'),45],[TR('menu.normal'),24],[TR('menu.fast'),10],[TR('menu.instant'),1]].map(([n,v])=>`<button class='btn' data-ts='${v}' style='${TS===v?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><button class='btn' id='vb'>${TR('menu.volume')}</button><button class='btn' id='rmb'>${TR('menu.reduceMotion')}: ${RMon()?TR('menu.enabled'):TR('menu.disabled')}</button><button class='btn' onclick='menuUI()'>رجوع</button></div>`);
+  ov(`<div class='pz'><h3>${TR('menu.settings')}</h3><p>${TR('menu.textSpeed')}</p><div style='display:flex;gap:6px;justify-content:center;flex-wrap:wrap'>${[[TR('menu.slow'),45],[TR('menu.normal'),24],[TR('menu.fast'),10],[TR('menu.instant'),1]].map(([n,v])=>`<button class='btn' data-ts='${v}' style='${TS===v?'outline:2px solid #35e6ff':''}'>${n}</button>`).join('')}</div><button class='btn' id='vb'>${TR('menu.volume')}</button><button class='btn' id='rmb'>${TR('menu.reduceMotion')}: ${RMon()?TR('menu.enabled'):TR('menu.disabled')}</button><button class='btn' onclick='menuUI()'>${TR('ui.back')}</button></div>`);
   document.querySelectorAll('#ov [data-ts]').forEach(b=>b.onclick=()=>{
     TS=+b.dataset.ts;
     try{
