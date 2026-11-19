@@ -620,6 +620,11 @@ LNG.en={t:{
 "audio.ambience":"Ambience (background)",
 "audio.effects":"Effects (beats and tones)",
 "audio.test":"Test audio",
+"hud.skipLine":"Skip line",
+"hud.skipLineTitle":"Skip line · Hold to change text speed",
+"hud.clueBook":"Clue notebook",
+"hud.sound":"Audio",
+"hud.chapterProgress":"Chapter progress",
 },
 rx:{
   fear:/trembl|dark|vanish|disappear|cold|legend|shiver|afraid|fear/i,
