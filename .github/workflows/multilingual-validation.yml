@@ -49,6 +49,11 @@ jobs:
             throw new Error('Save-slot HTML escaping regression');
           }
           console.log('Save-slot HTML injection regression test passed');
+          if (!/validSaveState\\(g\\)\\?g:null/.test(engineSource) ||
+              !/validSaveEntry\\(K\\+k,v\\)/.test(engineSource)) {
+            throw new Error('Local save validation is missing');
+          }
+          console.log('Local save validation regression test passed');
 
           const html = fs.readFileSync('index.html', 'utf8');
           for (const [i, match] of [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].entries()) {
