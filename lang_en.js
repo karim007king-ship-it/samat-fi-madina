@@ -559,6 +559,7 @@ LNG.en={t:{
 "menu.reduceMotion":"Reduce motion",
 "menu.enabled":"Enabled",
 "menu.disabled":"Disabled",
+"menu.back":"Back",
 "save.exported":"Save exported",
 "save.exportFailed":"Export failed",
 "save.imported":"Imported successfully; reloading…",
