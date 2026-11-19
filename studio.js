@@ -61,41 +61,11 @@ const f=document.createElement('input');
     f.click()
   })
 }
-function applyLib(t){let j;try{j=JSON.parse(t)}catch(e){return 'نص غير صالح'}if(Array.isArray(j))j={story:j};
-BG0=BG0||{
-    ...BG
-  };
-  Object.assign(BG,BG0);
-  CHR={};
-  OV={};
-  C0=C0||JSON.stringify(C);
-  const ns=Array.isArray(j.story)&&j.story.length;
-  C.length=0;
-  C.push(...(ns?j.story:JSON.parse(C0)));
-  let n=ns?1:0;
-(j.chars||[]).forEach(c=>{
-    const m=MAPC.find(x=>(c.name||'').includes(x[1]));
-    if(m&&c.svg){
-      CHR[m[0]]=c.svg.replace('<svg viewBox="0 0 60 92">',`<svg id="c_${m[0]}" viewBox="0 0 60 92" style="--c:${N[m[0]][1]}">`);
-      n++
-    }
-  });
-(j.bgs||[]).forEach(b=>{
-    const m=MAPB.find(x=>(b.name||'').includes(x[1]));
-    if(m&&b.svg){
-      BG[m[0]]=b.svg;
-      OV[m[0]]=1;
-      n++
-    }
-  });
-let st=$('#imp');
-  if(!st){
-    st=document.createElement('style');
-    st.id='imp';
-    document.head.appendChild(st)
-  }
-  st.textContent=j.css||'';
-curBg=null;buildChars();return 'تم تطبيق '+n+' عنصر'}
+// الاستيراد معطّل مؤقتا في نسخة التجربة: ملفات المكتبة قد تحتوي SVG/CSS/HTML
+// وتحتاج إلى تنظيف بنيوي قبل إدخالها إلى DOM. تبقى القصة والموارد الافتراضية متاحة.
+function applyLib(t){
+  return 'استيراد المكتبات متوقف مؤقتا لحماية نسخة التجربة'
+}
 function imp(){
   ov(`<div class="pz"><h3>استيراد من الاستوديو</h3><p>انسخ ملف JSON من تبويب «تصدير» في الاستوديو والصقه هنا. سمِّ الشخصيات: آدم، ياسمين، سامي. وسمِّ الخلفيات: سطح، استوديو، سوق، باب، سلالم، متاهة، مخبر، قاعة.</p><textarea id="jt" style="width:100%;height:110px;box-sizing:border-box;background:#06080f;color:#e9ecf5;border:1px solid #ffffff33;border-radius:8px;padding:8px;direction:ltr;user-select:text;-webkit-user-select:text"></textarea><p id="ps"></p><button class="btn" onclick="const t=$('#jt').value;const r=applyLib(t);if(r[0]==='ت')try{localStorage.setItem(LIBK,t)}catch(e){}$('#ps').textContent=r">تطبيق</button> <button class="btn" onclick="try{localStorage.removeItem(LIBK)}catch(e){}$('#ps').textContent=applyLib('{}')">استعادة الافتراضي</button> <button class="btn" onclick="home()">رجوع</button></div>`)
 }
