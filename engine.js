@@ -351,7 +351,7 @@ if(G.i===0&&G.card!==G.c){
     scene(ch.bg);
     stage(ch);
     hud();
-    ov(`<div class="card">${Engine.fill('card:extra',G.c)}<p>الفصل ${G.c+1}</p><h2>${ch.t}</h2></div>`);
+    ov(`<div class="card">${Engine.fill('card:extra',G.c)}<p>${TR('ui.chapter')} ${G.c+1}</p><h2>${ch.t}</h2></div>`);
     XT={
       in:{},out:{}
     };
