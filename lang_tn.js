@@ -688,6 +688,12 @@ LNG.tn={t:{
 
 "lang.select":"اختيار اللغة",
 
+"ui.history":"سجل الحوار",
+"ui.importStudio":"استيراد من الاستوديو",
+"ui.storyEditor":"نسخ القصة للمحرر",
+"ui.realImages":"صور حقيقية (شخصيات وخلفيات)",
+"ui.faceExpressions":"تعابير الوجوه",
+
 },
 rx:{
  fear:/يرجف|الظلام|اختفى|خرافة|بارد|يختفي/,
