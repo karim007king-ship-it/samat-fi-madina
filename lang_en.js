@@ -543,7 +543,7 @@ LNG.en={t:{
 "end.secretLabel":"Secret ending",
 "end.normalLabel":"Ending {n} of 5",
 "ui.restart":"Restart",
-"ui.endGallery":"Ending gallery"
+"ui.endGallery":"Ending gallery",
 "menu.tapToContinue":"Tap the dialogue to continue.",
 "menu.title":"Menu",
 "menu.slots":"Save slots",
