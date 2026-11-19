@@ -19,7 +19,7 @@
    ثوابت عامة ومرجع GAME القادم من story.js */
 
 const $=s=>document.querySelector(s);
-const htmlText=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function htmlText(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 var LIBK=GAME.id+'_lib';
 
 /* ═══════════ 2) واجهة التوسعة (Engine) ═══════════
