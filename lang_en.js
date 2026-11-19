@@ -588,6 +588,9 @@ LNG.en={t:{
 "ui.realImages":"Real images (characters and backgrounds)",
 "ui.faceExpressions":"Facial expressions",
 
+"ui.faceExpressionsHelp":"Optional: add full-body images for each character with different expressions. If none are provided, the game uses symbols and animations automatically.",
+"ui.clearExpressions":"Clear all expressions",
+"ui.processing":"Processing…",
 },
 rx:{
   fear:/trembl|dark|vanish|disappear|cold|legend|shiver|afraid|fear/i,
