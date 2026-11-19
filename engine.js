@@ -251,7 +251,7 @@ function scene(b){
 }
 
 function hud(){
-  $('#ct').textContent=`${G.c+1}/${C.length}`;
+  $('#ct').textContent=`${D(G.c+1)}/${D(C.length)}`;
   $('#ct').title=GAME.partOf(G.c);
   $('#ty').style.width=G.y*10+'%';
   $('#ts').style.width=G.s*10+'%';
@@ -352,7 +352,7 @@ if(G.i===0&&G.card!==G.c){
     scene(ch.bg);
     stage(ch);
     hud();
-    ov(`<div class="card">${Engine.fill('card:extra',G.c)}<p>${TR('menu.chapter').replace('{n}',G.c+1)}</p><h2>${ch.t}</h2></div>`);
+    ov(`<div class="card">${Engine.fill('card:extra',G.c)}<p>${TR('menu.chapter').replace('{n}',D(G.c+1))}</p><h2>${ch.t}</h2></div>`);
     XT={
       in:{},out:{}
     };
@@ -467,7 +467,7 @@ Engine.puzzles.ord=(p,c)=>{
     tone(300,.1);
     if(i===p.a[c.pos]){
       b.disabled=true;b.classList.add('lit');
-      b.textContent=(c.pos+1)+'. '+p.o[i];
+      b.textContent=D(c.pos+1)+'. '+p.o[i];
       if(++c.pos===p.a.length)win(p,c.f)
     }else{
       c.f++;c.pos=0;
