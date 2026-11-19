@@ -49,7 +49,7 @@ const trust=(k,d)=>{
   const o=G[k];
   G[k]=Math.max(0,Math.min(10,o+d));
   Engine.emit('trust',k,d,G[k]);
-  if(o>=4&&G[k]<4)toast(TR('warn.trust').replace('{n}',k==='y'?'ياسمين':'سامي'))
+  if(o>=4&&G[k]<4)toast(TR('warn.trust').replace('{n}',TR(k==='y'?'name.y':'name.s')))
 };
 
 const nw=()=>({c:0,i:0,y:5,s:5,j:[],f:{},card:-1,err:0});
@@ -568,7 +568,7 @@ function retryEnd(){const q=lsg('_snap',{}),s=q[decIdx()];if(s)start(JSON.parse(
 
 // مشاركة النتيجة: قائمة المشاركة إن وُجدت، وإلا نسخ للحافظة
 function shareEnd(){
-  const e=ending(),t=(e[3]===6?TR('share.t').replace('النهاية {n} من ٥','النهاية السرية'):TR('share.t').replace('{n}',e[3])).replace('{g}',TR('game.homeTitle')).replace('{e}',e[0])+(location.protocol.indexOf('http')===0?' '+location.href.split('#')[0]:'');
+  const e=ending(),t=(e[3]===6?TR('share.secret'):TR('share.t').replace('{n}',e[3])).replace('{g}',TR('game.homeTitle')).replace('{e}',e[0])+(location.protocol.indexOf('http')===0?' '+location.href.split('#')[0]:'');
   if(navigator.share)navigator.share({text:t}).catch(()=>{});
   else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast(TR('copied')),()=>toast(t));
   else toast(t)}
