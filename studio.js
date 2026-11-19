@@ -22,7 +22,7 @@ x.putImageData(d,0,0)}
 function prep(file,isC){
   return new Promise((resolve,reject)=>{
     const allowed=['image/png','image/jpeg','image/webp','image/gif'];
-    if(!file||!allowed.includes(file.type)||file.size>10*1024*1024){
+    if(!file||!allowed.includes(file.type)||file.size>8*1024*1024){
       reject(new Error('Unsupported or oversized image'));
       return
     }
@@ -31,7 +31,7 @@ function prep(file,isC){
     im.onload=()=>{
       try{
         if(!Number.isFinite(im.width)||!Number.isFinite(im.height)||im.width<1||im.height<1||
-          im.width>12000||im.height>12000||im.width*im.height>40000000){
+          im.width>10000||im.height>10000||im.width*im.height>16000000){
           throw new Error('Image dimensions exceed safe limits')
         }
         const m=isC?[520,760]:[1100,825],scale=Math.min(1,m[0]/im.width,m[1]/im.height),c=document.createElement('canvas');
