@@ -590,7 +590,7 @@ LNG.fr={t:{
 
 "ui.faceExpressionsHelp":"Facultatif : ajoutez pour chaque personnage des images en pied avec différentes expressions. Sans images, le jeu utilise automatiquement des symboles et des animations.",
 "ui.clearExpressions":"Effacer toutes les expressions",
-"ui.processing":"Traitement en cours…",,
+"ui.processing":"Traitement en cours…",
 "ui.wrongPick":"Ce n’est pas le bon écho.",
 "ui.exportFail":"Échec de l’exportation.",
 "ui.badSave":"Ce fichier de sauvegarde ne correspond pas à ce jeu."
