@@ -620,6 +620,11 @@ LNG.fr={t:{
 "audio.ambience":"Ambiance (fond sonore)",
 "audio.effects":"Effets (battements et tonalités)",
 "audio.test":"Tester le son",
+"hud.skipLine":"Passer la réplique",
+"hud.skipLineTitle":"Passer la réplique · Maintenez pour changer la vitesse du texte",
+"hud.clueBook":"Carnet d’indices",
+"hud.sound":"Audio",
+"hud.chapterProgress":"Progression du chapitre",
 },
 rx:{
   fear:/trembl|noir|obscurité|disparu|disparaît|froid|légende|peur|glac/i,
