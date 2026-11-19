@@ -577,5 +577,16 @@ rx:{
  question:/\?/,
  open:/opens|opening|glows|lights up|shines/i,
  down:/descend|stairs|steps|downstairs|underground/i,
- alert:/[!?]/
+ alert:/[!?]/,
+"hud.skipTitle":"Skip line · hold to change text speed",
+"hud.skip":"Skip line",
+"hud.clues":"Clue notebook",
+"hud.sound":"Sound",
+"hud.restart":"Restart",
+"hud.progress":"Chapter progress",
+"hud.menu":"Menu",
+"lang.tn":"Tunisian",
+"lang.ar":"Arabic",
+"lang.fr":"French",
+"lang.en":"English"
 }};
