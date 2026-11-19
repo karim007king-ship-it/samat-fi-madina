@@ -67,7 +67,7 @@ function applyLib(t){
   return TR('studio.importDisabled')
 }
 function imp(){
-  ov(`<div class="pz"><h3>${TR('studio.importTitle')}</h3><p>${TR('studio.importDisabledHelp')}</p><button class="btn" onclick="home()">رجوع</button></div>`)
+  ov(`<div class="pz"><h3>${TR('studio.importTitle')}</h3><p>${TR('studio.importDisabledHelp')}</p><button class="btn" onclick="home()">${TR('menu.back')}</button></div>`)
 }
 function expStory(){
   ov(`<div class="pz"><h3>${TR('ui.copyStory')}</h3><p>${TR('studio.storyHelp')}</p><textarea id="jt" readonly style="width:100%;height:110px;box-sizing:border-box;background:#06080f;color:#e9ecf5;border:1px solid #ffffff33;border-radius:8px;padding:8px;direction:ltr;user-select:text;-webkit-user-select:text"></textarea><p id="ps"></p><button class="btn" onclick="const t=$('#jt');t.select();let ok=0;try{ok=document.execCommand('copy')}catch(e){}$('#ps').textContent=ok?TR('studio.copied'):TR('studio.copyManual')">${TR('studio.copy')}</button> <button class="btn" onclick="home()">${TR('menu.back')}</button></div>`);
