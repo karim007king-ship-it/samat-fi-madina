@@ -388,7 +388,7 @@ const t=s[1],rx=/!/.test(t)?'jp':/\u061f/.test(t)?'tl':RX.fear.test(t)?'sh':'';
       thump()
     }
 $('#tx').style.color=s[0]==='n'?'#b9c0d8':'var(--ink)';direct(s);express(s);Engine.emit('line',s);typ(s[1]);nx=adv;return}
-if(s.c){wide();$('#nm').textContent='';$('#tx').textContent='ماذا تقرّرون؟';nx=0;rd=0;
+if(s.c){wide();$('#nm').textContent='';$('#tx').textContent=TR('ui.decision');nx=0;rd=0;
 s.c.forEach(o=>{
       const b=document.createElement('button');
       b.textContent=o[0];
@@ -413,7 +413,7 @@ s.c.forEach(o=>{
     return
   }
 if(s.p){nx=0;wide();return puz(s.p)}
-if(s.j){if(!G.j.includes(s.j)){G.j.push(s.j);toast('📓 دليل جديد في الدفتر')}G.i++;sv();return step()}}
+if(s.j){if(!G.j.includes(s.j)){G.j.push(s.j);toast(TR('ui.newClue'))}G.i++;sv();return step()}}
 
 /* ═══════════ 9) الألغاز ═══════════
    سجل الألغاز Engine.puzzles (seq، ord، code) + الفوز والتلميحات المدرّجة */
@@ -421,7 +421,7 @@ function win(p,f){
   chime(f<2);
   if(f>0)G.err=(G.err||0)+1;   // أي خطأ أو تخطّي يُسقط النهاية السرية
   const e=$('#ps');
-  if(e)e.textContent=f>1?'✔ نجحتم!':'✔ نجحتم! +ثقة';
+  if(e)e.textContent=f>1?TR('ui.success'):TR('ui.successTrust');
   for(const k in p.r)trust(k,f>1?0:p.r[k]);
   Engine.emit('puzzle:won',p,f);
   setTimeout(()=>{
@@ -477,7 +477,7 @@ Engine.puzzles.ord=(p,c)=>{
 };
 // لغز الاختيار بالدليل: كل خيار له زر استماع (نبضات بفاصل x.iv) وزر اختيار؛ الجواب p.a
 Engine.puzzles.pick=(p,c)=>{
-  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div class="ordw">${p.o.map((x,i)=>`<div class="pk"><button class="pad pl" data-i="${i}" aria-label="استمع">🔊</button><button class="pad ch" data-i="${i}">${x.t}</button></div>`).join('')}</div><p id="ps"></p></div>`);
+  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div class="ordw">${p.o.map((x,i)=>`<div class="pk"><button class="pad pl" data-i="${i}" aria-label="${TR('ui.listen')}">🔊</button><button class="pad ch" data-i="${i}">${x.t}</button></div>`).join('')}</div><p id="ps"></p></div>`);
   document.querySelectorAll('.pl').forEach(b=>b.onclick=()=>{
     const x=p.o[+b.dataset.i];
     [0,1,2].forEach(k=>setTimeout(()=>ps(70,40,.3,.22,'sine',.5),k*x.iv*400))
@@ -522,7 +522,7 @@ function hint(f,p,base){
       z.appendChild(b)
     }
   }
-  return f<2?base:f===2?TR('hint.j'):'تلميح: '+p.h}
+  return f<2?base:f===2?TR('hint.j'):TR('ui.hintPrefix')+p.h}
 
 /* ═══════════ 10) النهايات ═══════════
    شاشة النهاية، شرح السبب، «جرّب قراراً آخر»، المشاركة، البدء والإعادة */
@@ -532,7 +532,7 @@ function endScr(){
   endSnd(e[3]);
   endRec(e[3]);
   scene(e[2]);
-  const show=()=>{ov(`<div class="card"><p>${e[3]===6?'النهاية السرية':'النهاية '+e[3]+' من ٥'}</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">إعادة من البداية</button><button class="btn" onclick="endsUI()">معرض النهايات</button></div>`);Engine.emit('ending:shown',e[3])}
+  const show=()=>{ov(`<div class="card"><p>${e[3]===6?TR('end.secretLabel'):TR('end.normalLabel').replace('{n}',e[3])}</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">${TR('ui.restart')}</button><button class="btn" onclick="endsUI()">${TR('ui.endGallery')}</button></div>`);Engine.emit('ending:shown',e[3])}
   Engine.emit('ending',e);
   Engine.gate('ending',{n:e[3],e},show)
 }
