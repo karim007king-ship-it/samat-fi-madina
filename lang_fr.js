@@ -582,6 +582,12 @@ LNG.fr={t:{
 
 "lang.select":"Choisir la langue",
 
+"ui.history":"Historique des dialogues",
+"ui.importStudio":"Importer depuis le studio",
+"ui.storyEditor":"Copier l’histoire dans l’éditeur",
+"ui.realImages":"Images réelles (personnages et décors)",
+"ui.faceExpressions":"Expressions faciales",
+
 },
 rx:{
   fear:/trembl|noir|obscurité|disparu|disparaît|froid|légende|peur|glac/i,
