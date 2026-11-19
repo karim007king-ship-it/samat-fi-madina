@@ -559,6 +559,7 @@ LNG.fr={t:{
 "menu.reduceMotion":"Réduire les animations",
 "menu.enabled":"Activé",
 "menu.disabled":"Désactivé",
+"menu.back":"Retour",
 "save.exported":"Sauvegarde exportée",
 "save.exportFailed":"Échec de l’exportation",
 "save.imported":"Importation réussie, rechargement…",
