@@ -117,7 +117,7 @@ function layer(id,title,rows,empty,bottom){
 // دفتر الأدلة (الأحدث أولا)
 function jnl(){
   const a=(G&&G.j)||[];
-  layer('jn',`${TR('jn.h')} (${a.length})`,a.slice().reverse().map(x=>`<li>${x}</li>`),TR('jn.none'))
+  layer('jn',`${TR('jn.h')} (${D(a.length)})`,a.slice().reverse().map(x=>`<li>${x}</li>`),TR('jn.none'))
 }
 function hist(){
   layer('hs',TR('hs.h'),HIST.slice(-15).map(h=>`<li><b style="color:${h.c}">${h.n}</b> ${h.t}</li>`),TR('hs.none'),1)
@@ -493,7 +493,7 @@ Engine.puzzles.pick=(p,c)=>{
 };
 // لغز الرمز الرقمي (الافتراضي لأي نوع غير معروف)
 Engine.puzzles.code=(p,c)=>{
-  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div id="dg"></div><div class="kp">${[1,2,3,4,5,6,7,8,9,'⌫',0,'✔'].map(k=>`<button class="pad" data-k="${k}">${k}</button>`).join('')}</div><p id="ps"></p></div>`);
+  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div id="dg"></div><div class="kp">${[1,2,3,4,5,6,7,8,9,'⌫',0,'✔'].map(k=>`<button class="pad" data-k="${k}">${typeof k==='number'?D(k):k}</button>`).join('')}</div><p id="ps"></p></div>`);
   const sh=()=>{const e=$('#dg');if(e)e.textContent=c.inp.padEnd(p.a.length,'·')};
   sh();
   document.querySelectorAll('.pad').forEach(b=>b.onclick=()=>{
@@ -533,7 +533,7 @@ function endScr(){
   endSnd(e[3]);
   endRec(e[3]);
   scene(e[2]);
-  const show=()=>{ov(`<div class="card"><p>${e[3]===6?TR('end.secretLabel'):TR('end.normalLabel').replace('{n}',e[3])}</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">${TR('hud.restart')}</button><button class="btn" onclick="endsUI()">${TR('ui.endGallery')}</button></div>`);Engine.emit('ending:shown',e[3])}
+  const show=()=>{ov(`<div class="card"><p>${e[3]===6?TR('end.secretLabel'):TR('end.normalLabel').replace('{n}',D(e[3]))}</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">${TR('hud.restart')}</button><button class="btn" onclick="endsUI()">${TR('ui.endGallery')}</button></div>`);Engine.emit('ending:shown',e[3])}
   Engine.emit('ending',e);
   Engine.gate('ending',{n:e[3],e},show)
 }
@@ -554,7 +554,7 @@ if(n===5)m=TR('why.low').replace('{n}',lo.join(' و '));
   else if(n===6)m=TR('why.secret');
   else if(n===1)m=TR('why.release')+' '+TR('why.secrethint');
   else m=f.release?TR('why.rel_low'):TR('why.none');
-return `<p class="why"><b>${TR('why.h')}</b><br>${m}<br><small>${TR('why.tip')} (${TR('name.y')} ${y}/10 · ${TR('name.s')} ${s}/10)</small></p>`
+return `<p class="why"><b>${TR('why.h')}</b><br>${m}<br><small>${TR('why.tip')} (${TR('name.y')} ${D(y)}/10 · ${TR('name.s')} ${D(s)}/10)</small></p>`
 }
 
 // «جرّب قراراً آخر»: العودة لبداية فصل القرار الأخير (أول فصل فيه خيار destroy) من اللقطة المحفوظة
@@ -874,7 +874,7 @@ function menuUI(){
 
 function slotUI(){
   const sl=lsg('_slots',{});
-  ov(`<div class='pz'><h3>${TR('menu.slots')}</h3>${[1,2,3].map(n=>{const x=sl[n];return `<div style='padding:8px 0;border-bottom:1px solid #ffffff14'><b>${TR('menu.slot')} ${n}</b><br><small>${x?TR('menu.chapter').replace('{n}',x.g.c+1)+' · '+htmlText(x.t):TR('menu.empty')}</small><div style='display:flex;gap:6px;justify-content:center;margin-top:6px'><button class='btn' data-sv='${n}' ${G?'':'disabled'}>${TR('menu.save')}</button><button class='btn' data-ld='${n}' ${x?'':'disabled'}>${TR('menu.load')}</button></div></div>`}).join('')}<button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`);
+  ov(`<div class='pz'><h3>${TR('menu.slots')}</h3>${[1,2,3].map(n=>{const x=sl[n];return `<div style='padding:8px 0;border-bottom:1px solid #ffffff14'><b>${TR('menu.slot')} ${D(n)}</b><br><small>${x?TR('menu.chapter').replace('{n}',D(x.g.c+1))+' · '+htmlText(x.t):TR('menu.empty')}</small><div style='display:flex;gap:6px;justify-content:center;margin-top:6px'><button class='btn' data-sv='${n}' ${G?'':'disabled'}>${TR('menu.save')}</button><button class='btn' data-ld='${n}' ${x?'':'disabled'}>${TR('menu.load')}</button></div></div>`}).join('')}<button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`);
 document.querySelectorAll('#ov [data-sv]').forEach(b=>b.onclick=()=>{
     const q=lsg('_slots',{}),d=new Date();
     q[b.dataset.sv]={
@@ -893,7 +893,7 @@ document.querySelectorAll('#ov [data-ld]').forEach(b=>b.onclick=()=>{
 
 function chUI(){
   const q=lsg('_snap',{}),ks=Object.keys(q).map(Number).sort((a,b)=>a-b);
-  ov(`<div class='pz'><h3>${TR('menu.chapters')}</h3><div style='max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:6px'>${ks.length?ks.map(c=>`<button class='btn' data-c='${c}'>${c+1}. ${C[c].t}</button>`).join(''):`<p>${TR('ui.noChapters')}</p>`}</div><button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`);
+  ov(`<div class='pz'><h3>${TR('menu.chapters')}</h3><div style='max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:6px'>${ks.length?ks.map(c=>`<button class='btn' data-c='${c}' >${D(c+1)}. ${C[c].t}</button>`).join(''):`<p>${TR('ui.noChapters')}</p>`}</div><button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`);
   document.querySelectorAll('#ov [data-c]').forEach(b=>b.onclick=()=>start(JSON.parse(JSON.stringify(q[b.dataset.c]))))
 }
 function endsUI(){
@@ -906,9 +906,9 @@ function endsUI(){
   G=sg;
   const row=n=>{
     const e=df[n];
-    return got.includes(n)&&e?`<div><b>${n===6?'★':n+'.'} ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n===6?'★ '+TR('end.secretLabel'):n+'. ؟؟؟'}</b><br><small>${n===6?TR('ui.secretHint'):TR('ui.undiscoveredEnding')}</small></div>`
+    return got.includes(n)&&e?`<div><b>${n===6?'★':D(n)+'.'} ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n===6?'★ '+TR('end.secretLabel'):D(n)+'. ؟؟؟'}</b><br><small>${n===6?TR('ui.secretHint'):TR('ui.undiscoveredEnding')}</small></div>`
   };
-  ov(`<div class='pz'><h3>${TR('ui.endGallery')} (${got.length}/6)</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`)
+  ov(`<div class='pz'><h3>${TR('ui.endGallery')} (${D(got.length)}/${D(6)})</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`)
 }
 
 function setUI(){
