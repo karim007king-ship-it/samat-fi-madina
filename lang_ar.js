@@ -597,7 +597,7 @@ LNG.ar={t:{
 "save.invalidFile":"ملف غير صالح",
 "save.badSize":"حجم ملف الحفظ غير مقبول",
 "save.wrongGame":"ملف حفظ لا يخص هذه اللعبة",
-"save.invalidData":"بيانات الحفظ غير صالحة"
+"save.invalidData":"بيانات الحفظ غير صالحة",
 "ui.chapter":"الفصل",
 "ui.decide":"ماذا تقرّرون؟",
 "ui.newclue":"📓 دليل جديد في الدفتر",
