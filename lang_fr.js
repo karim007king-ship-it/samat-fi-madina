@@ -623,7 +623,6 @@ LNG.fr={t:{
 "hud.skipLine":"Passer la réplique",
 "hud.skipLineTitle":"Passer la réplique · Maintenez pour changer la vitesse du texte",
 "hud.clueBook":"Carnet d’indices",
-"hud.sound":"Audio",
 "hud.chapterProgress":"Progression du chapitre",
 },
 rx:{
