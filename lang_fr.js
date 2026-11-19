@@ -567,6 +567,7 @@ LNG.fr={t:{
 "save.badSize":"Taille du fichier de sauvegarde invalide",
 "save.wrongGame":"Cette sauvegarde ne correspond pas au jeu",
 "save.invalidData":"Données de sauvegarde invalides"
+"lang.select":"Choisir la langue",
 },
 rx:{
   fear:/trembl|noir|obscurité|disparu|disparaît|froid|légende|peur|glac/i,
