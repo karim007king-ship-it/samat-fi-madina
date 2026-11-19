@@ -705,6 +705,13 @@ LNG.tn={t:{
 "ui.successTrust":"✔ نجحتم! +ثقة",
 "end.secretLabel":"النهاية السرية",
 "end.normalLabel":"النهاية {n} من ٥",
+"puz.listenCarefully":"اسمعوا جيداً...",
+"puz.yourTurn":"دوركم",
+"puz.wrongListen":"خطأ. أعيدوا الاستماع.",
+"puz.wrongOrder":"الترتيب غير صحيح، حاولوا من جديد.",
+"puz.wrongEcho":"ليس هذا الصدى.",
+"puz.wrongCode":"الرمز غير صحيح.",
+"ui.textSpeedChanged":"سرعة النص: {speed}",
 },
 rx:{
  fear:/يرجف|الظلام|اختفى|خرافة|بارد|يختفي/,
