@@ -97,7 +97,7 @@ jobs:
             const source = fs.readFileSync('lang_' + lang + '.js', 'utf8');
             const table = source.match(/\bt:\s*\{([\s\S]*?)\n\},\s*\nrx:/);
             if (!table) throw new Error('Could not parse content table: ' + lang);
-            const entries = [...table[1].matchAll(/^\s*"([^"]+)"\s*:\s*"((?:\.|[^"\])*)"\s*,?\s*$/gm)];
+            const entries = [...table[1].matchAll(/^\s*"([^"]+)"\s*:\s*"((?:\\.|[^"\\])*)"\s*,?\s*$/gm)];
             dictionaries[lang] = new Map(entries.map(m => [m[1], m[2]]));
           }
           const placeholders = value => [...value.matchAll(/\{[^{}]+\}|%[sdif]/g)].map(m => m[0]).sort().join('|');
