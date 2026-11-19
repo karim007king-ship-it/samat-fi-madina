@@ -37,7 +37,7 @@ function prep(file,isC){
   })
 }
 function imgUI(){
-  ov(`<div class='pz'><h3>${TR('ui.photoTitle')}</h3><p>${TR('ui.photoHelp')}</p>${SLOTS.map(([k,n])=>`<div style='display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #ffffff14'><span style='flex:1;text-align:right'>${n}</span>${IMG[k]?`<img src='${IMG[k]}' style='height:38px;border-radius:4px'>`:''}<button class='btn' style='min-width:70px;padding:6px' data-k='${k}' data-a='pick'>${TR('ui.choose')}</button>${IMG[k]?`<button class='btn' style='min-width:46px;padding:6px' data-k='${k}' data-a='del'>✕</button>`:''}</div>`).join('')}<p id='ps'></p><button class='btn' onclick='home()'>رجوع</button></div>`);
+  ov(`<div class='pz'><h3>${TR('ui.photoTitle')}</h3><p>${TR('ui.photoHelp')}</p>${SLOTS.map(([k,n])=>`<div style='display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #ffffff14'><span style='flex:1;text-align:right'>${n}</span>${IMG[k]?`<img src='${IMG[k]}' style='height:38px;border-radius:4px'>`:''}<button class='btn' style='min-width:70px;padding:6px' data-k='${k}' data-a='pick'>${TR('ui.choose')}</button>${IMG[k]?`<button class='btn' style='min-width:46px;padding:6px' data-k='${k}' data-a='del'>✕</button>`:''}</div>`).join('')}<p id='ps'></p><button class='btn' onclick='home()'>${TR('ui.back')}</button></div>`);
 document.querySelectorAll('#ov [data-a]').forEach(b=>b.onclick=()=>{
     const k=b.dataset.k;
     if(b.dataset.a==='del'){
@@ -70,6 +70,6 @@ function imp(){
   ov(`<div class="pz"><h3>${TR('ui.importStudioTitle')}</h3><p>${TR('ui.importStudioBlocked')}</p><button class="btn" onclick="home()">${TR('ui.back')}</button></div>`)
 }
 function expStory(){
-  ov(`<div class="pz"><h3>${TR('ui.storyEditorTitle')}</h3><p>${TR('ui.storyEditorHelp')}</p><textarea id="jt" readonly style="width:100%;height:110px;box-sizing:border-box;background:#06080f;color:#e9ecf5;border:1px solid #ffffff33;border-radius:8px;padding:8px;direction:ltr;user-select:text;-webkit-user-select:text"></textarea><p id="ps"></p><button class="btn" onclick="const t=$('#jt');t.select();let ok=0;try{ok=document.execCommand('copy')}catch(e){}$('#ps').textContent=ok?TR('ui.copied'):TR('ui.copyManual')">${TR('ui.copy')}</button> <button class="btn" onclick="home()">رجوع</button></div>`);
+  ov(`<div class="pz"><h3>${TR('ui.storyEditorTitle')}</h3><p>${TR('ui.storyEditorHelp')}</p><textarea id="jt" readonly style="width:100%;height:110px;box-sizing:border-box;background:#06080f;color:#e9ecf5;border:1px solid #ffffff33;border-radius:8px;padding:8px;direction:ltr;user-select:text;-webkit-user-select:text"></textarea><p id="ps"></p><button class="btn" onclick="const t=$('#jt');t.select();let ok=0;try{ok=document.execCommand('copy')}catch(e){}$('#ps').textContent=ok?TR('ui.copied'):TR('ui.copyManual')">${TR('ui.copy')}</button> <button class="btn" onclick="home()">${TR('ui.back')}</button></div>`);
   $('#jt').value=JSON.stringify(C)
 }
