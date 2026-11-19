@@ -834,7 +834,7 @@ async function loadExp(){
 }
 
 function expUI(){
-  ov(`<div class='pz'><h3>تعابير الوجوه</h3><p>اختياري: لكل شخصية صورة كاملة الجسم بنفس الوضعية والإطار وبتعبير مختلف، وتظهر عند ذلك الشعور. بدونها تعمل التعابير تلقائيا بالرموز والحركة.</p>${Object.keys(N).map(c=>[c,N[c][0]]).map(([c,n])=>`<div style='padding:6px 0;border-bottom:1px solid #ffffff14'><b>${n}</b><div style='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px'>${EXN.map(e=>{const k='x_'+c+'_'+e;return `<button class='btn' data-x='${k}' style='padding:6px 10px;font-size:13px'>${EXA[e]}${IMG[k]?' ✓':''}</button>`}).join('')}</div></div>`).join('')}<p id='ps'></p><button class='btn' id='xc'>مسح كل التعابير</button><button class='btn' onclick='ov()'>إغلاق</button></div>`);
+  ov(`<div class='pz'><h3>تعابير الوجوه</h3><p>اختياري: لكل شخصية صورة كاملة الجسم بنفس الوضعية والإطار وبتعبير مختلف، وتظهر عند ذلك الشعور. بدونها تعمل التعابير تلقائيا بالرموز والحركة.</p>${Object.keys(N).map(c=>[c,N[c][0]]).map(([c,n])=>`<div style='padding:6px 0;border-bottom:1px solid #ffffff14'><b>${n}</b><div style='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px'>${EXN.map(e=>{const k='x_'+c+'_'+e;return `<button class='btn' data-x='${k}' style='padding:6px 10px;font-size:13px'>${EXA[e]}${IMG[k]?' ✓':''}</button>`}).join('')}</div></div>`).join('')}<p id='ps'></p><button class='btn' id='xc'>مسح كل التعابير</button><button class='btn' onclick='ov()'>${TR('ui.close')}</button></div>`);
 $('#xc').onclick=async()=>{
     for(const c of'ays')for(const e of EXN){
       const k='x_'+c+'_'+e;
@@ -864,16 +864,16 @@ document.querySelectorAll('#ov [data-x]').forEach(b=>b.onclick=()=>{
 
 function home(){
   const s=ld();
-  ov(`<div class="card"><p>${GAME.homePart}</p><h1>${GAME.homeTitle}</h1><p>${TR('menu.tapToContinue')}</p><button class="btn" onclick="start(nw())">ابدأ</button>${s?'<button class="btn" onclick="start(ld())">تابع</button>':''}<button class="btn" onclick="imp()">استيراد من الاستوديو</button><button class="btn" onclick="expStory()">نسخ القصة للمحرر</button><button class="btn" onclick="imgUI()">صور حقيقية (شخصيات وخلفيات)</button><button class="btn" onclick="expUI()">تعابير الوجوه</button><button class="btn" onclick="menuUI()">القائمة</button></div>`)
+  ov(`<div class="card"><p>${GAME.homePart}</p><h1>${GAME.homeTitle}</h1><p>${TR('menu.tapToContinue')}</p><button class="btn" onclick="start(nw())">${TR('ui.start')}</button>${s?`<button class="btn" onclick="start(ld())">${TR('ui.continue')}</button>`:''}<button class="btn" onclick="imp()">${TR('ui.importStudio')}</button><button class="btn" onclick="expStory()">${TR('ui.storyEditor')}</button><button class="btn" onclick="imgUI()">${TR('ui.realImages')}</button><button class="btn" onclick="expUI()">${TR('ui.faceExpressions')}</button><button class="btn" onclick="menuUI()">${TR('ui.menu')}</button></div>`)
 }
 
 function menuUI(){
-  ov(`<div class='card'><h2>${TR('menu.title')}</h2><button class='btn' onclick='slotUI()'>خانات الحفظ</button><button class='btn' onclick='chUI()'>اختيار الفصل</button><button class='btn' onclick='hist()'>سجل الحوار</button><button class='btn' onclick='endsUI()'>معرض النهايات</button><button class='btn' onclick='expSave()'>تصدير الحفظ</button><button class='btn' onclick='impSave()'>استيراد الحفظ</button><button class='btn' onclick='setUI()'>الإعدادات</button><button class='btn' onclick='ov()'>إغلاق</button></div>`)
+  ov(`<div class='card'><h2>${TR('menu.title')}</h2><button class='btn' onclick='slotUI()'>${TR('ui.slots')}</button><button class='btn' onclick='chUI()'>${TR('ui.pickChapter')}</button><button class='btn' onclick='hist()'>${TR('ui.history')}</button><button class='btn' onclick='endsUI()'>${TR('ui.endGallery')}</button><button class='btn' onclick='expSave()'>${TR('ui.exportSave')}</button><button class='btn' onclick='impSave()'>${TR('ui.importSave')}</button><button class='btn' onclick='setUI()'>${TR('ui.settings')}</button><button class='btn' onclick='ov()'>إغلاق</button></div>`)
 }
 
 function slotUI(){
   const sl=lsg('_slots',{});
-  ov(`<div class='pz'><h3>${TR('menu.slots')}</h3>${[1,2,3].map(n=>{const x=sl[n];return `<div style='padding:8px 0;border-bottom:1px solid #ffffff14'><b>خانة ${n}</b><br><small>${x?'الفصل '+(x.g.c+1)+' · '+x.t:'فارغة'}</small><div style='display:flex;gap:6px;justify-content:center;margin-top:6px'><button class='btn' data-sv='${n}' ${G?'':'disabled'}>حفظ</button><button class='btn' data-ld='${n}' ${x?'':'disabled'}>تحميل</button></div></div>`}).join('')}<button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`);
+  ov(`<div class='pz'><h3>${TR('menu.slots')}</h3>${[1,2,3].map(n=>{const x=sl[n];return `<div style='padding:8px 0;border-bottom:1px solid #ffffff14'><b>${TR('ui.slot')} ${n}</b><br><small>${x?TR('ui.chapter')+' '+(x.g.c+1)+' · '+x.t:TR('ui.empty')}</small><div style='display:flex;gap:6px;justify-content:center;margin-top:6px'><button class='btn' data-sv='${n}' ${G?'':'disabled'}>${TR('ui.save')}</button><button class='btn' data-ld='${n}' ${x?'':'disabled'}>${TR('ui.load')}</button></div></div>`}).join('')}<button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`);
 document.querySelectorAll('#ov [data-sv]').forEach(b=>b.onclick=()=>{
     const q=lsg('_slots',{}),d=new Date();
     q[b.dataset.sv]={
@@ -905,9 +905,9 @@ function endsUI(){
   G=sg;
   const row=n=>{
     const e=df[n];
-    return got.includes(n)&&e?`<div><b>${n===6?'★':n+'.'} ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n===6?'★ نهاية سرية':n+'. ؟؟؟'}</b><br><small>${n===6?'لمن يستحقها فقط.':'نهاية لم تكتشفها بعد.'}</small></div>`
+    return got.includes(n)&&e?`<div><b>${n===6?'★':n+'.'} ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n===6?'★ '+TR('ui.secretEnd'):n+'. '+TR('ui.unknown')}</b><br><small>${n===6?TR('ui.secretLocked'):TR('ui.endLocked')}</small></div>`
   };
-  ov(`<div class='pz'><h3>معرض النهايات (${got.length}/6)</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>رجوع</button></div>`)
+  ov(`<div class='pz'><h3>${TR('ui.endGallery')} (${got.length}/6)</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>${TR('ui.back')}</button></div>`)
 }
 
 function setUI(){
@@ -1046,7 +1046,7 @@ $('#bj').onclick=()=>jnl();
 
 $('#bs').onclick=()=>{mute=!mute;if(dr)dr.gain.value=mute?0:.05;ambMute();$('#bs').textContent=mute?'🔇':'🔊'};
 
-$('#br').onclick=()=>ov(`<div class="card"><h2>إعادة من البداية؟</h2><p>سيُحذف التقدّم المحفوظ.</p><button class="btn" onclick="rst()">نعم، من البداية</button><button class="btn" onclick="ov()">إلغاء</button></div>`);
+$('#br').onclick=()=>ov(`<div class="card"><h2>${TR('ui.resetQ')}</h2><p>${TR('ui.resetWarn')}</p><button class="btn" onclick="rst()">${TR('ui.resetYes')}</button><button class="btn" onclick="ov()">${TR('ui.cancel')}</button></div>`);
 
 scene('roof');
 
