@@ -21,7 +21,6 @@ if (LANG !== 'tn') document.write('<script src="lang_' + LANG + '.js"><\/script>
 
 function _lg() { return LNG[LANG] || LNG.tn; }
 function TR(k) { var a = _lg().t, b = LNG.tn.t; return k in a ? a[k] : (k in b ? b[k] : k); }
-document.title = TR('game.homeTitle').split('<br>').join(' ').split('<br/>').join(' ');
 var TXT = new Proxy({}, { has: function (_, k) { return k in _lg().t || k in LNG.tn.t; }, get: function (_, k) { return TR(k); } });
 var RX = new Proxy({}, { get: function (_, k) { var r = _lg().rx; return (r && r[k]) || LNG.tn.rx[k]; } });
 function D(n) { var g = TR('ui.digits'); return String(n).replace(/\d/g, function (d) { return g[+d]; }); }
