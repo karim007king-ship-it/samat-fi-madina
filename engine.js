@@ -834,7 +834,7 @@ async function loadExp(){
 }
 
 function expUI(){
-  ov(`<div class='pz'><h3>تعابير الوجوه</h3><p>اختياري: لكل شخصية صورة كاملة الجسم بنفس الوضعية والإطار وبتعبير مختلف، وتظهر عند ذلك الشعور. بدونها تعمل التعابير تلقائيا بالرموز والحركة.</p>${Object.keys(N).map(c=>[c,N[c][0]]).map(([c,n])=>`<div style='padding:6px 0;border-bottom:1px solid #ffffff14'><b>${n}</b><div style='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px'>${EXN.map(e=>{const k='x_'+c+'_'+e;return `<button class='btn' data-x='${k}' style='padding:6px 10px;font-size:13px'>${EXA[e]}${IMG[k]?' ✓':''}</button>`}).join('')}</div></div>`).join('')}<p id='ps'></p><button class='btn' id='xc'>مسح كل التعابير</button><button class='btn' onclick='ov()'>${TR('ui.close')}</button></div>`);
+  ov(`<div class='pz'><h3>${TR('ui.faceExpressions')}</h3><p>${TR('ui.faceExpressionsHelp')}</p>${Object.keys(N).map(c=>[c,N[c][0]]).map(([c,n])=>`<div style='padding:6px 0;border-bottom:1px solid #ffffff14'><b>${n}</b><div style='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px'>${EXN.map(e=>{const k='x_'+c+'_'+e;return `<button class='btn' data-x='${k}' style='padding:6px 10px;font-size:13px'>${EXA[e]}${IMG[k]?' ✓':''}</button>`}).join('')}</div></div>`).join('')}<p id='ps'></p><button class='btn' id='xc'>${TR('ui.clearExpressions')}</button><button class='btn' onclick='ov()'>${TR('ui.close')}</button></div>`);
 $('#xc').onclick=async()=>{
     for(const c of'ays')for(const e of EXN){
       const k='x_'+c+'_'+e;
@@ -849,7 +849,7 @@ document.querySelectorAll('#ov [data-x]').forEach(b=>b.onclick=()=>{
     f.accept='image/*';
     f.onchange=async()=>{
       if(!f.files[0])return;
-      $('#ps').textContent='جارِ المعالجة...';
+      $('#ps').textContent=TR('ui.processing');
       const d=await prep(f.files[0],true);
       await dbSet(k,d);
       IMG[k]=d;
@@ -1064,7 +1064,7 @@ home();
 // زر سرعة النص (⏩): بطيئة ← عادية ← سريعة ← فورية
 (()=>{
   // ⏩ نقرة = تخطّي الجملة (نقرتان سريعتان = أكمل الكتابة وانتقل) | ضغط مطوّل = تبديل سرعة النص
-  const SP=[['بطيئة',45],['عادية',24],['سريعة',10],['فورية',1]],b=$('#bk');
+  const SP=[[TR('menu.slow'),45],[TR('menu.normal'),24],[TR('menu.fast'),10],[TR('menu.instant'),1]],b=$('#bk');
   let tm=0,long=0;
   b.oncontextmenu=e=>e.preventDefault();
   b.onpointerdown=()=>{
@@ -1074,7 +1074,7 @@ home();
       const i=SP.findIndex(x=>x[1]===TS),n=SP[(i+1)%SP.length];
       TS=n[1];
       try{localStorage.setItem('ts',TS)}catch(x){}
-      toast('سرعة النص: '+n[0])
+      toast(TR('menu.textSpeed')+': '+n[0])
     },450)
   };
   b.onpointerup=b.onpointerleave=b.onpointercancel=()=>clearTimeout(tm);
@@ -1132,7 +1132,7 @@ document.addEventListener('keydown',e=>{
   if(!b)return;
   const v=document.createElement('button');
   v.id='bv';
-  v.setAttribute('aria-label','القائمة');
+  v.setAttribute('aria-label',TR('hud.menu'));
   v.textContent='☰';
   v.className=b.className;
   b.before(v);
