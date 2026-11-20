@@ -847,14 +847,19 @@ $('#xc').onclick=async()=>{
 document.querySelectorAll('#ov [data-x]').forEach(b=>b.onclick=()=>{
     const k=b.dataset.x,f=document.createElement('input');
     f.type='file';
-    f.accept='image/*';
+    f.accept='image/png,image/jpeg,image/webp,image/gif';
     f.onchange=async()=>{
-      if(!f.files[0])return;
+      if(!f.files||!f.files[0])return;
       $('#ps').textContent=TR('ui.processing');
-      const d=await prep(f.files[0],true);
-      await dbSet(k,d);
-      IMG[k]=d;
-      expUI()
+      try{
+        const d=await prep(f.files[0],true);
+        await dbSet(k,d);
+        IMG[k]=d;
+        expUI()
+      }catch(error){
+        const status=$('#ps');
+        if(status)status.textContent=TR('save.invalidFile')
+      }
     };
     f.click()
   })
