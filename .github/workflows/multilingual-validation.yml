@@ -88,6 +88,14 @@ jobs:
             throw new Error('Wildcard image picker is not allowed');
           }
           console.log('Image upload safety regression tests passed');
+          if (engineSource.includes("f.accept='image/*'") ||
+              !engineSource.includes("f.accept='image/png,image/jpeg,image/webp,image/gif'")) {
+            throw new Error('Expression image picker must use the image MIME allowlist');
+          }
+          if (!/catch\(error\)\{[\s\S]*?TR\('save\.invalidFile'\)/.test(engineSource)) {
+            throw new Error('Expression image upload failures must be handled safely');
+          }
+          console.log('Expression image upload regression tests passed');
 
 
           const html = fs.readFileSync('index.html', 'utf8');
