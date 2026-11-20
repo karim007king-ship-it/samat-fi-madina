@@ -2,7 +2,7 @@ name: Multilingual validation and preview
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, fix/multilingual-main-sync]
   push:
     branches: [fix/multilingual-main-sync, chore/engine-architecture-review]
 
