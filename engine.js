@@ -311,7 +311,7 @@ else if(op==='lights'){
       lightSnd(a)
     }
 else if(op==='flash')(boom(),$('#cam')).animate([{filter:'brightness(3)'},{filter:'none'}],{duration:380});
-else if(op==='title'){ov(`<div class="card"><h2>${TR(c.slice(6).trim())}</h2></div>`;await sl(1800);ov()}
+else if(op==='title'){ov(`<div class="card"><h2>${TR(c.slice(6).trim())}</h2></div>`);await sl(1800);ov()}
 else if(op==='hush')await sl(+a||800)
 else if(op==='cine'){/* fx handles if present */}
 else if(op==='wait')await sl(+a||500)}
