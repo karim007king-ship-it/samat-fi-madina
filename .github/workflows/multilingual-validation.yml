@@ -2,9 +2,9 @@ name: Multilingual validation and preview
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, fix/multilingual-main-sync]
   push:
-    branches: [fix/multilingual-main-sync]
+    branches: [fix/multilingual-main-sync, chore/engine-architecture-review]
 
 permissions:
   contents: read
@@ -23,6 +23,8 @@ jobs:
 
       - name: Runtime language switching smoke test
         run: node tests/i18n-runtime.js
+      - name: First-render home and settings localization test
+        run: node tests/settings-first-render.js
 
       - name: Validate scripts and translations
         run: |
