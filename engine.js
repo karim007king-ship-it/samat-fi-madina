@@ -95,7 +95,7 @@ Engine.on('line',s=>{
   if(!Array.isArray(s)||!s[1])return;
   const e=$('#nm'),L=HIST[HIST.length-1];
   if(L&&L.t===s[1])return;
-  HIST.push({n:e?e.textContent:'',c:e?e.style.color:'',t:s[1]});
+  HIST.push({n:e?e.textContent:'',c:e?e.style.color:'',t:TR(s[1])});
   if(HIST.length>40)HIST.shift()
 });
 // طبقة قائمة فوق اللعبة دون إغلاق ما تحتها (دفتر الأدلة، سجل الحوار)
@@ -311,6 +311,9 @@ else if(op==='lights'){
       lightSnd(a)
     }
 else if(op==='flash')(boom(),$('#cam')).animate([{filter:'brightness(3)'},{filter:'none'}],{duration:380});
+else if(op==='title'){ov(`<div class="card"><h2>${TR(c.slice(6).trim())}</h2></div>`;await sl(1800);ov()}
+else if(op==='hush')await sl(+a||800)
+else if(op==='cine'){/* fx handles if present */}
 else if(op==='wait')await sl(+a||500)}
 adv()}
 
@@ -351,7 +354,7 @@ if(G.i===0&&G.card!==G.c){
     scene(ch.bg);
     stage(ch);
     hud();
-    ov(`<div class="card">${Engine.fill('card:extra',G.c)}<p>${TR('ui.chapter')} ${G.c+1}</p><h2>${ch.t}</h2></div>`);
+    ov(`<div class="card">${Engine.fill('card:extra',G.c)}<p>${TR('ui.chapter')} ${G.c+1}</p><h2>${TR(ch.t)}</h2></div>`);
     XT={
       in:{},out:{}
     };
@@ -370,13 +373,13 @@ scene(ch.bg);stage(ch);hud();$('#cx').innerHTML='';
 if(!Array.isArray(s)&&s.f&&!cond(s.f)){G.i++;return step()}
 if(s.x!=null)return runX(s.x);
 if(Array.isArray(s)){if(s[2]&&!cond(s[2])){G.i++;return step()}
-const [nm,col]=N[s[0]];$('#nm').textContent=nm;$('#nm').style.color=col;
+const [nm,col]=N[s[0]];$('#nm').textContent=nm?TR(nm):'';$('#nm').style.color=col;
 ['a','y','s'].forEach(k=>{
       const e=$('#c_'+k);
       e.classList.toggle('on',k===s[0]);
       e.classList.toggle('al',k===s[0]&&/[!؟]/.test(s[1]))
     });
-const t=s[1],rx=/!/.test(t)?'jp':/\u061f/.test(t)?'tl':RX.fear.test(t)?'sh':'';
+const t=TR(s[1]),rx=/!/.test(t)?'jp':/\u061f/.test(t)?'tl':RX.fear.test(t)?'sh':'';
     document.querySelectorAll('#ch svg').forEach(x=>x.classList.remove('jp','tl','sh'));
     void $('#ch').offsetWidth;
     if(rx)(s[0]==='n'?document.querySelectorAll('#ch svg'):[$('#c_'+s[0])]).forEach(x=>x.classList.add(rx));
@@ -387,11 +390,11 @@ const t=s[1],rx=/!/.test(t)?'jp':/\u061f/.test(t)?'tl':RX.fear.test(t)?'sh':'';
       sc.classList.add('qk');
       thump()
     }
-$('#tx').style.color=s[0]==='n'?'#b9c0d8':'var(--ink)';direct(s);express(s);Engine.emit('line',s);typ(s[1]);nx=adv;return}
+$('#tx').style.color=s[0]==='n'?'#b9c0d8':'var(--ink)';direct(s);express(s);Engine.emit('line',s);typ(TR(s[1]));nx=adv;return}
 if(s.c){wide();$('#nm').textContent='';$('#tx').textContent=TR('ui.decide');nx=0;rd=0;
 s.c.forEach(o=>{
       const b=document.createElement('button');
-      b.textContent=o[0];
+      b.textContent=TR(o[0]);
       b.onclick=()=>{
         for(const k in o[1]){
           trust(k,o[1][k]);
@@ -432,7 +435,7 @@ function win(p,f){
 // مؤقتات اللغز قد تنتهي بعد إغلاقه (تخطي مثلا) لذلك say آمنة
 const say=t=>{const e=$('#ps');if(e)e.textContent=t};
 Engine.puzzles.seq=(p,c)=>{
-  ov(`<div class="pz"><h3>${p.t}</h3><div class="pads">${p.pads.map((x,i)=>`<button class="pad" data-i="${i}">${x}</button>`).join('')}</div><p id="ps"></p></div>`);
+  ov(`<div class="pz"><h3>${TR(p.t)}</h3><div class="pads">${p.pads.map((x,i)=>`<button class="pad" data-i="${i}">${x}</button>`).join('')}</div><p id="ps"></p></div>`);
   const B=[...document.querySelectorAll('.pad')];
   const fl=i=>{if(!B[i])return;B[i].classList.add('lit');tone(F[i]);setTimeout(()=>B[i].classList.remove('lit'),350)};
   const play=()=>{
@@ -459,7 +462,7 @@ Engine.puzzles.seq=(p,c)=>{
 };
 // لغز الترتيب: اضغط العناصر بالترتيب الصحيح (p.o العناصر، p.a فهارس الترتيب الصحيح)
 Engine.puzzles.ord=(p,c)=>{
-  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div class="ordw">${p.o.map((x,i)=>`<button class="pad" data-i="${i}">${x}</button>`).join('')}</div><p id="ps"></p></div>`);
+  ov(`<div class="pz"><h3>${TR(p.t)}</h3><p>${TR(p.cl)}</p><div class="ordw">${p.o.map((x,i)=>`<button class="pad" data-i="${i}">${TR(x)}</button>`).join('')}</div><p id="ps"></p></div>`);
   const B=[...document.querySelectorAll('.pad')];
   B.forEach(b=>b.onclick=()=>{
     const i=+b.dataset.i;
@@ -477,7 +480,7 @@ Engine.puzzles.ord=(p,c)=>{
 };
 // لغز الاختيار بالدليل: كل خيار له زر استماع (نبضات بفاصل x.iv) وزر اختيار؛ الجواب p.a
 Engine.puzzles.pick=(p,c)=>{
-  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div class="ordw">${p.o.map((x,i)=>`<div class="pk"><button class="pad pl" data-i="${i}" aria-label="${TR('ui.listen')}">🔊</button><button class="pad ch" data-i="${i}">${x.t}</button></div>`).join('')}</div><p id="ps"></p></div>`);
+  ov(`<div class="pz"><h3>${TR(p.t)}</h3><p>${TR(p.cl)}</p><div class="ordw">${p.o.map((x,i)=>`<div class="pk"><button class="pad pl" data-i="${i}" aria-label="${TR('ui.listen')}">🔊</button><button class="pad ch" data-i="${i}">${x.t}</button></div>`).join('')}</div><p id="ps"></p></div>`);
   document.querySelectorAll('.pl').forEach(b=>b.onclick=()=>{
     const x=p.o[+b.dataset.i];
     [0,1,2].forEach(k=>setTimeout(()=>ps(70,40,.3,.22,'sine',.5),k*x.iv*400))
@@ -492,7 +495,7 @@ Engine.puzzles.pick=(p,c)=>{
 };
 // لغز الرمز الرقمي (الافتراضي لأي نوع غير معروف)
 Engine.puzzles.code=(p,c)=>{
-  ov(`<div class="pz"><h3>${p.t}</h3><p>${p.cl}</p><div id="dg"></div><div class="kp">${[1,2,3,4,5,6,7,8,9,'⌫',0,'✔'].map(k=>`<button class="pad" data-k="${k}">${k}</button>`).join('')}</div><p id="ps"></p></div>`);
+  ov(`<div class="pz"><h3>${TR(p.t)}</h3><p>${TR(p.cl)}</p><div id="dg"></div><div class="kp">${[1,2,3,4,5,6,7,8,9,'⌫',0,'✔'].map(k=>`<button class="pad" data-k="${k}">${k}</button>`).join('')}</div><p id="ps"></p></div>`);
   const sh=()=>{const e=$('#dg');if(e)e.textContent=c.inp.padEnd(p.a.length,'·')};
   sh();
   document.querySelectorAll('.pad').forEach(b=>b.onclick=()=>{
@@ -522,7 +525,7 @@ function hint(f,p,base){
       z.appendChild(b)
     }
   }
-  return f<2?base:f===2?TR('hint.j'):TR('ui.hint')+p.h}
+  return f<2?base:f===2?TR('hint.j'):TR('ui.hint')+TR(p.h)}
 
 /* ═══════════ 10) النهايات ═══════════
    شاشة النهاية، شرح السبب، «جرّب قراراً آخر»، المشاركة، البدء والإعادة */
@@ -532,7 +535,7 @@ function endScr(){
   endSnd(e[3]);
   endRec(e[3]);
   scene(e[2]);
-  const show=()=>{ov(`<div class="card"><p>${e[3]===6?'النهاية السرية':'النهاية '+e[3]+' من ٥'}</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">إعادة من البداية</button><button class="btn" onclick="endsUI()">معرض النهايات</button></div>`);Engine.emit('ending:shown',e[3])}
+  const show=()=>{ov(`<div class="card"><p>${e[3]===6?TR('ui.endSecret'):TR('ui.endN').replace('{n}',e[3])}</p><h2>${e[0]}</h2><p>${e[1]}</p>${why(e[3])}${retryBtn()}<button class="btn" onclick="shareEnd()">${TR('share.b')}</button><button class="btn" onclick="rst()">${TR('ui.restart')}</button><button class="btn" onclick="endsUI()">${TR('ui.endsGallery')}</button></div>`);Engine.emit('ending:shown',e[3])}
   Engine.emit('ending',e);
   Engine.gate('ending',{n:e[3],e},show)
 }
@@ -568,7 +571,7 @@ function retryEnd(){const q=lsg('_snap',{}),s=q[decIdx()];if(s)start(JSON.parse(
 
 // مشاركة النتيجة: قائمة المشاركة إن وُجدت، وإلا نسخ للحافظة
 function shareEnd(){
-  const e=ending(),t=(e[3]===6?TR('share.t').replace('النهاية {n} من ٥','النهاية السرية'):TR('share.t').replace('{n}',e[3])).replace('{g}',TR('game.homeTitle')).replace('{e}',e[0])+(location.protocol.indexOf('http')===0?' '+location.href.split('#')[0]:'');
+  const e=ending(),t=(e[3]===6?TR('share.t').replace('النهاية {n} من ٥',TR('ui.secretEnd')):TR('share.t').replace('{n}',e[3])).replace('{g}',TR('game.homeTitle')).replace('{e}',e[0])+(location.protocol.indexOf('http')===0?' '+location.href.split('#')[0]:'');
   if(navigator.share)navigator.share({text:t}).catch(()=>{});
   else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast(TR('copied')),()=>toast(t));
   else toast(t)}
@@ -578,7 +581,7 @@ function shareEnd(){
 
 const SLAB="<defs><linearGradient id='trg' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#2c3b4b'/><stop offset='1' stop-color='#0d141c'/></linearGradient></defs><path fill='url(#trg)' d='M0 300V236Q200 226 400 236V300Z'/><path d='M0 236Q200 226 400 236' stroke='#5b7186' stroke-width='1.2' fill='none' opacity='.7'/><path stroke='#0a1118' stroke-width='1' opacity='.6' d='M0 262H400M70 236L40 300M170 232L150 300M270 232L290 300M370 236L410 300'/>";
 
-const SLOTS=[...Object.keys(N).map(k=>['c_'+k,N[k][0]]),...MAPB.map(([k,n])=>['b_'+k,'خلفية: '+n])];
+const SLOTS=[...Object.keys(N).map(k=>['c_'+k,N[k][0]]),...MAPB.map(([k,n])=>['b_'+k,TR('ui.bgPrefix')+TR(n)])];
 
 const DUSTG='<g fill=\'#cfe9ff\'>'+[[60,270,0],[130,250,2],[200,280,4],[270,240,1],[330,265,3],[370,230,5]].map(d=>`<circle class='du' cx='${d[0]}' cy='${d[1]}' r='1.6' style='animation-delay:-${d[2]}s'/>`).join('')+'</g>';
 
@@ -726,7 +729,7 @@ async function lightsCached(src){
    تبديل تعابير الشخصيات حسب مشاعر السطر */
 
 const EXN=['joy','sad','angry','fear','surprise'],EXA={
-  joy:'فرح',sad:'حزن',angry:'غضب',fear:'خوف',surprise:'دهشة'
+  joy:()=>TR('emo.joy'),sad:()=>TR('emo.sad'),angry:()=>TR('emo.angry'),fear:()=>TR('emo.fear'),surprise:()=>TR('emo.surprise')
 },HD={};
 
 const ER=[['fear',RX.fear],['angry',RX.angry],['sad',RX.sad],['joy',RX.joy]];
@@ -834,7 +837,7 @@ async function loadExp(){
 }
 
 function expUI(){
-  ov(`<div class='pz'><h3>تعابير الوجوه</h3><p>اختياري: لكل شخصية صورة كاملة الجسم بنفس الوضعية والإطار وبتعبير مختلف، وتظهر عند ذلك الشعور. بدونها تعمل التعابير تلقائيا بالرموز والحركة.</p>${Object.keys(N).map(c=>[c,N[c][0]]).map(([c,n])=>`<div style='padding:6px 0;border-bottom:1px solid #ffffff14'><b>${n}</b><div style='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px'>${EXN.map(e=>{const k='x_'+c+'_'+e;return `<button class='btn' data-x='${k}' style='padding:6px 10px;font-size:13px'>${EXA[e]}${IMG[k]?' ✓':''}</button>`}).join('')}</div></div>`).join('')}<p id='ps'></p><button class='btn' id='xc'>مسح كل التعابير</button><button class='btn' onclick='ov()'>إغلاق</button></div>`);
+  ov(`<div class='pz'><h3>تعابير الوجوه</h3><p>اختياري: لكل شخصية صورة كاملة الجسم بنفس الوضعية والإطار وبتعبير مختلف، وتظهر عند ذلك الشعور. بدونها تعمل التعابير تلقائيا بالرموز والحركة.</p>${Object.keys(N).map(c=>[c,N[c][0]]).map(([c,n])=>`<div style='padding:6px 0;border-bottom:1px solid #ffffff14'><b>${n}</b><div style='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px'>${EXN.map(e=>{const k='x_'+c+'_'+e;return `<button class='btn' data-x='${k}' style='padding:6px 10px;font-size:13px'>${typeof EXA[e]==='function'?EXA[e]():EXA[e]}${IMG[k]?' ✓':''}</button>`}).join('')}</div></div>`).join('')}<p id='ps'></p><button class='btn' id='xc'>مسح كل التعابير</button><button class='btn' onclick='ov()'>إغلاق</button></div>`);
 $('#xc').onclick=async()=>{
     for(const c of'ays')for(const e of EXN){
       const k='x_'+c+'_'+e;
@@ -864,7 +867,7 @@ document.querySelectorAll('#ov [data-x]').forEach(b=>b.onclick=()=>{
 
 function home(){try{var ey=$('#ny'),es=$('#ns');if(ey)ey.textContent=TR('name.y');if(es)es.textContent=TR('name.s')}catch(e){}
   const s=ld();
-  ov(`<div class="card"><p>${GAME.homePart}</p><h1>${GAME.homeTitle}</h1><p>${TR('ui.tapHint')}</p><button class="btn" onclick="start(nw())">${TR('ui.start')}</button>${s?'<button class="btn" onclick="start(ld())">'+TR('ui.continue')+'</button>':''}<button class="btn" onclick="imp()">استيراد من الاستوديو</button><button class="btn" onclick="expStory()">نسخ القصة للمحرر</button><button class="btn" onclick="imgUI()">صور حقيقية (شخصيات وخلفيات)</button><button class="btn" onclick="expUI()">تعابير الوجوه</button><button class="btn" onclick="menuUI()">${TR('ui.menu')}</button></div>`)
+  ov(`<div class="card"><p>${TR(GAME.homePart)}</p><h1>${TR(GAME.homeTitle)}</h1><p>${TR('ui.tapHint')}</p><button class="btn" onclick="start(nw())">${TR('ui.start')}</button>${s?'<button class="btn" onclick="start(ld())">'+TR('ui.continue')+'</button>':''}<button class="btn" onclick="imp()">استيراد من الاستوديو</button><button class="btn" onclick="expStory()">نسخ القصة للمحرر</button><button class="btn" onclick="imgUI()">صور حقيقية (شخصيات وخلفيات)</button><button class="btn" onclick="expUI()">تعابير الوجوه</button><button class="btn" onclick="menuUI()">${TR('ui.menu')}</button></div>`)
 }
 
 function menuUI(){
@@ -905,7 +908,7 @@ function endsUI(){
   G=sg;
   const row=n=>{
     const e=df[n];
-    return got.includes(n)&&e?`<div><b>${n===6?'★':n+'.'} ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n===6?'★ '+TR('ui.secretEnd'):n+'. '+TR('ui.unknown')}</b><br><small>${n===6?TR('ui.secretLocked'):TR('ui.endLocked')}</small></div>`
+    return got.includes(n)&&e?`<div><b>${n===6?'★':n+'.'} ${TR(e[0])}</b><br><small>${TR(e[1])}</small></div>`:`<div><b>${n===6?'★ '+TR('ui.secretEnd'):n+'. '+TR('ui.unknown')}</b><br><small>${n===6?TR('ui.secretLocked'):TR('ui.endLocked')}</small></div>`
   };
   ov(`<div class='pz'><h3>${TR('ui.endsGallery')} (${got.length}/6)</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>${TR('ui.back')}</button></div>`)
 }
@@ -1052,7 +1055,7 @@ $('#br').onclick=()=>ov(`<div class="card"><h2>${TR('ui.resetQ')}</h2><p>${TR('u
 
 scene('roof');
 
-$('#ct').textContent=GAME.part;
+$('#ct').textContent=TR(GAME.part);
 
 try{
   const t=localStorage.getItem(LIBK);
