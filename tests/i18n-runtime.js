@@ -19,6 +19,11 @@ function boot(language, browserLanguage = 'fr') {
     const selectedBundle = 'lang_' + context.LANG + '.js';
     vm.runInContext(fs.readFileSync(selectedBundle, 'utf8'), context, { filename: selectedBundle });
   }
+  vm.runInContext(fs.readFileSync('story.js', 'utf8'), context, { filename: 'story.js' });
+  if (context.LANG !== 'tn') {
+    const selectedBundle = 'lang_' + context.LANG + '.js';
+    vm.runInContext(fs.readFileSync(selectedBundle, 'utf8'), context, { filename: selectedBundle });
+  }
   return { context, document, storage, writtenScripts, reloads: () => reloads };
 }
 
@@ -29,6 +34,12 @@ for (const language of ['tn', 'ar', 'fr', 'en']) {
   assert.equal(document.documentElement.dir, language === 'fr' || language === 'en' ? 'ltr' : 'rtl');
   assert.ok(context.TR('ui.start'), 'start label must resolve');
   assert.ok(context.TR('game.title'), 'title must resolve');
+  assert.equal(vm.runInContext('C.length', context), 45, 'all 45 chapters must load');
+  assert.ok(vm.runInContext('GAME.homeTitle && GAME.homePart', context), 'game home title and subtitle must be localized');
+  const storyText = vm.runInContext('JSON.stringify(C)', context);
+  if (language === 'fr' || language === 'en') {
+    assert.doesNotMatch(storyText, /[\u0600-\u06FF]/, 'chapter names, dialogue, choices and puzzle text must not leak Arabic script');
+  }
   assert.deepEqual(writtenScripts, language === 'tn'
     ? ['<script src="lang_tn.js"></script>']
     : ['<script src="lang_tn.js"></script>', '<script src="lang_' + language + '.js"></script>'],
