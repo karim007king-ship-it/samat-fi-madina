@@ -150,6 +150,14 @@ jobs:
             throw new Error('Settings language names are not localized');
           }
           console.log('Home screen and settings language-label checks passed');
+          // Logical alignment must follow the selected document direction (RTL/LTR).
+          if (studioSource.includes("text-align:right")) {
+            throw new Error('Studio labels must use direction-aware logical alignment');
+          }
+          if (engineSource.includes("text-align:right")) {
+            throw new Error('Engine overlays must not force RTL alignment in LTR languages');
+          }
+          console.log('Direction-aware Studio and ending-gallery alignment checks passed');
 
           const baseline = [...keySets.tn];
           for (const lang of languages) {
