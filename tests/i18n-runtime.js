@@ -12,8 +12,11 @@ function boot(language, browserLanguage = 'fr') {
     localStorage: { getItem(k) { return storage[k] ?? null; }, setItem(k,v) { storage[k]=v; } },
     location: { reload() { reloads++; } }, console
   });
-  for (const file of ['i18n.js', 'lang_tn.js', 'lang_' + language + '.js']) {
-    vm.runInContext(fs.readFileSync(file, 'utf8'), context, { filename: file });
+  vm.runInContext(fs.readFileSync('i18n.js', 'utf8'), context, { filename: 'i18n.js' });
+  vm.runInContext(fs.readFileSync('lang_tn.js', 'utf8'), context, { filename: 'lang_tn.js' });
+  if (context.LANG !== 'tn') {
+    const selectedBundle = 'lang_' + context.LANG + '.js';
+    vm.runInContext(fs.readFileSync(selectedBundle, 'utf8'), context, { filename: selectedBundle });
   }
   return { context, document, storage, reloads: () => reloads };
 }
