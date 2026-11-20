@@ -1,7 +1,7 @@
 // Service Worker — network-first لملفات التطبيق لضمان وصول الترجمات الجديدة، مع fallback للعمل دون اتصال.
-// نطاق التخزين خاص باللعبة فقط؛ لا نحذف مخازن تطبيقات أخرى على النطاق نفسه.
+// نطاق التخزين خاص بإصدارات هذه اللعبة فقط؛ لا نحذف مخازن تطبيقات أخرى على النطاق نفسه.
 const V = 'smm-v25-cache-scope';
-const PREFIX = 'smm-';
+const PREFIX = 'smm-v';
 const FILES = ['./', 'index.html', 'images.js', 'images2.js', 'i18n.js', 'lang_tn.js', 'lang_ar.js', 'lang_fr.js', 'lang_en.js', 'story.js', 'audio.js', 'studio.js', 'engine.js', 'fx.js', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -23,7 +23,7 @@ self.addEventListener('fetch', e => {
   e.respondWith((async () => {
     const cache = await caches.open(V);
     const url = new URL(r.url);
-    const appCode = r.mode === 'navigate' || /\.(?:html|js|css)$/.test(url.pathname);
+    const appCode = r.mode === 'navigate' || /\\.(?:html|js|css)$/.test(url.pathname);
 
     if (appCode) {
       try {
