@@ -215,6 +215,11 @@ jobs:
           if (!/const cache = await caches\.open\(V\)/.test(sw) || !/cache\.match\(r\)/.test(sw)) {
             throw new Error('Fetch handler must read only from its own cache');
           }
+          if (!sw.includes("/\\.(?:html|js|css)$/.test(url.pathname)") ||
+              !sw.includes("fetch(new Request(r, { cache: 'no-store' }))")) {
+            throw new Error('Service worker must use network-first for HTML, JS, and CSS assets');
+          }
+          console.log('Service worker network-first asset regression test passed');
           console.log('Service worker cache-isolation checks passed');
           console.log('Service worker cache version:', version[1]);
           NODE
