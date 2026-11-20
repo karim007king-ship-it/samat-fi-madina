@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [fix/multilingual-main-sync]
+    branches: [fix/multilingual-main-sync, chore/engine-architecture-review]
 
 permissions:
   contents: read
