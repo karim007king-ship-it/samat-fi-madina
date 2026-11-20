@@ -6,7 +6,8 @@ const assert = require('node:assert/strict');
 function boot(language, browserLanguage = 'fr') {
   const storage = { lang: language };
   let reloads = 0;
-  const document = { documentElement: { lang: '', dir: '' }, write() {} };
+  const writtenScripts = [];
+  const document = { documentElement: { lang: '', dir: '' }, write(markup) { writtenScripts.push(markup); } };
   const context = vm.createContext({
     window: {}, document, navigator: { language: browserLanguage },
     localStorage: { getItem(k) { return storage[k] ?? null; }, setItem(k,v) { storage[k]=v; } },
@@ -18,16 +19,32 @@ function boot(language, browserLanguage = 'fr') {
     const selectedBundle = 'lang_' + context.LANG + '.js';
     vm.runInContext(fs.readFileSync(selectedBundle, 'utf8'), context, { filename: selectedBundle });
   }
-  return { context, document, storage, reloads: () => reloads };
+  return { context, document, storage, writtenScripts, reloads: () => reloads };
 }
 
 for (const language of ['tn', 'ar', 'fr', 'en']) {
-  const { context, document, storage, reloads } = boot(language);
+  const { context, document, storage, writtenScripts, reloads } = boot(language);
   assert.equal(context.LANG, language, 'stored language should be respected');
   assert.equal(document.documentElement.lang, language === 'tn' ? 'ar' : language);
   assert.equal(document.documentElement.dir, language === 'fr' || language === 'en' ? 'ltr' : 'rtl');
   assert.ok(context.TR('ui.start'), 'start label must resolve');
   assert.ok(context.TR('game.title'), 'title must resolve');
+  assert.deepEqual(writtenScripts, language === 'tn'
+    ? ['<script src="lang_tn.js"><\\/script>']
+    : ['<script src="lang_tn.js"><\\/script>', '<script src="lang_' + language + '.js"><\\/script>'],
+    'i18n bootstrap must request the fallback bundle and only the selected language bundle');
+
+  // These labels previously remained Arabic in the Studio after switching to French/English.
+  const studioLabels = ['ui.importStudio', 'ui.copyStory', 'ui.realImages', 'studio.imageHelp',
+    'studio.choose', 'studio.importDisabled', 'studio.importTitle', 'studio.importDisabledHelp',
+    'studio.storyHelp', 'studio.copied', 'studio.copyManual', 'studio.copy'];
+  for (const key of studioLabels) {
+    const value = context.TR(key);
+    assert.notEqual(value, key, 'Studio label must resolve: ' + key);
+    if (language === 'fr' || language === 'en') {
+      assert.doesNotMatch(value, /[\\u0600-\\u06FF]/, 'Studio label must not leak Arabic script: ' + key);
+    }
+  }
   assert.equal(context.TR('__missing_key__'), '__missing_key__', 'unknown key should remain explicit');
   assert.equal(typeof context.RX.fear, 'object', 'emotion regex should be available');
 
