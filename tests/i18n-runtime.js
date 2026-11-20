@@ -47,4 +47,7 @@ const invalid = boot('xx', 'en');
 assert.equal(invalid.context.LANG, 'en', 'unsupported stored language should use browser language');
 const defaulted = boot('xx', 'de');
 assert.equal(defaulted.context.LANG, 'tn', 'unsupported language should default to Tunisian');
+assert.equal(defaulted.context.setLang('xx'), false, 'unsupported language changes must be rejected');
+assert.equal(defaulted.storage.lang, 'xx', 'rejected language must not overwrite stored preference');
+assert.equal(defaulted.reloads(), 0, 'rejected language must not reload the page');
 console.log('Language preference fallback checks passed');
