@@ -91,6 +91,27 @@ jobs:
 
 
           const html = fs.readFileSync('index.html', 'utf8');
+
+          // Shared HUD must not contain language-specific labels or character names.
+          const hud = html.match(/<div id="hud">([\\s\\S]*?)<\\/div>/);
+          if (!hud) throw new Error('HUD container is missing');
+          if (!/<span class="tr" id="ny"><span class="nm"><\\/span>/.test(hud[1]) ||
+              !/<span class="tr" id="ns"><span class="nm"><\\/span>/.test(hud[1])) {
+            throw new Error('HUD character names must use dedicated localized text nodes');
+          }
+          if (/[\\u0600-\\u06FF]/.test(hud[1])) {
+            throw new Error('Hardcoded Arabic text found in shared HUD markup');
+          }
+          const hudLocalization = [
+            'TR("name.y")', 'TR("name.s")', 'TR("hud.skipLine")',
+            'TR("hud.skipLineTitle")', 'TR("hud.clueBook")',
+            'TR("hud.sound")', 'TR("hud.restart")',
+            'TR("hud.chapterProgress")'
+          ];
+          for (const key of hudLocalization) {
+            if (!html.includes(key)) throw new Error('Missing HUD localization binding: ' + key);
+          }
+          console.log('Shared HUD localization checks passed');
           for (const [i, match] of [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].entries()) {
             if (match[1].trim()) new Function(match[1]);
             console.log('Inline script OK:', i + 1);
