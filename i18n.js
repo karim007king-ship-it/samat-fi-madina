@@ -7,6 +7,13 @@ var LNG = window.LNG || (window.LNG = {});
 var LANGS = [['tn', 'تونسي', 'rtl'], ['ar', 'العربية الفصحى', 'rtl'], ['fr', 'Français', 'ltr'], ['en', 'English', 'ltr']];
 var LANG = (function () {
   try {
+    var q = new URLSearchParams(location.search).get('lang');
+    if (q && LANGS.some(function (x) { return x[0] === q; })) {
+      try { localStorage.setItem('lang', q); } catch (e2) { }
+      return q;
+    }
+  } catch (e) { }
+  try {
     var l = localStorage.getItem('lang');
     if (LANGS.some(function (x) { return x[0] === l; })) return l;
   } catch (e) { }
@@ -45,5 +52,7 @@ function D(n) {
 var LOC = LANG === 'fr' ? 'fr' : LANG === 'en' ? 'en' : 'ar';
 function setLang(c) {
   try { localStorage.setItem('lang', c); } catch (e) { }
-  location.reload();
+  // إعادة تحميل مع كسر الكاش حتى لا تبقى الإعدادات باللغة القديمة
+  var u = location.href.split('#')[0].split('?')[0];
+  location.replace(u + '?lang=' + encodeURIComponent(c) + '&t=' + Date.now());
 }
