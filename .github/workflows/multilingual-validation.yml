@@ -188,7 +188,14 @@ jobs:
           for (const file of ['i18n.js', 'lang_tn.js', 'lang_ar.js', 'lang_fr.js', 'lang_en.js', 'story.js', 'audio.js', 'studio.js', 'engine.js', 'fx.js']) {
             if (!sw.includes("'" + file + "'")) throw new Error('Service worker cache missing ' + file);
           }
-          if (!/filter\\(k => k\\.startsWith\\(PREFIX\\) && k !== V\\)/.test(sw) || !/const PREFIX = 'smm-'/.test(sw)) {\n            throw new Error('Service worker must clean only its own cache namespace');\n          }\n          if (!/const cache = await caches\\.open\\(V\\)/.test(sw) || !/cache\\.match\\(r\\)/.test(sw)) {\n            throw new Error('Fetch handler must read only from its own cache');\n          }\n          console.log('Service worker cache-isolation checks passed');\n          console.log('Service worker cache version:', version[1]);
+          if (!/filter\\(k => k\\.startsWith\\(PREFIX\\) && k !== V\\)/.test(sw) || !/const PREFIX = 'smm-'/.test(sw)) {
+            throw new Error('Service worker must clean only its own cache namespace');
+          }
+          if (!/const cache = await caches\\.open\\(V\\)/.test(sw) || !/cache\\.match\\(r\\)/.test(sw)) {
+            throw new Error('Fetch handler must read only from its own cache');
+          }
+          console.log('Service worker cache-isolation checks passed');
+          console.log('Service worker cache version:', version[1]);
           NODE
 
       - name: Package browser preview
