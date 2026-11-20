@@ -32,7 +32,7 @@ for (const language of ['tn', 'ar', 'fr', 'en']) {
   assert.equal(typeof context.RX.fear, 'object', 'emotion regex should be available');
 
   const digits = context.TR('ui.digits');
-  const expectedDigits = '123'.replace(/\\d/g, d => digits[Number(d)]);
+  const expectedDigits = '123'.replace(/\d/g, d => digits[Number(d)]);
   assert.equal(context.D(123), expectedDigits, 'digits must use the selected language');
   if (language !== 'tn') {
     const fallbackKey = 'ui.start';
