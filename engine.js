@@ -249,7 +249,7 @@ function scene(b){
   $('#moon').style.opacity=o?0:s[3]
 }
 
-function hud(){
+function hud(){try{var ey=$('#ny'),es=$('#ns');if(ey)ey.textContent=TR('name.y');if(es)es.textContent=TR('name.s')}catch(e){}
   $('#ct').textContent=`${G.c+1}/${C.length}`;
   $('#ct').title=GAME.partOf(G.c);
   $('#ty').style.width=G.y*10+'%';
@@ -862,7 +862,7 @@ document.querySelectorAll('#ov [data-x]').forEach(b=>b.onclick=()=>{
 /* ═══════════ 13) القوائم والإعدادات ═══════════
    الشاشة الرئيسية، القائمة، خانات الحفظ، الفصول، معرض النهايات، التصدير والاستيراد */
 
-function home(){
+function home(){try{var ey=$('#ny'),es=$('#ns');if(ey)ey.textContent=TR('name.y');if(es)es.textContent=TR('name.s')}catch(e){}
   const s=ld();
   ov(`<div class="card"><p>${GAME.homePart}</p><h1>${GAME.homeTitle}</h1><p>${TR('ui.tapHint')}</p><button class="btn" onclick="start(nw())">${TR('ui.start')}</button>${s?'<button class="btn" onclick="start(ld())">'+TR('ui.continue')+'</button>':''}<button class="btn" onclick="imp()">استيراد من الاستوديو</button><button class="btn" onclick="expStory()">نسخ القصة للمحرر</button><button class="btn" onclick="imgUI()">صور حقيقية (شخصيات وخلفيات)</button><button class="btn" onclick="expUI()">تعابير الوجوه</button><button class="btn" onclick="menuUI()">${TR('ui.menu')}</button></div>`)
 }
