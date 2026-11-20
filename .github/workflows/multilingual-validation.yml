@@ -66,14 +66,14 @@ jobs:
           const imageGuards = [
             ['MIME allowlist', /image\\/png,image\\/jpeg,image\\/webp,image\\/gif/],
             ['8 MB source limit', /8\\s*\\*\\s*1024\\s*\\*\\s*1024/],
-            ['10,000 px dimension limit', /10000/],
-            ['16 megapixel limit', /16000000/],
+            ['10,000 px dimension limit', source => source.includes('10000')],
+            ['16 megapixel limit', source => source.includes('16000000')],
             ['temporary URL cleanup', /URL\\.revokeObjectURL\\(url\\)/],
             ['decode failure handling', /im\\.onerror/],
-            ['decode timeout', /15000/]
+            ['decode timeout', source => source.includes('15000')]
           ];
           for (const [label, pattern] of imageGuards) {
-            if (!pattern.test(studioSource)) throw new Error('Image upload guard missing: ' + label);
+            if (!pattern(studioSource)) throw new Error('Image upload guard missing: ' + label);
           }
           if (/accept=['"]image\\/\\*['"]/.test(studioSource)) {
             throw new Error('Wildcard image picker is not allowed');
