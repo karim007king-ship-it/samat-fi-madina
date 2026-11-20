@@ -20,10 +20,6 @@ function boot(language, browserLanguage = 'fr') {
     vm.runInContext(fs.readFileSync(selectedBundle, 'utf8'), context, { filename: selectedBundle });
   }
   vm.runInContext(fs.readFileSync('story.js', 'utf8'), context, { filename: 'story.js' });
-  if (context.LANG !== 'tn') {
-    const selectedBundle = 'lang_' + context.LANG + '.js';
-    vm.runInContext(fs.readFileSync(selectedBundle, 'utf8'), context, { filename: selectedBundle });
-  }
   return { context, document, storage, writtenScripts, reloads: () => reloads };
 }
 
