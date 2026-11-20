@@ -1004,7 +1004,20 @@ function impSave(){
       if(!j||j.v!==1||j.k!==K||!j.d||typeof j.d!=='object'||Array.isArray(j.d))return toast(TR('save.wrongGame'));
       const keys=Object.keys(j.d);
       if(!keys.length||keys.length>20||!keys.every(k=>okKey(k)&&validSaveEntry(k,j.d[k])))return toast(TR('save.invalidData'));
-      keys.forEach(k=>localStorage.setItem(k,j.d[k]));
+      // Snapshot current keys first, then rollback on quota/write errors.
+      const before={};
+      for(const k of keys)before[k]=localStorage.getItem(k);
+      try{
+        for(const k of keys)localStorage.setItem(k,j.d[k]);
+      }catch(writeError){
+        for(const k of keys){
+          try{
+            if(before[k]===null)localStorage.removeItem(k);
+            else localStorage.setItem(k,before[k])
+          }catch(rollbackError){}
+        }
+        throw writeError
+      }
       toast(TR('save.imported'));
       setTimeout(()=>location.reload(),900)
     }catch(x){
