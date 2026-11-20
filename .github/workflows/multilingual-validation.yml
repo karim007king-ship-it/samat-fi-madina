@@ -130,6 +130,19 @@ jobs:
             console.log(lang + ':', keys.length, 'unique translation keys');
           }
 
+          const homeStart = engineSource.indexOf('function home(){');
+          const homeEnd = engineSource.indexOf('\nfunction menuUI()', homeStart);
+          const homeMarkup = engineSource.slice(homeStart, homeEnd);
+          for (const key of ['ui.importStudio', 'ui.copyStory', 'ui.realImages']) {
+            if (!homeMarkup.includes("TR('" + key + "')")) {
+              throw new Error('Home screen label is not localized: ' + key);
+            }
+          }
+          if (!engineSource.includes("TR('lang.'+c)")) {
+            throw new Error('Settings language names are not localized');
+          }
+          console.log('Home screen and settings language-label checks passed');
+
           const baseline = [...keySets.tn];
           for (const lang of languages) {
             const missing = baseline.filter(key => !keySets[lang].has(key));
