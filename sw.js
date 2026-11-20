@@ -23,7 +23,7 @@ self.addEventListener('fetch', e => {
   e.respondWith((async () => {
     const cache = await caches.open(V);
     const url = new URL(r.url);
-    const appCode = r.mode === 'navigate' || /\\.(?:html|js|css)$/.test(url.pathname);
+    const appCode = r.mode === 'navigate' || /\.(?:html|js|css)$/.test(url.pathname);
 
     if (appCode) {
       try {
