@@ -21,6 +21,9 @@ jobs:
         with:
           node-version: 20
 
+      - name: Runtime language switching smoke test
+        run: node tests/i18n-runtime.js
+
       - name: Validate scripts and translations
         run: |
           node <<'NODE'
