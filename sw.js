@@ -1,5 +1,5 @@
 // Service Worker — network-first للـ JS/HTML حتى تتحدث اللغة فوراً
-const V = 'smm-v15';
+const V = 'smm-v16';
 const FILES = ['./', 'index.html', 'images.js', 'images2.js', 'i18n.js', 'lang_tn.js', 'lang_ar.js', 'lang_fr.js', 'lang_en.js', 'story.js', 'audio.js', 'studio.js', 'engine.js', 'fx.js', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
