@@ -42,7 +42,7 @@ for (const language of ['tn', 'ar', 'fr', 'en']) {
     const value = context.TR(key);
     assert.notEqual(value, key, 'Studio label must resolve: ' + key);
     if (language === 'fr' || language === 'en') {
-      assert.doesNotMatch(value, /[\\u0600-\\u06FF]/, 'Studio label must not leak Arabic script: ' + key);
+      assert.doesNotMatch(value, /[\u0600-\u06FF]/, 'Studio label must not leak Arabic script: ' + key);
     }
   }
   assert.equal(context.TR('__missing_key__'), '__missing_key__', 'unknown key should remain explicit');
