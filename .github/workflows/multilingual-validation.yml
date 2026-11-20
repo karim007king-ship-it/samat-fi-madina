@@ -93,13 +93,13 @@ jobs:
           const html = fs.readFileSync('index.html', 'utf8');
 
           // Shared HUD must not contain language-specific labels or character names.
-          const hud = html.match(/<div id="hud">([\\s\\S]*?)<\\/div>/);
+          const hud = html.match(/<div id="hud">([\s\S]*?)<\/div>/);
           if (!hud) throw new Error('HUD container is missing');
-          if (!/<span class="tr" id="ny"><span class="nm"><\\/span>/.test(hud[1]) ||
-              !/<span class="tr" id="ns"><span class="nm"><\\/span>/.test(hud[1])) {
+          if (!/<span class="tr" id="ny"><span class="nm"><\/span>/.test(hud[1]) ||
+              !/<span class="tr" id="ns"><span class="nm"><\/span>/.test(hud[1])) {
             throw new Error('HUD character names must use dedicated localized text nodes');
           }
-          if (/[\\u0600-\\u06FF]/.test(hud[1])) {
+          if (/[\u0600-\u06FF]/.test(hud[1])) {
             throw new Error('Hardcoded Arabic text found in shared HUD markup');
           }
           const hudLocalization = [
