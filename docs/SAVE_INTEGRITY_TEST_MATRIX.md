@@ -17,7 +17,7 @@ Scope: exercise the existing save validation and import boundary without changin
 | Clue type/size | non-array, >300 clues, oversized clue text | rejected |
 | Unknown clue | clue not in ALLJ | rejected |
 | Flags structure | array, excessive keys, invalid key, non-boolean values | rejected |
-| Prototype-like keys | constructor, prototype, __proto__ | rejected or safely inert |
+| Prototype-like keys | constructor, prototype, __proto__ | rejected |
 | Card pointer | invalid integer or outside chapter bounds | rejected |
 | Error counter | negative, non-finite, or >10000 | rejected |
 
