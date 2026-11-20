@@ -1,6 +1,6 @@
 // Service Worker — stale-while-revalidate مع نطاق تخزين خاص باللعبة.
 // عند تغيير الملفات، حدّث V. لا نحذف مخازن تطبيقات أخرى على النطاق نفسه.
-const V = 'smm-v23-cache-scope';
+const V = 'smm-v24-cache-scope';
 const PREFIX = 'smm-';
 const FILES = ['./', 'index.html', 'images.js', 'images2.js', 'i18n.js', 'lang_tn.js', 'lang_ar.js', 'lang_fr.js', 'lang_en.js', 'story.js', 'audio.js', 'studio.js', 'engine.js', 'fx.js', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
