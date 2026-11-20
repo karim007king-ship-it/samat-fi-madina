@@ -54,6 +54,12 @@ jobs:
             throw new Error('Local save validation is missing');
           }
           console.log('Local save validation regression test passed');
+          if (!/const before=\{\}/.test(engineSource) ||
+              !/catch\(writeError\)/.test(engineSource) ||
+              !/rollbackError/.test(engineSource)) {
+            throw new Error('Save import rollback protection is missing');
+          }
+          console.log('Save import rollback protection regression test passed');
           const audioSource = fs.readFileSync('audio.js', 'utf8');
           if (!audioSource.includes('Number.isFinite(v.a)') ||
               !audioSource.includes('Math.max(0,Math.min(1.5,v.a))') ||
