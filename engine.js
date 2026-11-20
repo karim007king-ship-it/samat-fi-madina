@@ -913,7 +913,7 @@ function endsUI(){
     const e=df[n];
     return got.includes(n)&&e?`<div><b>${n===6?'★':D(n)+'.'} ${e[0]}</b><br><small>${e[1]}</small></div>`:`<div><b>${n===6?'★ '+TR('end.secretLabel'):D(n)+'. '+TR('ui.unknown')}</b><br><small>${n===6?TR('ui.secretHint'):TR('ui.undiscoveredEnding')}</small></div>`
   };
-  ov(`<div class='pz'><h3>${TR('ui.endGallery')} (${D(got.length)}/${D(6)})</h3><div style='max-height:55vh;overflow:auto;text-align:right;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`)
+  ov(`<div class='pz'><h3>${TR('ui.endGallery')} (${D(got.length)}/${D(6)})</h3><div style='max-height:55vh;overflow:auto;text-align:start;display:flex;flex-direction:column;gap:10px'>${[1,2,3,4,5,6].map(row).join('')}</div><button class='btn' onclick='menuUI()'>${TR('menu.back')}</button></div>`)
 }
 
 function setUI(){
