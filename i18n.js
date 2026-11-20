@@ -25,4 +25,4 @@ var TXT = new Proxy({}, { has: function (_, k) { return k in _lg().t || k in LNG
 var RX = new Proxy({}, { get: function (_, k) { var r = _lg().rx; return (r && r[k]) || LNG.tn.rx[k]; } });
 function D(n) { var g = TR('ui.digits'); return String(n).replace(/\d/g, function (d) { return g[+d]; }); }
 var LOC = LANG === 'fr' ? 'fr' : LANG === 'en' ? 'en' : 'ar';
-function setLang(c) { try { localStorage.setItem('lang', c); } catch (e) { } location.reload(); }
+function setLang(c) { if (!LANGS.some(function (x) { return x[0] === c; })) return false; try { localStorage.setItem('lang', c); } catch (e) { } location.reload(); return true; }
