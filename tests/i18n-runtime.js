@@ -30,8 +30,8 @@ for (const language of ['tn', 'ar', 'fr', 'en']) {
   assert.ok(context.TR('ui.start'), 'start label must resolve');
   assert.ok(context.TR('game.title'), 'title must resolve');
   assert.deepEqual(writtenScripts, language === 'tn'
-    ? ['<script src="lang_tn.js"><\\/script>']
-    : ['<script src="lang_tn.js"><\\/script>', '<script src="lang_' + language + '.js"><\\/script>'],
+    ? ['<script src="lang_tn.js"></script>']
+    : ['<script src="lang_tn.js"></script>', '<script src="lang_' + language + '.js"></script>'],
     'i18n bootstrap must request the fallback bundle and only the selected language bundle');
 
   // These labels previously remained Arabic in the Studio after switching to French/English.
