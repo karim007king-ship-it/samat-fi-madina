@@ -188,10 +188,10 @@ jobs:
           for (const file of ['i18n.js', 'lang_tn.js', 'lang_ar.js', 'lang_fr.js', 'lang_en.js', 'story.js', 'audio.js', 'studio.js', 'engine.js', 'fx.js']) {
             if (!sw.includes("'" + file + "'")) throw new Error('Service worker cache missing ' + file);
           }
-          if (!/filter\\(k => k\\.startsWith\\(PREFIX\\) && k !== V\\)/.test(sw) || !/const PREFIX = 'smm-'/.test(sw)) {
+          if (!/filter\(k => k\.startsWith\(PREFIX\) && k !== V\)/.test(sw) || !/const PREFIX = 'smm-'/.test(sw)) {
             throw new Error('Service worker must clean only its own cache namespace');
           }
-          if (!/const cache = await caches\\.open\\(V\\)/.test(sw) || !/cache\\.match\\(r\\)/.test(sw)) {
+          if (!/const cache = await caches\.open\(V\)/.test(sw) || !/cache\.match\(r\)/.test(sw)) {
             throw new Error('Fetch handler must read only from its own cache');
           }
           console.log('Service worker cache-isolation checks passed');
